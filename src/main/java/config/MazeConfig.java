@@ -76,27 +76,28 @@ public class MazeConfig {
         return new ArrayList<>();
     }
 
+    // La map est restreinte à un rectangle pour l'instant
     public static MazeConfig makeExample1() {
         List<String> allLines = getLines("src/main/java/config/mazestructure.txt");
-        List<String[]> lineData = new ArrayList<>(); // Liste de chaque ligne sous tableau
-        List<String[][]> lineData2 = new ArrayList<>(); // Liste de chaque ligne sous tableau avec chaque couple sous tableau
+        List<String[]> lineData = new ArrayList<>(); // Liste de chaque ligne sous forme d'array : [(Type,Content); ...], [(Type,Content); ...], ...
+        List<String[][]> lineData2 = new ArrayList<>(); // Liste de chaque ligne sous forme d'array contenant chaque couple aussi en array : [ligne][couples], [ligne][couples], ...
 
-        for(String line : allLines) {
+        for(String line : allLines) { // On parcourt chaque ligne du fichier .txt et on transforme chaque ligne en un array [(Type,Content), ...] contenant chaque String de couple (Type,Content)
             lineData.add(line.split(" "));
         }
-        for(String[] line : lineData) {
-            List<String[]> allCouples = new ArrayList<>(); // Contient les tableaux de chaque couple [Type, Content] d'une ligne
-            for(String couple : line) {
+        for(String[] line : lineData) { // On parcourt les array de 'lineData'
+            List<String[]> allCouples = new ArrayList<>(); // Chaque couple sous forme d'array [Type, Content] d'une ligne
+            for(String couple : line) { // On parcourt chaque ligne et on ajoute les couples [Type, Content] dans 'allCouples'
                 allCouples.add(couple.split(","));
             }
-            String[][] lineArray = new String[allCouples.size()][allCouples.get(0).length];
+            String[][] lineArray = new String[allCouples.size()][allCouples.get(0).length]; // Une ligne et ses couples sous forme de tableau de tableaux : [ligne][couples]
             lineArray = allCouples.toArray(lineArray);
             lineData2.add(lineArray);
         }
 
-        Cell[][] maze = new Cell[lineData2.size()][lineData2.get(0).length];
+        Cell[][] maze = new Cell[lineData2.size()][lineData2.get(0).length]; // Tableau de tableaux contenant les cellules
         int i = 0;
-        for(String[][] line : lineData2) {
+        for(String[][] line : lineData2) { // Ajout des cellules dans 'maze' en utilisant les données de 'lineData2'
             Cell[] oneLine = new Cell[lineData2.get(0).length];
             int j = 0;
             for(String[] couple : line) {
