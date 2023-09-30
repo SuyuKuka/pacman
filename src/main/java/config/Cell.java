@@ -45,6 +45,4 @@ public record Cell(boolean northWall, boolean eastWall, boolean southWall, boole
         }
         return null;
     }
-
-    // FIXME: all these factories are convenient, but it is not very "economic" to have so many methods!
 }
