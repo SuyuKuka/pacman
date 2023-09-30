@@ -107,7 +107,8 @@ public class MazeConfig {
             i++;
         }
 
-        return new MazeConfig(maze,
+        return new MazeConfig(
+            maze,
             new IntCoordinates(3, 0), // Pacman
             new IntCoordinates(0, 3), // Rouge
             new IntCoordinates(3, 5), // Rose
