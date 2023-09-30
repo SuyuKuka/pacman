@@ -14,8 +14,12 @@ import static config.Cell.*;
 import static config.Cell.Content.NOTHING;
 
 public class MazeConfig {
-    public MazeConfig(Cell[][] grid, IntCoordinates pacManPos, IntCoordinates blinkyPos, IntCoordinates pinkyPos,
-                      IntCoordinates inkyPos, IntCoordinates clydePos) {
+
+
+    private final Cell[][] grid;
+    private final IntCoordinates pacManPos, blinkyPos, pinkyPos, inkyPos, clydePos;
+
+    public MazeConfig(Cell[][] grid, IntCoordinates pacManPos, IntCoordinates blinkyPos, IntCoordinates pinkyPos, IntCoordinates inkyPos, IntCoordinates clydePos) {
         this.grid = new Cell[grid.length][grid[0].length];
         for (int i = 0; i < getHeight(); i++) {
             if (getWidth() >= 0) System.arraycopy(grid[i], 0, this.grid[i], 0, getHeight());
@@ -26,9 +30,6 @@ public class MazeConfig {
         this.pinkyPos = pinkyPos;
         this.clydePos = clydePos;
     }
-
-    private final Cell[][] grid;
-    private final IntCoordinates pacManPos, blinkyPos, pinkyPos, inkyPos, clydePos;
 
     public IntCoordinates getPacManPos() {
         return pacManPos;
@@ -63,8 +64,7 @@ public class MazeConfig {
     }
 
 
-    // simple example with a square shape
-    // TODO: mazes should be loaded from a text file
+    // Lit la structure d'un niveau à partir d'un fichier texte
     public static List<String> getLines(String path) {
         Path file = Paths.get(path);
         try {
