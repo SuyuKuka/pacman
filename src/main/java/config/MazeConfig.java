@@ -9,9 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.IOException;
 
-import static config.Cell.Content.DOT; // Permet de ne pas écrire la classe (Ex: DOT au lieu de Cell.DOT)
 import static config.Cell.*;
-import static config.Cell.Content.NOTHING;
 
 public class MazeConfig {
 
@@ -68,8 +66,7 @@ public class MazeConfig {
     public static List<String> getLines(String path) {
         Path file = Paths.get(path);
         try {
-            List<String> allLines = Files.readAllLines(file, StandardCharsets.UTF_8);
-            return allLines;
+            return Files.readAllLines(file, StandardCharsets.UTF_8);
         } catch(IOException e) {
             e.printStackTrace();
         }
