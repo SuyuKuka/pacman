@@ -110,11 +110,11 @@ public class MazeConfig {
 
         return new MazeConfig(
             maze,
-            new IntCoordinates(3, 0), // Pacman
-            new IntCoordinates(0, 3), // Rouge
-            new IntCoordinates(3, 5), // Rose
-            new IntCoordinates(5, 5), // Bleu
-            new IntCoordinates(5, 1)  // Orange
+            new IntCoordinates(0, 1), // Pacman
+            new IntCoordinates(2, 2), // Rouge
+            new IntCoordinates(2, 3), // Rose
+            new IntCoordinates(3, 1), // Bleu
+            new IntCoordinates(3, 2)  // Orange
         );
     }
 }
