@@ -91,14 +91,21 @@ public final class MazeState {
 
             }
 
-            critter.setPos(nextPos.warp(width, height));
+            RealCoordinates calibratedPos = curPos.calibrate(nextPos);
+            if (nextPos.equals(calibratedPos)) {
+                critter.setPos(nextPos.warp(width, height));
+            } else {
+                critter.setPos(calibratedPos);
+            }
         }
         // FIXME Pac-Man rules should somehow be in Pacman class
+        // Incrémente le score de 1 quand pac-man mange un pac-gomme
         var pacPos = PacMan.INSTANCE.getPos().round();
         if (!gridState[pacPos.y()][pacPos.x()]) {
             addScore(1);
             gridState[pacPos.y()][pacPos.x()] = true;
         }
+        // Collision entre pac-man et les fantômes
         for (var critter : critters) {
             if (critter instanceof Ghost && critter.getPos().round().equals(pacPos)) {
                 if (PacMan.INSTANCE.isEnergized()) {
