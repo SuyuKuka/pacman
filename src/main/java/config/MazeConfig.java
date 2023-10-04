@@ -1,12 +1,10 @@
 package config;
 
 import geometry.IntCoordinates;
-import java.util.List;
+
+import java.io.File;
+import java.util.Scanner;
 import java.util.ArrayList;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.io.IOException;
 
 import static config.Cell.*;
@@ -20,7 +18,7 @@ public class MazeConfig {
     public MazeConfig(Cell[][] grid, IntCoordinates pacManPos, IntCoordinates blinkyPos, IntCoordinates pinkyPos, IntCoordinates inkyPos, IntCoordinates clydePos) {
         this.grid = new Cell[grid.length][grid[0].length];
         for (int i = 0; i < getHeight(); i++) {
-            if (getWidth() >= 0) System.arraycopy(grid[i], 0, this.grid[i], 0, getHeight());
+            if (getWidth() >= 0) System.arraycopy(grid[i], 0, this.grid[i], 0, getWidth());
         }
         this.pacManPos = pacManPos;
         this.blinkyPos = blinkyPos;
@@ -62,56 +60,42 @@ public class MazeConfig {
     }
 
 
-    // Lit la structure d'un niveau à partir d'un fichier texte
-    public static List<String> getLines(String path) {
-        Path file = Paths.get(path);
-        try {
-            return Files.readAllLines(file, StandardCharsets.UTF_8);
-        } catch(IOException e) {
+    /**
+     * Convertie les données d'un fichier .txt en {@code Cell[][]} utilisé pour la configuration de la carte.
+     * Le fichier doit contenir des données nécessaires pour une carte rectangulaire.
+     * @param path Le chemin du fichier à importer.
+     * @return {@code Cell[][] maze}
+    */
+    public static Cell[][] getMaze(String path) {
+        try (Scanner sc = new Scanner(new File(path));) {
+            ArrayList<String[]> set = new ArrayList<>();
+            while (sc.hasNextLine()) {
+                set.add(sc.nextLine().split(" "));
+            }
+            Cell[][] maze = new Cell[set.size()][set.get(0).length];
+            int i = 0;
+            for (String[] line : set) {
+                for (int j=0; j<set.get(i).length; j++) {
+                    String[] couple = line[j].split(",");
+                    maze[i][j] = cell(Type.valueOf(couple[0]), Content.valueOf(couple[1]));
+                }
+                i++;
+            }
+            return maze;
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        return new ArrayList<>();
+        return new Cell[0][];
     }
 
-    // La map est restreinte à un rectangle pour l'instant
     public static MazeConfig makeExample1() {
-        List<String> allLines = getLines("src/main/java/config/mazestructure.txt");
-        List<String[]> lineData = new ArrayList<>(); // Liste de chaque ligne sous forme d'array : [(Type,Content); ...], [(Type,Content); ...], ...
-        List<String[][]> lineData2 = new ArrayList<>(); // Liste de chaque ligne sous forme d'array contenant chaque couple aussi en array : [ligne][couples], [ligne][couples], ...
-
-        for(String line : allLines) { // On parcourt chaque ligne du fichier .txt et on transforme chaque ligne en un array [(Type,Content), ...] contenant chaque String de couple (Type,Content)
-            lineData.add(line.split(" "));
-        }
-        for(String[] line : lineData) { // On parcourt les array de 'lineData'
-            List<String[]> allCouples = new ArrayList<>(); // Chaque couple sous forme d'array [Type, Content] d'une ligne
-            for(String couple : line) { // On parcourt chaque ligne et on ajoute les couples [Type, Content] dans 'allCouples'
-                allCouples.add(couple.split(","));
-            }
-            String[][] lineArray = new String[allCouples.size()][allCouples.get(0).length]; // Une ligne et ses couples sous forme de tableau de tableaux : [ligne][couples]
-            lineArray = allCouples.toArray(lineArray);
-            lineData2.add(lineArray);
-        }
-
-        Cell[][] maze = new Cell[lineData2.size()][lineData2.get(0).length]; // Tableau de tableaux contenant les cellules
-        int i = 0;
-        for(String[][] line : lineData2) { // Ajout des cellules dans 'maze' en utilisant les données de 'lineData2'
-            Cell[] oneLine = new Cell[lineData2.get(0).length];
-            int j = 0;
-            for(String[] couple : line) {
-                oneLine[j] = cell(Type.valueOf(couple[0]), Content.valueOf(couple[1]));
-                j++;
-            }
-            maze[i] = oneLine;
-            i++;
-        }
-
         return new MazeConfig(
-            maze,
-            new IntCoordinates(0, 1), // Pacman
-            new IntCoordinates(2, 2), // Rouge
-            new IntCoordinates(2, 3), // Rose
-            new IntCoordinates(3, 1), // Bleu
-            new IntCoordinates(3, 2)  // Orange
+            getMaze("src/main/java/config/mazestructure.txt"),
+            new IntCoordinates(8, 14), // Pacman
+            new IntCoordinates(8, 6), // Rouge
+            new IntCoordinates(8, 8), // Rose
+            new IntCoordinates(7, 8), // Bleu
+            new IntCoordinates(9, 8)  // Orange
         );
     }
 }
