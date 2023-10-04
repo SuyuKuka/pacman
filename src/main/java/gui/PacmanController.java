@@ -28,8 +28,8 @@ public class PacmanController {
                 default:
                     break;
             }
+            if (hasWall) return;
         }
-        if(hasWall) return;
 
         PacMan.INSTANCE.setDirection(
                 switch (event.getCode()) {
