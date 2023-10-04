@@ -108,7 +108,7 @@ public record RealCoordinates(double x, double y) {
         Direction d = this.getDirectionTo(end);
         switch (d) {
         case NORTH:
-            if (end.y() < 0 && this.y() > 0 || Math.floor(this.y()) != this.y() && Math.floor(this.y()) - Math.ceil(end.y()) == 0) {
+            if (Math.floor(this.y()) != this.y() && Math.floor(this.y()) - Math.ceil(end.y()) == 0) {
                 return this.floorY();
             }       
             break;
@@ -122,7 +122,7 @@ public record RealCoordinates(double x, double y) {
             }
             break;
         case WEST:
-            if (end.x() < 0 && this.x() > 0 || Math.floor(this.x()) != this.x() && Math.floor(this.x()) - Math.ceil(end.x()) == 0) 
+            if (Math.floor(this.x()) != this.x() && Math.floor(this.x()) - Math.ceil(end.x()) == 0) 
                 return this.floorX();
             break;
         default:

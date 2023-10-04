@@ -90,7 +90,7 @@ public class MazeConfig {
 
     public static MazeConfig makeExample1() {
         return new MazeConfig(
-            getMaze("src/main/java/config/mazestructure.txt"),
+            getMaze("src/main/java/config/Level1.txt"),
             new IntCoordinates(8, 14), // Pacman
             new IntCoordinates(8, 6), // Rouge
             new IntCoordinates(8, 8), // Rose
