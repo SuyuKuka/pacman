@@ -1,13 +1,19 @@
 package config;
 
 import geometry.IntCoordinates;
+import geometry.RealCoordinates;
+import model.Direction;
 
 import java.io.File;
+import java.util.List;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.io.IOException;
 
 import static config.Cell.*;
+
+import config.Cell.Content;
+import config.Cell.Type;
 
 public class MazeConfig {
 
@@ -88,14 +94,34 @@ public class MazeConfig {
         return new Cell[0][];
     }
 
+    /**
+     * La méthode utilise la méthode {@code getAdjacentCellsCoordinates()} pour obtenir les cellules {@code Cell} adjacentes au fantôme.<br><br>
+     * Si une coordonnée indique une position en dehors de la map, une cellule de type {@code CLOSED} sera ajoutée à la liste.
+     * @param pos La position actuelle du fantôme.
+     * @param dir La direction actuelle du fantôme.
+     * @return Une {@code List<Cell>} contenant les cellules adjacentes au fantôme.
+     */
+    public List<Cell> getAdjacentCells(RealCoordinates pos, Direction dir) {
+        List<IntCoordinates> adjacentCellCoordinates = pos.getAdjacentCellsCoordinates(dir);
+        List<Cell> adjacentCells = new ArrayList<>();
+        for (IntCoordinates intCoordinates : adjacentCellCoordinates) {
+            if (intCoordinates.x() < 0 || intCoordinates.x() == grid[0].length || intCoordinates.y() < 0 || intCoordinates.y() == grid.length) {
+                adjacentCells.add(new Cell(true, true, true, true, null));
+            } else {
+                adjacentCells.add(grid[intCoordinates.y()][intCoordinates.x()]);
+            }
+        }
+        return adjacentCells;
+    }
+
     public static MazeConfig makeExample1() {
         return new MazeConfig(
             getMaze("src/main/java/config/Level1.txt"),
-            new IntCoordinates(8, 14), // Pacman
-            new IntCoordinates(8, 6), // Rouge
-            new IntCoordinates(8, 8), // Rose
-            new IntCoordinates(7, 8), // Bleu
-            new IntCoordinates(9, 8)  // Orange
+            new IntCoordinates(8, 16), // Pacman
+            new IntCoordinates(8, 8), // Blinky (Rouge)
+            new IntCoordinates(8, 10), // Pinky (Rose)
+            new IntCoordinates(7, 10), // Inky (Bleu)
+            new IntCoordinates(9, 10)  // Clyde (Orange)
         );
     }
 }
