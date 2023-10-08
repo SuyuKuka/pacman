@@ -23,6 +23,25 @@ public sealed interface Critter permits Ghost, PacMan {
         }).times(getSpeed()*deltaTNanoSeconds * 1E-9));
     }
 
+    /**
+     * La méthode téléporte Pac-Man lorsqu'il sort par l'un des côtés de la map et le replace au côté opposé.<br><br>
+     * Elle recalibre aussi la position d'un {@code Critter} lorsqu'il traverse le centre d'une case afin de faciliter les opérations lors
+     * des virages.
+     * @param deltaTns La variation du temps entre deux instants
+     * @param curPos La position actuelle
+     * @param nextPos La position suivante
+     * @param height La hauteur de la map
+     * @param width La largeur de la map
+     */
+    default void calibratePos(long deltaTns, RealCoordinates curPos, RealCoordinates nextPos, int height, int width) {
+        RealCoordinates calibratedPos = curPos.calibrate(nextPos);
+        if (nextPos.equals(calibratedPos)) {
+            setPos(nextPos.warp(width, height));
+        } else {
+            setPos(calibratedPos);
+        }
+    }
+
     void setPos(RealCoordinates realCoordinates);
     void setDirection(Direction direction);
 }

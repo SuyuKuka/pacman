@@ -1,5 +1,6 @@
 package geometry;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +38,41 @@ public record RealCoordinates(double x, double y) {
         );
     }
 
+    /**
+     * La méthode retourne une liste contenant les coordonnées des cellules adjacentes à une position, triées dans le sens horaire en
+     * commençant par la cellule du haut, puis droite, bas, gauche.
+     * @param dir La direction actuelle du fantôme.
+     * @return Une {@code List<IntCoordinates>} contenant les cellules adjacentes.
+     */
+    public List<IntCoordinates> getAdjacentCellsCoordinates(Direction dir) {
+        List<IntCoordinates> coordinates = new ArrayList<>();
+        switch (dir) {
+            case NORTH:
+                    coordinates.add(0, new IntCoordinates((int) x, (int) y - 1));
+                    coordinates.add(1, new IntCoordinates((int) x + 1, (int) y));
+                    coordinates.add(2, new IntCoordinates((int) x - 1, (int) y));
+                    break;
+            case EAST:
+                    coordinates.add(0, new IntCoordinates((int) x, (int) y - 1));
+                    coordinates.add(1, new IntCoordinates((int) x + 1, (int) y));
+                    coordinates.add(2, new IntCoordinates((int) x, (int) y + 1));
+                    break;
+            case SOUTH:
+                    coordinates.add(0, new IntCoordinates((int) x + 1, (int) y));
+                    coordinates.add(1, new IntCoordinates((int) x, (int) y + 1));
+                    coordinates.add(2, new IntCoordinates((int) x - 1, (int) y));
+                    break;
+            case WEST:
+                    coordinates.add(0, new IntCoordinates((int) x, (int) y - 1));
+                    coordinates.add(1, new IntCoordinates((int) x, (int) y + 1));
+                    coordinates.add(2, new IntCoordinates((int) x - 1, (int) y));
+                    break;
+            default:
+                return new ArrayList<>();
+        }
+        return coordinates;
+    }
+
     public IntCoordinates round() {
         return new IntCoordinates((int) Math.round(x), (int) Math.round(y));
     }
@@ -57,6 +93,12 @@ public record RealCoordinates(double x, double y) {
         return new RealCoordinates(x, (int) Math.ceil(y));
     }
 
+    /**
+     * Téléportation de gauche à droite et de haut en bas.
+     * @param width Largeur de la map
+     * @param height Hauteur de la map
+     * @return Les {@code RealCoordinates} de la position après la téléportation.
+     */
     public RealCoordinates warp(int width, int height) {
         var rx = x;
         var ry = y;
@@ -72,8 +114,8 @@ public record RealCoordinates(double x, double y) {
     }
     /**
      * Retourne une Direction calculée en fonction de 2 RealCoordinates
-     * @param end Le RealCoordinates destination
-     * @return Donne la Direction de this à end
+     * @param end Le {@code RealCoordinates} destination
+     * @return Donne la {@code Direction} de this à {@code end}
      */
     public Direction getDirectionTo(RealCoordinates end) {
         double deltaY = end.y() - this.y();
@@ -92,14 +134,12 @@ public record RealCoordinates(double x, double y) {
 
     /**
      * Fonction qui permet d'obtenir exactement le centre d'une case si on la traverse.
-     * Sinon, renvoie la coordonnée de destination initiale.
-     * Par exemple : 
+     * Sinon, renvoie la coordonnée de destination initiale.<br><br>
+     * Par exemple :<br><br>
      * this.y = 0.9 et end.y = 1.1 retourne 1 
      * this.y = 0.2 et end.y = 0.3 retourne 0.3 (car il n'y a pas eu traversée)
      * @param end Le RealCoordinates destination
-     * @return Retourne un RealCoordinates qui prend soit :
-     * - les coordonnées exacte du centre d'une case traversée
-     * - la valeur end
+     * @return Retourne un {@code RealCoordinates} qui prend soit les coordonnées exacte du centre d'une case traversée, soit la valeur {@code end}.
      */
     public RealCoordinates calibrate(RealCoordinates end) {
         if (this.intNeighbours().containsAll(end.intNeighbours())) {
