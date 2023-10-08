@@ -1,13 +1,10 @@
 package model;
 
 import config.MazeConfig;
-import config.Cell;
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
 
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +21,7 @@ public final class MazeState {
         CHASE, SCATTER, FRIGHTENED
     }
     private Mode mode;
-    private Timer timer = new Timer();
+    private Instant start;
 
     private final List<Critter> critters;
     private int score;
@@ -65,11 +62,12 @@ public final class MazeState {
         // Active les fantômes après la première input
         if (PacMan.INSTANCE.getPacManMoved() == 1) {
             activateGhost();
+            updateMode();
             PacMan.INSTANCE.setPacManMoved(-1);
         } else if (PacMan.INSTANCE.getPacManMoved() != 0) {
+            updateMode();
             updateGhost(deltaTns);
         }
-
         updateScore();
         updateCollision();
     }
@@ -127,60 +125,17 @@ public final class MazeState {
     }
 
     /**
-     * La méthode active le timer pour les changements de mode entre {@code CHASE}, {@code SCATTER} et {@code FRIGHTENED}. Les positions de
-     * {@code BLINKY} et de {@code PINKY} sont également initialiséees.
+     * La méthode initialise la variable {@code start} qui garde l'heure UNIX au lancement de la partie (lorsque Pac-Man bouge pour la première fois),
+     * initialise le premier mode en {@code SCATTER} et
+     * initialise les directions de {@code BLINKY} et de {@code PINKY}.
      */
     public void activateGhost() {
-        updateMode();
+        start = Instant.now();
+        mode = Mode.SCATTER;
+        BLINKY.setActivated(true);
+        PINKY.setActivated(true);
         BLINKY.setDirection(EAST);
         PINKY.setDirection(NORTH);
-    }
-
-    /**
-     * La méthode active plusieurs timers nécessaires à l'alternance des modes dans lesquels les fantômes se trouvent.
-     */
-    private void updateMode() {
-        mode = Mode.SCATTER;
-        TimerTask chase1 = new TimerTask() {
-            public void run() {
-                setMode(Mode.CHASE);
-            }
-        };
-        timer.schedule(chase1, (long) 7 * 1000);
-        TimerTask scatter2 = new TimerTask() {
-            public void run() {
-                setMode(Mode.SCATTER);
-            }
-        };
-        timer.schedule(scatter2, (long) (7 + 20) * 1000);
-        TimerTask chase2 = new TimerTask() {
-            public void run() {
-                setMode(Mode.CHASE);
-            }
-        };
-        timer.schedule(chase2, (long) (7 + 20 + 7) * 1000);
-        TimerTask scatter3 = new TimerTask() {
-            public void run() {
-                setMode(Mode.SCATTER);
-            }
-        };
-        timer.schedule(scatter3, (long) (7 + 20 + 7 + 20) * 1000);
-        TimerTask chase3 = new TimerTask() {
-            public void run() {
-                setMode(Mode.CHASE);
-            }
-        };
-        timer.schedule(chase3, (long) (7 + 20 + 7 + 20 + 5) * 1000);
-        TimerTask scatter4 = new TimerTask() {
-            public void run() {
-                setMode(Mode.SCATTER);
-            }
-        };
-        timer.schedule(scatter4, (long) (7 + 20 + 7 + 20 + 5 + 20) * 1000);
-    }
-
-    private void setMode(Mode mode) {
-        this.mode = mode;
     }
 
     /**
@@ -189,38 +144,94 @@ public final class MazeState {
      * @param deltaTns La variation du temps entre deux instants.
      */
     private void updateGhost(long deltaTns) {
-        if (mode == Mode.SCATTER) {
-            scatterMode();
-        } else if (mode == Mode.CHASE) {
-            updateBlinky();
-            updateInky();
-            updatePinky();
-            updateClyde();
-        }
-        
         for (Critter critter : critters) {
             critter.calibratePos(deltaTns, critter.getPos(), critter.nextPos(deltaTns), height, width);
             RealCoordinates pos = critter.getPos();
             Direction dir = critter.getDirection();
-            if (critter == INKY && score == 30) {
+
+            // Activation d'Inky à partir de 30 points
+            if (critter == INKY && !INKY.isActivated() && score == 30 ) {
+                INKY.setActivated(true);
                 critter.setDirection(EAST);
-            } else if (critter == CLYDE && score == 146/3) {
+            // Activation de Clyde lorsqu'un tier des points totaux a été obtenu
+            } else if (critter == CLYDE && !CLYDE.isActivated() && score == 146/3) {
+                CLYDE.setActivated(true);
                 critter.setDirection(WEST);
-            } else if (critter instanceof Ghost && pos.x()%1 == 0 && pos.y()%1 == 0) {
+            // Set direction aléatoire en FRIGHTENED mode
+            } else if (critter instanceof Ghost && mode == Mode.FRIGHTENED && pos.x()%1 == 0 && pos.y()%1 == 0) {
+                frightenedMode((Ghost) critter, dir);
+            // Set direction la plus proche du target
+            } else if (critter instanceof Ghost && ((Ghost) critter).isActivated() && pos.x()%1 == 0 && pos.y()%1 == 0) {
                 critter.setDirection(directionClosestToTarget(config, (Ghost) critter, pos, dir));
             }
         }
-        
+    }
+
+    /**
+     * La méthode met à jour le mode selon le temps de jeu. A chaque changement de mode sauf pour la fin du mode {@code FRIGHTENED}, les fantômes
+     * se retournent.
+     */
+    private void updateMode() {
+        // Pac-Man est ENERGIZED, changement du mode en FRIGHTENED
+        if (PacMan.INSTANCE.isEnergized() && mode != Mode.FRIGHTENED) {
+            reverseGhostsDirection();
+            mode = Mode.FRIGHTENED;
+        // Changement du mode selon le temps de jeu
+        } else if (!PacMan.INSTANCE.isEnergized()) {
+            long startMilli = start.toEpochMilli();
+            long now = Instant.now().toEpochMilli();
+
+            if (now > startMilli + 7 * 1000 ||
+                now > startMilli + (7 + 20 + 7) * 1000 ||
+                now > startMilli + (7 + 20 + 7 + 20 + 5) * 1000 ||
+                now > startMilli + (7 + 20 + 7 + 20 + 5 + 20 + 5) * 1000) {
+                    if (mode == Mode.SCATTER) {
+                        Ghost.reverseGhostsDirection();
+                    }
+                    chaseMode();
+            }
+
+            if (now < startMilli + 7 * 1000 ||
+                now > startMilli + (7 + 20) * 1000 && now <= startMilli + (7 + 20 + 7) * 1000 ||
+                now > startMilli + (7 + 20 + 7 + 20) * 1000 && now <= startMilli + (7 + 20 + 7 + 20 + 5) * 1000 ||
+                now > startMilli + (7 + 20 + 7 + 20 + 5 + 20) * 1000 && now <= startMilli + (7 + 20 + 7 + 20 + 5 + 20 + 5) * 1000) {
+                    if (mode == Mode.CHASE) {
+                        Ghost.reverseGhostsDirection();
+                    }
+                    scatterMode();
+            }
+        }
     }
 
     /**
      * La méthode met à jour les targets de chaque fantôme dans un coin de la map qui leur est dédié durant le {@code SCATTER} mode.
      */
     private void scatterMode() {
+        mode = Mode.SCATTER;
         BLINKY.setTarget(new IntCoordinates(16, 0).toRealCoordinates(1.0));
         INKY.setTarget(new IntCoordinates(16, 21).toRealCoordinates(1.0));
         PINKY.setTarget(new IntCoordinates(0, 0).toRealCoordinates(1.0));
         CLYDE.setTarget(new IntCoordinates(0, 21).toRealCoordinates(1.0));
+    }
+
+    /**
+     * La méthode met à jour les targets de chaque fantôme par rapport à Pac-Man en {@code CHASE} mode.
+     */
+    private void chaseMode() {
+        mode = Mode.CHASE;
+        updateBlinky();
+        updateInky();
+        updatePinky();
+        updateClyde();
+    }
+
+    /**
+     * La méthode met à jour les directions de chaque fantôme "aléatoirement" en {@code FRIGHTENED} mode.
+     */
+    private void frightenedMode(Ghost ghost, Direction dir) {
+        if (ghost.isActivated()) {
+            ghost.setRandomDirection(config, dir);
+        }
     }
 
     // FIXME Pac-Man rules should somehow be in Pacman class (mettre updateScore et updateCollision dans PacMan ?)
