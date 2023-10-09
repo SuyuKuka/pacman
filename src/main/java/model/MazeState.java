@@ -7,6 +7,7 @@ import geometry.RealCoordinates;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static model.Ghost.*;
 import static model.Direction.*;
@@ -80,40 +81,95 @@ public final class MazeState {
     private void updatePacMan(long deltaTns) {
         var curPos = PacMan.INSTANCE.getPos();
         var nextPos = PacMan.INSTANCE.nextPos(deltaTns);
-        var curNeighbours = curPos.intNeighbours();
-        var nextNeighbours = nextPos.intNeighbours();
 
         // Nécessaire pour éviter les problèmes de détermination du target selon la direction de Pac-Man
         if (PacMan.INSTANCE.getDirection() != NONE) PacMan.INSTANCE.setLastDirection(PacMan.INSTANCE.getDirection());
+        
+        if (updatePacManDirection(deltaTns)) {
+            nextPos = PacMan.INSTANCE.nextPos(deltaTns, PacMan.INSTANCE.getBufferDirection());
+        }
+        nextPos = updatePacManPos(curPos, nextPos);
+        PacMan.INSTANCE.calibratePos(deltaTns, curPos, nextPos, height, width);
+        PacMan.INSTANCE.increaseBufferDurationTime(deltaTns);
+    }
 
+    /**
+     * Méthode qui actualise la {@code Direction} de {@code Pac-Man} en fonction du terrain et de son {@code bufferDirection}.
+     * @param deltaTns Temps écoulé en nanosecondes.
+     * @return Retourne vraie si la {@code Direction} de {@code Pac-Man} devrait changer ou faux sinon.
+     */
+    public boolean updatePacManDirection(long deltaTns) {
+        var curNeighbours = PacMan.INSTANCE.getPos().intNeighbours();
+        var nextNeighbours = PacMan.INSTANCE.nextPos(deltaTns).intNeighbours();
+        boolean isBufferUsed = true;
+        if (PacMan.INSTANCE.getBufferDirection() != Direction.NONE) {
+            switch (PacMan.INSTANCE.getBufferDirection()) {
+                case NORTH -> {
+                    for (var n: curNeighbours) 
+                        if (nextNeighbours.size() >= 4 || config.getCell(n).northWall()) isBufferUsed = false;
+                    break;
+                }
+                case EAST -> {
+                    for (var n: curNeighbours)
+                        if (nextNeighbours.size() >= 4 || config.getCell(n).eastWall()) isBufferUsed = false;
+                    break;
+                }
+                case SOUTH -> {
+                    for (var n: curNeighbours)
+                        if (nextNeighbours.size() >= 4 || config.getCell(n).southWall()) isBufferUsed = false;
+                    break;
+                }
+                case WEST -> {
+                    for (var n: curNeighbours)
+                        if (nextNeighbours.size() >= 4 || config.getCell(n).westWall()) isBufferUsed = false;
+                    break;
+                }
+                default -> {
+                    break;
+                }
+            }
+            if (isBufferUsed) {
+                PacMan.INSTANCE.setDirection(PacMan.INSTANCE.getBufferDirection());
+                PacMan.INSTANCE.setBufferDirection(Direction.NONE);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Méthode qui actualise la position ({@code RealCoordinates}) de {@code Pac-Man} en fonction du terrain.
+     * @param curPos {@code RealCoordinates} actuelle de {@code Pac-Man}.
+     * @param nextPos {@code RealCoordinates} supposée (si il ne traverse pas de mur) de {@code Pac-Man}.
+     * @return Retourne un {@code RealCoordinates} (modifié ou non).
+     */
+    public RealCoordinates updatePacManPos(RealCoordinates curPos, RealCoordinates nextPos) {
+        var curNeighbours = curPos.intNeighbours();
+        var nextNeighbours = nextPos.intNeighbours();
         if (!curNeighbours.containsAll(nextNeighbours)) { // the critter would overlap new cells. Do we allow it?
             switch (PacMan.INSTANCE.getDirection()) {
                 case NORTH -> {
                     for (var n: curNeighbours) if (config.getCell(n).northWall()) {
-                        nextPos = curPos.floorY();
                         PacMan.INSTANCE.setDirection(Direction.NONE);
-                        break;
+                        return nextPos = curPos.floorY();
                     }
                 }
                 case EAST -> {
                     for (var n: curNeighbours) if (config.getCell(n).eastWall()) {
-                        nextPos = curPos.ceilX();
                         PacMan.INSTANCE.setDirection(Direction.NONE);
-                        break;
+                        return nextPos = curPos.ceilX();
                     }
                 }
                 case SOUTH -> {
                     for (var n: curNeighbours) if (config.getCell(n).southWall()) {
-                        nextPos = curPos.ceilY();
                         PacMan.INSTANCE.setDirection(Direction.NONE);
-                        break;
+                        return nextPos = curPos.ceilY();
                     }
                 }
                 case WEST -> {
                     for (var n: curNeighbours) if (config.getCell(n).westWall()) {
-                        nextPos = curPos.floorX();
                         PacMan.INSTANCE.setDirection(Direction.NONE);
-                        break;
+                        return nextPos = curPos.floorX();
                     }
                 }
                 default -> {
@@ -121,7 +177,7 @@ public final class MazeState {
                 }
             }
         }
-        PacMan.INSTANCE.calibratePos(deltaTns, curPos, nextPos, height, width);
+        return nextPos;
     }
 
     /**
@@ -145,7 +201,7 @@ public final class MazeState {
      */
     private void updateGhost(long deltaTns) {
         for (Critter critter : critters) {
-            critter.calibratePos(deltaTns, critter.getPos(), critter.nextPos(deltaTns), height, width);
+            if (critter instanceof Ghost) critter.calibratePos(deltaTns, critter.getPos(), critter.nextPos(deltaTns), height, width);
             RealCoordinates pos = critter.getPos();
             Direction dir = critter.getDirection();
 
@@ -190,7 +246,6 @@ public final class MazeState {
                     }
                     chaseMode();
             }
-
             if (now < startMilli + 7 * 1000 ||
                 now > startMilli + (7 + 20) * 1000 && now <= startMilli + (7 + 20 + 7) * 1000 ||
                 now > startMilli + (7 + 20 + 7 + 20) * 1000 && now <= startMilli + (7 + 20 + 7 + 20 + 5) * 1000 ||
@@ -198,6 +253,7 @@ public final class MazeState {
                     if (mode == Mode.CHASE) {
                         Ghost.reverseGhostsDirection();
                     }
+                    mode = Mode.SCATTER;
                     scatterMode();
             }
         }

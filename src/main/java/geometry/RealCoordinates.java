@@ -153,8 +153,9 @@ public record RealCoordinates(double x, double y) {
             }       
             break;
         case EAST:
-            if (Math.floor(this.x()) != this.x() && Math.ceil(this.x()) - Math.floor(end.x()) == 0) 
+            if (Math.floor(this.x()) != this.x() && Math.ceil(this.x()) - Math.floor(end.x()) == 0) {
                 return this.ceilX();
+            }
             break;
         case SOUTH:
             if (Math.floor(this.y()) != this.y() && Math.ceil(this.y()) - Math.floor(end.y()) == 0) {
@@ -162,8 +163,9 @@ public record RealCoordinates(double x, double y) {
             }
             break;
         case WEST:
-            if (Math.floor(this.x()) != this.x() && Math.floor(this.x()) - Math.ceil(end.x()) == 0) 
+            if (Math.floor(this.x()) != this.x() && Math.floor(this.x()) - Math.ceil(end.x()) == 0) {
                 return this.floorX();
+            }
             break;
         default:
             break;

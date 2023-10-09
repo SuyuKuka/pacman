@@ -17,7 +17,7 @@ public class App extends Application {
         gameScene.setOnKeyPressed(pacmanController::keyPressedHandler);
         gameScene.setOnKeyReleased(pacmanController::keyReleasedHandler);
         var maze = new MazeState(MazeConfig.makeExample1());
-        var gameView = new GameView(maze, root, 35.0);
+        var gameView = new GameView(maze, root, 25.0);
         primaryStage.setScene(gameScene);
         primaryStage.show();
         gameView.animate();
