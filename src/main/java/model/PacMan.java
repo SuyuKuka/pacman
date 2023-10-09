@@ -4,6 +4,7 @@ import geometry.RealCoordinates;
 
 /**
  * Implements Pac-Man character using singleton pattern. FIXME: check whether singleton is really a good idea.
+ * (Faudra transformer Pac-Man en objet si on veut ajouter du multijoueur local et associer à chaque pacman un pacmanController)
  */
 public final class PacMan implements Critter {
     private Direction direction = Direction.NONE;
@@ -11,6 +12,10 @@ public final class PacMan implements Critter {
     private RealCoordinates pos;
     private boolean energized;
     private int pacManMoved = 0;
+    /* Buffer */
+    private Direction bufferDirection = Direction.NONE; // Direction stockée dans le buffer
+    private final double bufferMaxTime = 0.7; // Temps en seconde avant que la direction stockée dans le buffer se retire
+    private double bufferDurationTime = 0; // Temps passé sans que l'utilisateur est input une touche
 
     private PacMan() {
     }
@@ -24,7 +29,7 @@ public final class PacMan implements Critter {
 
     @Override
     public double getSpeed() {
-        return isEnergized() ? 6 : 4;
+        return isEnergized() ? 9 : 6;
     }
 
     @Override
@@ -70,4 +75,29 @@ public final class PacMan implements Critter {
     public void setPacManMoved(int pacManMoved) {
         this.pacManMoved = pacManMoved;
     }
+
+    public void setBufferDurationTime(double bufferDurationTime) {
+      this.bufferDurationTime = bufferDurationTime;
+    }
+
+    public Direction getBufferDirection() {
+      return bufferDirection;
+    }
+
+    public void setBufferDirection(Direction bufferDirection) {
+      this.bufferDirection = bufferDirection;
+    }
+
+    public double getBufferDurationTime() {
+      return bufferDurationTime;
+    }
+
+    public void increaseBufferDurationTime(long deltaTns) {
+        bufferDurationTime += deltaTns / Math.pow(10, 9);
+        if (bufferDurationTime >= bufferMaxTime) {
+            bufferDurationTime = 0;
+            bufferDirection = Direction.NONE;
+        }
+    }
+
 }

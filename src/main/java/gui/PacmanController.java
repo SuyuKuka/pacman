@@ -8,6 +8,15 @@ import javafx.scene.input.KeyEvent;
 
 public class PacmanController {
     public void keyPressedHandler(KeyEvent event) {
+        PacMan.INSTANCE.setBufferDirection(
+            switch (event.getCode()) {
+            case UP -> Direction.NORTH;
+            case RIGHT -> Direction.EAST;
+            case DOWN -> Direction.SOUTH;
+            case LEFT -> Direction.WEST;
+            default -> PacMan.INSTANCE.getBufferDirection();
+        });
+        PacMan.INSTANCE.setBufferDurationTime(0);
         MazeConfig config = MazeConfig.makeExample1();
         var curNeighbours = PacMan.INSTANCE.getPos().intNeighbours();
         boolean hasWall = false;
@@ -53,6 +62,6 @@ public class PacmanController {
         }
     }
     public void keyReleasedHandler(KeyEvent event) {
-        // Nothing to do?
+        PacMan.INSTANCE.setBufferDurationTime(0);
     }
 }

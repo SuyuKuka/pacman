@@ -41,9 +41,9 @@ public enum Ghost implements Critter {
     @Override
     public double getSpeed() {
         if (isInTunnel()) {
-            return 3;
+            return 2;
         }
-        return 4;
+        return 3;
     }
 
     public RealCoordinates getTarget() {
@@ -153,9 +153,12 @@ public enum Ghost implements Critter {
      * La méthode met à jour le target de {@code CLYDE} en {@code CHASE} mode.
      */
     public static void updateClyde() {
-        // Si Clyde se trouve dans un rayon de 8 cases de Pac-Man, ce dernier aura comme target le target en mode SCATTER
+        // Dans le vrai jeu, si Clyde se trouve dans un rayon de 8 cases de Pac-Man, ce dernier aura comme target le target en mode SCATTER
         // Sinon le target est identique à Blinky (la position de Pac-Man)
-        if (Math.sqrt(Math.pow(CLYDE.getPos().x() - PacMan.INSTANCE.getPos().x(), 2) + Math.pow(CLYDE.getPos().y() - PacMan.INSTANCE.getPos().y(), 2)) < 8) {
+
+        // ici, ce rayon de 8 cases sera remplacé par 4 car le fonctionnement des cellules est différent (ici, les cellules sont plus grandes que celles du jeu original)
+        int radiusRange = 4;
+        if (Math.sqrt(Math.pow(CLYDE.getPos().x() - PacMan.INSTANCE.getPos().x(), 2) + Math.pow(CLYDE.getPos().y() - PacMan.INSTANCE.getPos().y(), 2)) < radiusRange) {
             CLYDE.setTarget(new IntCoordinates(0, 21).toRealCoordinates(1.0));
         } else {
             CLYDE.setTarget(PacMan.INSTANCE.getPos());
