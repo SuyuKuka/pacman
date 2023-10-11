@@ -171,10 +171,10 @@ public enum Ghost implements Critter {
      * @param dir La direction actuelle du fantôme
      * @return Une {@code List<Direction>} contenant les directions possibles. Triées dans le sens horaire.
      */
-    public List<Direction> possibleDirections(MazeConfig config, Direction dir) {
-        List<Cell> adjacentCells = config.getAdjacentCells(getPos(), dir);
+    public List<Direction> possibleDirections(MazeConfig config) {
+        List<Cell> adjacentCells = config.getAdjacentCells(getPos(), direction);
         List<Direction> possibleDirections = new ArrayList<>();
-        switch (dir) {
+        switch (direction) {
             case NORTH -> {
                 if (!adjacentCells.get(0).southWall()) {
                     possibleDirections.add(NORTH);
@@ -233,6 +233,15 @@ public enum Ghost implements Critter {
                 break;
             }
         }
+
+        // Si le fantôme se trouve au spot des murs invisibles
+        if (pos.equals(new IntCoordinates(7, 8).toRealCoordinates(1.0)) ||
+            pos.equals(new IntCoordinates(9, 8).toRealCoordinates(1.0)) ||
+            pos.equals(new IntCoordinates(7, 16).toRealCoordinates(1.0)) ||
+            pos.equals(new IntCoordinates(9, 16).toRealCoordinates(1.0))) {
+            possibleDirections.remove(NORTH);
+        }
+
         return possibleDirections;
     }
 
@@ -246,12 +255,13 @@ public enum Ghost implements Critter {
      * @param dir La direction actuelle du fantôme
      * @return La {@code Direction} la plus proche du target.
      */
-    public static Direction directionClosestToTarget(MazeConfig config, Ghost ghost, RealCoordinates pos, Direction dir) {
-        List<Direction> possibleDirections = ghost.possibleDirections(config, dir);
+    public Direction directionClosestToTarget(MazeConfig config) {
+        List<Direction> possibleDirections = possibleDirections(config);
         
         // Si le fantôme se trouve dans un cul-de-sac, il se retourne
         if (possibleDirections.isEmpty()) {
-            ghost.reverseDirection();
+            reverseDirection();
+            return direction;
         }
 
         // Oblige le fantôme à sortir du home
@@ -259,34 +269,32 @@ public enum Ghost implements Critter {
             return NORTH;
         }
 
-        double[] deltaDist = new double[4];
-        for (int i = 0; i < deltaDist.length; i++) {
-            deltaDist[i] = -1;
-        }
+        double[] deltaDist = {-1, -1, -1, -1};
 
         // Calcul des distances entre le fantôme et le target après déplacement
-        for (Direction direction : possibleDirections) {
-            switch (direction) {
+        for (Direction dir : possibleDirections) {
+            switch (dir) {
                 case NORTH:
-                    deltaDist[0] = Math.sqrt(Math.pow(ghost.getTarget().x() - pos.x(), 2) + Math.pow((ghost.getTarget().y() - (pos.y() - 1)), 2));
-                    break;
-                case EAST:
-                    deltaDist[1] = Math.sqrt(Math.pow(ghost.getTarget().x() - (pos.x() + 1), 2) + Math.pow((ghost.getTarget().y() - pos.y()), 2));
-                    break;
-                case SOUTH:
-                    deltaDist[2] = Math.sqrt(Math.pow(ghost.getTarget().x() - pos.x(), 2) + Math.pow((ghost.getTarget().y() - (pos.y() + 1)), 2));
+                    deltaDist[0] = Math.sqrt(Math.pow(getTarget().x() - pos.x(), 2) + Math.pow((getTarget().y() - (pos.y() - 1)), 2));
                     break;
                 case WEST:
-                    deltaDist[3] = Math.sqrt(Math.pow(ghost.getTarget().x() - (pos.x() - 1), 2) + Math.pow((ghost.getTarget().y() - pos.y()), 2));
+                    deltaDist[1] = Math.sqrt(Math.pow(getTarget().x() - (pos.x() - 1), 2) + Math.pow((getTarget().y() - pos.y()), 2));
+                    break;
+                case SOUTH:
+                    deltaDist[2] = Math.sqrt(Math.pow(getTarget().x() - pos.x(), 2) + Math.pow((getTarget().y() - (pos.y() + 1)), 2));
+                    break;
+                case EAST:
+                    deltaDist[3] = Math.sqrt(Math.pow(getTarget().x() - (pos.x() + 1), 2) + Math.pow((getTarget().y() - pos.y()), 2));
                     break;
                 default:
                     break;
             }
         }
-
+System.out.println(deltaDist[0]);
+System.out.println(deltaDist[3]);
         // Détermination de la plus petite distance
         double minVal = 10000;
-        int min = 0;
+        int min = -1;
         for (int i = 0; i < deltaDist.length; i++) {
             if (deltaDist[i] != -1 && deltaDist[i] < minVal) {
                 min = i;
@@ -297,11 +305,11 @@ public enum Ghost implements Critter {
             case 0:
                 return NORTH;
             case 1:
-                return EAST;
+                return WEST;
             case 2:
                 return SOUTH;
             case 3:
-                return WEST;
+                return EAST;
             default:
                 return NONE;
         }
@@ -313,8 +321,8 @@ public enum Ghost implements Critter {
      * @param config La configuration actuelle
      * @param dir La direction actuelle du fantôme
      */
-    public void setRandomDirection(MazeConfig config, Direction dir) {
-        List<Direction> possibles = possibleDirections(config, dir);
+    public void setRandomDirection(MazeConfig config) {
+        List<Direction> possibles = possibleDirections(config);
         double rand = Math.random() * 100;
         if (rand < 16.3) {
             if (!possibles.isEmpty()) {

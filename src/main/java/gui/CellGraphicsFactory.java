@@ -76,4 +76,32 @@ public class CellGraphicsFactory {
             }
         };
     }
+
+    /**
+     * Méthode pour vérifier la position des targets en les affichant sur la map.
+     * @param pos Position du target
+     * @return {@code GraphicsUpdater}
+     */
+    public GraphicsUpdater showTarget(IntCoordinates pos) {
+        var group = new Group();
+        group.setTranslateX(pos.x()*scale);
+        group.setTranslateY(pos.y()*scale);
+        var dot = new Circle();
+        group.getChildren().add(dot);
+        dot.setRadius(5);
+        dot.setCenterX(scale/2);
+        dot.setCenterY(scale/2);
+        dot.setFill(Color.RED);
+        return new GraphicsUpdater() {
+            @Override
+            public void update() {
+                dot.setVisible(true);
+            }
+
+            @Override
+            public Node getNode() {
+                return group;
+            }
+        };
+    }
 }
