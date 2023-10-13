@@ -6,6 +6,8 @@
 **/build/
 **/bin/
 !src/**/build/
+**/.metadata/
+**/.DS_store/
 
 # Ignore Gradle GUI config
 gradle-app.setting
