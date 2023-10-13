@@ -100,32 +100,46 @@ public final class MazeState {
     public boolean updatePacManDirection(long deltaTns) {
         var curNeighbours = PacMan.INSTANCE.getPos().intNeighbours();
         var nextNeighbours = PacMan.INSTANCE.nextPos(deltaTns).intNeighbours();
-        boolean isBufferUsed = true;
-        if (PacMan.INSTANCE.getBufferDirection() != Direction.NONE) {
-            switch (PacMan.INSTANCE.getBufferDirection()) {
+        if (PacMan.INSTANCE.getDirection() != PacMan.INSTANCE.getBufferDirection() && PacMan.INSTANCE.getBufferDirection() != Direction.NONE) {
+            boolean isBufferUsed = !(nextNeighbours.size() >= 4);
+            if (isBufferUsed) {
+                switch (PacMan.INSTANCE.getBufferDirection()) {
                 case NORTH -> {
-                    for (var n: curNeighbours) 
-                        if (nextNeighbours.size() >= 4 || config.getCell(n).northWall()) isBufferUsed = false;
-                    break;
+                    for (var n: curNeighbours) { 
+                        if (config.getCell(n).northWall()) { 
+                            isBufferUsed = false;
+                            break;
+                        }
+                    }
                 }
                 case EAST -> {
-                    for (var n: curNeighbours)
-                        if (nextNeighbours.size() >= 4 || config.getCell(n).eastWall()) isBufferUsed = false;
-                    break;
+                    for (var n: curNeighbours) {
+                        if (config.getCell(n).eastWall()) {
+                            isBufferUsed = false;
+                        break;
+                        }
+                    }
                 }
                 case SOUTH -> {
-                    for (var n: curNeighbours)
-                        if (nextNeighbours.size() >= 4 || config.getCell(n).southWall()) isBufferUsed = false;
-                    break;
+                    for (var n: curNeighbours) {
+                        if (config.getCell(n).southWall()) {
+                            isBufferUsed = false;
+                            break;
+                        }
+                    }
                 }
                 case WEST -> {
-                    for (var n: curNeighbours)
-                        if (nextNeighbours.size() >= 4 || config.getCell(n).westWall()) isBufferUsed = false;
-                    break;
+                    for (var n: curNeighbours) {
+                        if (config.getCell(n).westWall()) { 
+                            isBufferUsed = false;
+                            break;
+                        }
+                    }
                 }
                 default -> {
                     break;
                 }
+            }
             }
             if (isBufferUsed) {
                 PacMan.INSTANCE.setDirection(PacMan.INSTANCE.getBufferDirection());
