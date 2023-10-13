@@ -126,6 +126,10 @@ public final class MazeState {
      * @param deltaTns La variation du temps entre deux instants.
      */
     private void updatePacMan(long deltaTns) {
+        // Si Pac-Man mange un ENERGIZER
+        if (config.getCell(new IntCoordinates((int) PacMan.INSTANCE.getPos().x(), (int) PacMan.INSTANCE.getPos().y())).initialContent().equals(ENERGIZER)) {
+            PacMan.INSTANCE.setEnergized(true);
+        }
         var curPos = PacMan.INSTANCE.getPos();
         var nextPos = PacMan.INSTANCE.nextPos(deltaTns);
 
@@ -407,7 +411,7 @@ public final class MazeState {
                     } else {
                         updateClyde();
                     }
-                } else {
+                } else if (!((Ghost) critter).isEaten()) {
                     playerLost();
                     return;
                 }
