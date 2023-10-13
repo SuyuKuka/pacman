@@ -3,6 +3,9 @@ package gui;
 import geometry.IntCoordinates;
 import javafx.animation.AnimationTimer;
 import javafx.scene.layout.Pane;
+
+import model.Ghost;
+import static model.Ghost.*;
 import model.MazeState;
 
 import java.util.ArrayList;
@@ -53,6 +56,16 @@ public class GameView {
                 }
                 var deltaT = now - last;
                 maze.update(deltaT);
+
+                // Décommenter ce block pour afficher le target
+                /*
+                var cellFactory = new CellGraphicsFactory(25);
+                Ghost ghost = CLYDE;
+                if (ghost.getTarget() != null) {
+                    addGraphics(cellFactory.showTarget(new IntCoordinates((int)(ghost.getTarget().x()), (int)(ghost.getTarget().y()))));
+                }
+                */
+
                 for (var updater : graphicsUpdaters) {
                     updater.update();
                 }

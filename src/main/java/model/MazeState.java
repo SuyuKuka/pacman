@@ -7,7 +7,6 @@ import geometry.RealCoordinates;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static model.Ghost.*;
 import static model.Direction.*;
@@ -202,8 +201,8 @@ public final class MazeState {
     private void updateGhost(long deltaTns) {
         for (Critter critter : critters) {
             if (critter instanceof Ghost) critter.calibratePos(deltaTns, critter.getPos(), critter.nextPos(deltaTns), height, width);
+            
             RealCoordinates pos = critter.getPos();
-            Direction dir = critter.getDirection();
 
             // Activation d'Inky à partir de 30 points
             if (critter == INKY && !INKY.isActivated() && score == 30 ) {
@@ -215,10 +214,10 @@ public final class MazeState {
                 critter.setDirection(WEST);
             // Set direction aléatoire en FRIGHTENED mode
             } else if (critter instanceof Ghost && mode == Mode.FRIGHTENED && pos.x()%1 == 0 && pos.y()%1 == 0) {
-                frightenedMode((Ghost) critter, dir);
+                frightenedMode((Ghost) critter);
             // Set direction la plus proche du target
             } else if (critter instanceof Ghost && ((Ghost) critter).isActivated() && pos.x()%1 == 0 && pos.y()%1 == 0) {
-                critter.setDirection(directionClosestToTarget(config, (Ghost) critter, pos, dir));
+                critter.setDirection(((Ghost) critter).directionClosestToTarget(config));
             }
         }
     }
@@ -284,9 +283,9 @@ public final class MazeState {
     /**
      * La méthode met à jour les directions de chaque fantôme "aléatoirement" en {@code FRIGHTENED} mode.
      */
-    private void frightenedMode(Ghost ghost, Direction dir) {
+    private void frightenedMode(Ghost ghost) {
         if (ghost.isActivated()) {
-            ghost.setRandomDirection(config, dir);
+            ghost.setRandomDirection(config);
         }
     }
 
