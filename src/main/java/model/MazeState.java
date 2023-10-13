@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import static config.Cell.Content.ENERGIZER;
 import model.Direction;
 import model.PacMan;
 
@@ -289,6 +290,14 @@ public final class MazeState {
             } else if (critter == CLYDE && !CLYDE.isActivated() && score == 146 / 3) {
                 CLYDE.setActivated(true);
                 critter.setDirection(WEST);
+<<<<<<< src/main/java/model/MazeState.java
+            // Set direction aléatoire en FRIGHTENED mode
+            } else if (critter instanceof Ghost && !((Ghost) critter).isEaten() && mode == Mode.FRIGHTENED && pos.x()%1 == 0 && pos.y()%1 == 0) {
+                frightenedMode((Ghost) critter);
+            // Set direction la plus proche du target
+            } else if (critter instanceof Ghost && ((Ghost) critter).isActivated() && pos.x()%1 == 0 && pos.y()%1 == 0) {
+                critter.setDirection(((Ghost) critter).directionClosestToTarget(config));
+=======
                 // Set direction aléatoire en FRIGHTENED mode
             } else if (critter instanceof Ghost && mode == Mode.FRIGHTENED && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
                 frightenedMode((Ghost) critter, dir);
@@ -296,6 +305,7 @@ public final class MazeState {
             } else if (critter instanceof Ghost && ((Ghost) critter).isActivated() && pos.x() % 1 == 0
                     && pos.y() % 1 == 0) {
                 critter.setDirection(directionClosestToTarget(config, (Ghost) critter, pos, dir));
+>>>>>>> src/main/java/model/MazeState.java
             }
         }
     }
@@ -395,9 +405,18 @@ public final class MazeState {
         var pacPos = PacMan.INSTANCE.getPos().round();
         for (var critter : critters) {
             if (critter instanceof Ghost && critter.getPos().round().equals(pacPos)) {
-                if (PacMan.INSTANCE.isEnergized()) {
+                if (PacMan.INSTANCE.isEnergized() && !((Ghost) critter).isEaten()) {
                     addScore(10);
-                    resetCritter(critter);
+                    ((Ghost) critter).setEaten(true);
+                    if ((Ghost) critter == BLINKY) {
+                        updateBlinky();
+                    } else if ((Ghost) critter == PINKY) {
+                        updatePinky();
+                    } else if ((Ghost) critter == INKY) {
+                        updateInky();
+                    } else {
+                        updateClyde();
+                    }
                 } else {
                     playerLost();
                     return;

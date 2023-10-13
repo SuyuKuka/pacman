@@ -18,6 +18,8 @@ public enum Ghost implements Critter {
     private Direction direction = Direction.NONE;
     private RealCoordinates target;
     private boolean activated;
+    private boolean eaten;
+
     @Override
     public RealCoordinates getPos() {
         return pos;
@@ -62,6 +64,14 @@ public enum Ghost implements Critter {
         this.activated = activated;
     }
 
+    public boolean isEaten() {
+        return eaten;
+    }
+
+    public void setEaten(boolean eaten) {
+        this.eaten = eaten;
+    }
+
     /**
      * La méthode renvoie {@code true} si le fantôme est dans un tunnel de téléportation horizontal de 3 de longueur à la position y = 10.
      * @return {@code true} si dans un tunnel
@@ -74,13 +84,26 @@ public enum Ghost implements Critter {
      * La méthode met à jour le target de {@code BLINKY} en {@code CHASE} mode.
      */
     public static void updateBlinky() {
-        BLINKY.setTarget(PacMan.INSTANCE.getPos());
+        // Lorsque le fantôme a été mangé
+        if (BLINKY.eaten) BLINKY.setTarget(new IntCoordinates(8, 10).toRealCoordinates(1.0));
+        else if (BLINKY.eaten && BLINKY.pos.equals(new IntCoordinates(8, 10).toRealCoordinates(1.0))) BLINKY.eaten = false;
+        // Cas général
+        else BLINKY.setTarget(PacMan.INSTANCE.getPos());
     }
 
     /**
      * La méthode met à jour le target de {@code PINKY} en {@code CHASE} mode.
      */
     public static void updatePinky() {
+        // Lorsque le fantôme a été mangé
+        if (PINKY.eaten) {
+            PINKY.setTarget(new IntCoordinates(8, 10).toRealCoordinates(1.0));
+            return;
+        } else if (PINKY.eaten && PINKY.pos.equals(new IntCoordinates(8, 10).toRealCoordinates(1.0))) {
+            PINKY.eaten = false;
+            return;
+        }
+
         RealCoordinates targetPos;
         double deltaX;
         double deltaY;
@@ -121,6 +144,15 @@ public enum Ghost implements Critter {
      * La méthode met à jour le target de {@code INKY} en {@code CHASE} mode.
      */
     public static void updateInky() {
+        // Lorsque le fantôme a été mangé
+        if (INKY.eaten) {
+            INKY.setTarget(new IntCoordinates(8, 10).toRealCoordinates(1.0));
+            return;
+        } else if (INKY.eaten && INKY.pos.equals(new IntCoordinates(8, 10).toRealCoordinates(1.0))) {
+            INKY.eaten = false;
+            return;
+        }
+
         RealCoordinates targetPos;
         // Pour éviter les situations lorsque Pac-Man est stationnaire
         Direction pacDir = PacMan.INSTANCE.getDirection() == NONE ? PacMan.INSTANCE.getLastDirection() : PacMan.INSTANCE.getDirection();
@@ -153,6 +185,15 @@ public enum Ghost implements Critter {
      * La méthode met à jour le target de {@code CLYDE} en {@code CHASE} mode.
      */
     public static void updateClyde() {
+        // Lorsque le fantôme a été mangé
+        if (CLYDE.eaten) {
+            CLYDE.setTarget(new IntCoordinates(8, 10).toRealCoordinates(1.0));
+            return;
+        } else if (CLYDE.eaten && CLYDE.pos.equals(new IntCoordinates(8, 10).toRealCoordinates(1.0))) {
+            CLYDE.eaten = false;
+            return;
+        }
+
         // Dans le vrai jeu, si Clyde se trouve dans un rayon de 8 cases de Pac-Man, ce dernier aura comme target le target en mode SCATTER
         // Sinon le target est identique à Blinky (la position de Pac-Man)
 
@@ -290,7 +331,7 @@ public enum Ghost implements Critter {
                     break;
             }
         }
-        
+
         // Détermination de la plus petite distance
         double minVal = 10000;
         int min = -1;
