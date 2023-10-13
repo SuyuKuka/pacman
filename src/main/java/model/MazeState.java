@@ -58,7 +58,6 @@ public final class MazeState {
     private Group livegroup3 = new Group();
     private int select = 1;
     private boolean lose;
-    private PacmanController testtesController = new PacmanController();
     private Group Interface = new Group();
     private Rectangle Transparent;
     private Rectangle TextPos;
@@ -282,9 +281,13 @@ public final class MazeState {
      */
     private void updateGhost(long deltaTns) {
         for (Critter critter : critters) {
-            if (critter instanceof Ghost)
-                critter.calibratePos(deltaTns, critter.getPos(), critter.nextPos(deltaTns), height, width);
+            if (critter instanceof Ghost) critter.calibratePos(deltaTns, critter.getPos(), critter.nextPos(deltaTns), height, width);
             RealCoordinates pos = critter.getPos();
+
+            // Lorsque le fantôme mangé retourne au spawn
+            if (critter instanceof Ghost && ((Ghost) critter).isEaten() && pos.equals(new IntCoordinates(8, 10).toRealCoordinates(1.0))) {
+                ((Ghost) critter).setEaten(false);
+            }
 
             // Activation d'Inky à partir de 30 points
             if (critter == INKY && !INKY.isActivated() && score == 30) {
