@@ -17,14 +17,15 @@ import config.Cell.Type;
 
 public class MazeConfig {
 
-
     private final Cell[][] grid;
     private final IntCoordinates pacManPos, blinkyPos, pinkyPos, inkyPos, clydePos;
 
-    public MazeConfig(Cell[][] grid, IntCoordinates pacManPos, IntCoordinates blinkyPos, IntCoordinates pinkyPos, IntCoordinates inkyPos, IntCoordinates clydePos) {
+    public MazeConfig(Cell[][] grid, IntCoordinates pacManPos, IntCoordinates blinkyPos, IntCoordinates pinkyPos,
+            IntCoordinates inkyPos, IntCoordinates clydePos) {
         this.grid = new Cell[grid.length][grid[0].length];
         for (int i = 0; i < getHeight(); i++) {
-            if (getWidth() >= 0) System.arraycopy(grid[i], 0, this.grid[i], 0, getWidth());
+            if (getWidth() >= 0)
+                System.arraycopy(grid[i], 0, this.grid[i], 0, getWidth());
         }
         this.pacManPos = pacManPos;
         this.blinkyPos = blinkyPos;
@@ -65,13 +66,15 @@ public class MazeConfig {
         return grid[Math.floorMod(pos.y(), getHeight())][Math.floorMod(pos.x(), getWidth())];
     }
 
-
     /**
-     * Convertie les données d'un fichier .txt en {@code Cell[][]} utilisé pour la configuration de la carte.
-     * Le fichier doit contenir des données nécessaires pour une carte rectangulaire.
+     * Convertie les données d'un fichier .txt en {@code Cell[][]} utilisé pour la
+     * configuration de la carte.
+     * Le fichier doit contenir des données nécessaires pour une carte
+     * rectangulaire.
+     * 
      * @param path Le chemin du fichier à importer.
      * @return {@code Cell[][] maze}
-    */
+     */
     public static Cell[][] getMaze(String path) {
         try (Scanner sc = new Scanner(new File(path));) {
             ArrayList<String[]> set = new ArrayList<>();
@@ -81,7 +84,7 @@ public class MazeConfig {
             Cell[][] maze = new Cell[set.size()][set.get(0).length];
             int i = 0;
             for (String[] line : set) {
-                for (int j=0; j<set.get(i).length; j++) {
+                for (int j = 0; j < set.get(i).length; j++) {
                     String[] couple = line[j].split(",");
                     maze[i][j] = cell(Type.valueOf(couple[0]), Content.valueOf(couple[1]));
                 }
@@ -95,11 +98,16 @@ public class MazeConfig {
     }
 
     /**
-     * La méthode utilise la méthode {@code getAdjacentCellsCoordinates()} pour obtenir les cellules {@code Cell} adjacentes au fantôme.<br><br>
-     * Si une coordonnée indique une position en dehors de la map, une cellule de type {@code CLOSED} sera ajoutée à la liste.
+     * La méthode utilise la méthode {@code getAdjacentCellsCoordinates()} pour
+     * obtenir les cellules {@code Cell} adjacentes au fantôme.<br>
+     * <br>
+     * Si une coordonnée indique une position en dehors de la map, une cellule de
+     * type {@code CLOSED} sera ajoutée à la liste.
+     * 
      * @param pos La position actuelle du fantôme.
      * @param dir La direction actuelle du fantôme.
-     * @return Une {@code List<Cell>} contenant les cellules adjacentes au fantôme. Triées dans le sens horaire.
+     * @return Une {@code List<Cell>} contenant les cellules adjacentes au fantôme.
+     *         Triées dans le sens horaire.
      */
     public List<Cell> getAdjacentCells(RealCoordinates pos, Direction dir) {
         List<IntCoordinates> adjacentCellCoordinates = pos.getAdjacentCellsCoordinates(dir);
@@ -107,7 +115,8 @@ public class MazeConfig {
 
         for (IntCoordinates intCoordinates : adjacentCellCoordinates) {
             // Si la cellule est en dehors de la map, elle sera considérée comme CLOSED
-            if (intCoordinates.x() < 0 || intCoordinates.x() == grid[0].length || intCoordinates.y() < 0 || intCoordinates.y() == grid.length) {
+            if (intCoordinates.x() < 0 || intCoordinates.x() == grid[0].length || intCoordinates.y() < 0
+                    || intCoordinates.y() == grid.length) {
                 adjacentCells.add(new Cell(true, true, true, true, null));
             } else {
                 adjacentCells.add(grid[intCoordinates.y()][intCoordinates.x()]);
@@ -118,12 +127,12 @@ public class MazeConfig {
 
     public static MazeConfig makeExample1() {
         return new MazeConfig(
-            getMaze("src/main/java/config/Level1.txt"),
-            new IntCoordinates(8, 16), // Pacman
-            new IntCoordinates(8, 8), // Blinky (Rouge)
-            new IntCoordinates(8, 10), // Pinky (Rose)
-            new IntCoordinates(7, 10), // Inky (Bleu)
-            new IntCoordinates(9, 10)  // Clyde (Orange)
+                getMaze("src/main/java/config/Level1.txt"),
+                new IntCoordinates(8, 16), // Pacman
+                new IntCoordinates(8, 8), // Blinky (Rouge)
+                new IntCoordinates(8, 10), // Pinky (Rose)
+                new IntCoordinates(7, 10), // Inky (Bleu)
+                new IntCoordinates(9, 10) // Clyde (Orange)
         );
     }
 }
