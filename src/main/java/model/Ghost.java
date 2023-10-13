@@ -290,8 +290,7 @@ public enum Ghost implements Critter {
                     break;
             }
         }
-System.out.println(deltaDist[0]);
-System.out.println(deltaDist[3]);
+        
         // Détermination de la plus petite distance
         double minVal = 10000;
         int min = -1;
