@@ -1,8 +1,5 @@
 package model;
 
-import gui.App;
-import gui.GameView;
-import gui.PacmanController;
 import javafx.scene.Scene;
 import config.MazeConfig;
 import geometry.IntCoordinates;
@@ -15,7 +12,6 @@ import java.util.Map;
 import static config.Cell.Content.ENERGIZER;
 import model.Direction;
 import model.PacMan;
-import gui.MenuGraphics;
 
 import static model.Ghost.*;
 import static model.Direction.*;
@@ -38,19 +34,20 @@ public final class MazeState {
     private int score;
 
     private final Map<Critter, RealCoordinates> initialPos;
-    public static final int totalLive = 3;
-    private int lives = totalLive;
+    private final int totalLive;
+    private int lives;
 
-    private MenuGraphics graphics;
     private Scene gameScene;
 
     public MazeState(MazeConfig config) {
-
         this.config = config;
-        // MenuGraphics graphics = new MenuGraphics(gameScene);
-
+        // Ajouter difficulté dans config et faire un switch (difficulté) pour le nb de total live
+        totalLive = 1;
+        lives = totalLive;
         height = config.getHeight();
         width = config.getWidth();
+        System.out.println(height);
+        System.out.println(width);
         critters = List.of(PacMan.INSTANCE, CLYDE, BLINKY, INKY, PINKY);
         gridState = new boolean[height][width];
         initialPos = Map.of(
@@ -443,5 +440,9 @@ public final class MazeState {
 
     public Scene getGameScene() {
         return gameScene;
+    }
+
+    public int getTotalLive() {
+        return totalLive;
     }
 }

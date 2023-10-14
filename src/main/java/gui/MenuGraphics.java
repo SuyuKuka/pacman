@@ -10,12 +10,14 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 import model.MazeState;
 
 public class MenuGraphics {
+    private Stage primaryStage;
     private Scene gameScene;
     private Group root = new Group();
     private Text text_score;
@@ -33,8 +35,9 @@ public class MenuGraphics {
     private Text Option2 = new Text(">");
     private Text Option3 = new Text(">");
 
-    public MenuGraphics(Scene gameScene) {
+    public MenuGraphics(Scene gameScene, Stage primaryStage) {
         this.gameScene = gameScene;
+        this.primaryStage=primaryStage;
     }
 
     public void displayScore(MazeState state) {
@@ -80,7 +83,7 @@ public class MenuGraphics {
     }
 
     public void removeLife(MazeState state) {
-        if (state.getLive() < MazeState.totalLive) {
+        if (state.getLive() < state.getTotalLive()) {
             livegroup[state.getLive()].setVisible(false);
         }
 
@@ -176,10 +179,12 @@ public class MenuGraphics {
                     // Continue sur le prochain niveau
                 }
                 if (select == 2) {
-                    // Retry le jeu
+                    //test
+                    Solo.classique(primaryStage);
                 }
                 if (select == 3) {
-                    // Retourne au menu
+                    Menu menu = new Menu();
+                    menu.start(primaryStage);
                 }
             }
             if (keyEvent.getCode() == KeyCode.DOWN || keyEvent.getCode() == KeyCode.UP) {
