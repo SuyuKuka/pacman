@@ -85,10 +85,12 @@ public enum Ghost implements Critter {
      */
     public static void updateBlinky() {
         // Lorsque le fantôme a été mangé
-        if (BLINKY.eaten) BLINKY.setTarget(new IntCoordinates(8, 10).toRealCoordinates(1.0));
-        else if (BLINKY.eaten && BLINKY.pos.equals(new IntCoordinates(8, 10).toRealCoordinates(1.0))) BLINKY.eaten = false;
+        if (BLINKY.eaten) {
+            BLINKY.setTarget(new IntCoordinates(8, 10).toRealCoordinates(1.0));
         // Cas général
-        else BLINKY.setTarget(PacMan.INSTANCE.getPos());
+        } else {
+            BLINKY.setTarget(PacMan.INSTANCE.getPos());
+        }
     }
 
     /**
@@ -98,9 +100,6 @@ public enum Ghost implements Critter {
         // Lorsque le fantôme a été mangé
         if (PINKY.eaten) {
             PINKY.setTarget(new IntCoordinates(8, 10).toRealCoordinates(1.0));
-            return;
-        } else if (PINKY.eaten && PINKY.pos.equals(new IntCoordinates(8, 10).toRealCoordinates(1.0))) {
-            PINKY.eaten = false;
             return;
         }
 
@@ -148,9 +147,6 @@ public enum Ghost implements Critter {
         if (INKY.eaten) {
             INKY.setTarget(new IntCoordinates(8, 10).toRealCoordinates(1.0));
             return;
-        } else if (INKY.eaten && INKY.pos.equals(new IntCoordinates(8, 10).toRealCoordinates(1.0))) {
-            INKY.eaten = false;
-            return;
         }
 
         RealCoordinates targetPos;
@@ -188,9 +184,6 @@ public enum Ghost implements Critter {
         // Lorsque le fantôme a été mangé
         if (CLYDE.eaten) {
             CLYDE.setTarget(new IntCoordinates(8, 10).toRealCoordinates(1.0));
-            return;
-        } else if (CLYDE.eaten && CLYDE.pos.equals(new IntCoordinates(8, 10).toRealCoordinates(1.0))) {
-            CLYDE.eaten = false;
             return;
         }
 
