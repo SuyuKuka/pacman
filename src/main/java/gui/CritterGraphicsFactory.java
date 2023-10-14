@@ -17,8 +17,11 @@ public final class CritterGraphicsFactory {
 
     public GraphicsUpdater makeGraphics(Critter critter) {
         var size = 0.7;
+
+        /*remplacer
+        var image = new ImageView(new Image(url, scale * size, scale * size, true, true));
+        à  Image(pas encore le url, setFitWidth(),setFitHeight(),setPreserveRatio(),setSmooth()*/
         var image = new ImageView();
-        //var image = new ImageView(new Image(url, scale * size, scale * size, true, true));
         image.setFitWidth(scale * size);
         image.setFitHeight(scale * size);
         image.setPreserveRatio(true);
@@ -29,9 +32,8 @@ public final class CritterGraphicsFactory {
 
             @Override
             public void update() {
-
                 String newUrl = getImageUrlForCritter(critter);
-                if (!newUrl.equals(url)) {  
+                if (!newUrl.equals(url)) {// if url a changé return le nouveau url  
                     image.setImage(new Image(newUrl));
                     url = newUrl;
                 } 
@@ -47,6 +49,7 @@ public final class CritterGraphicsFactory {
         };
     }
 
+    //renvoi le file du image en regardant le direction de pacman
     private String getImageUrlForCritter(Critter critter) {
         if (critter instanceof PacMan) {
             PacMan pacMan = (PacMan) critter;
@@ -61,8 +64,10 @@ public final class CritterGraphicsFactory {
                     return "pacman_west.png";
                 default:
                     return "pacman_east.png";
+                    //On peut mettre "return url" pour "default:"" en gardant l'ancien direction fait par pacman(mettre url ds paramètre)
+                    //mais il enleve l'image de pacman à point initial
             }
-        } else if (critter instanceof Ghost) {
+        } else if (critter instanceof Ghost) {//ghost reste de la même
             switch ((Ghost) critter) {
                 case BLINKY:
                     return "ghost_blinky.png";
@@ -73,7 +78,7 @@ public final class CritterGraphicsFactory {
                 case PINKY:
                     return "ghost_pinky.png";
                 default:
-                    return "";  // or some default ghost image
+                    return "";
             }
         }
         return "";
