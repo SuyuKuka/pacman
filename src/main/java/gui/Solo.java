@@ -37,6 +37,7 @@ public class Solo extends Application{
             classique.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
                 classique(primaryStage);
             });
+
             Text facile = Menu.createText("Facile", 38);
             Text select2 = Menu.createText(">", 38);
             HBox option2 = Menu.createHBox(20, select2, facile);
@@ -82,7 +83,7 @@ public class Solo extends Application{
             listPos.getChildren().addAll(option0, levelPos);
             listPos.setAlignment(Pos.CENTER);
 
-            root.getChildren().addAll(background, listPos, optionback);
+            root.getChildren().addAll(background, listPos);
 
             Scene gameScene = new Scene(root, 690, 510);
             Text[] allText = {select1, select2, select3, select4, select5, selectback};
