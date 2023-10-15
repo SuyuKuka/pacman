@@ -25,6 +25,7 @@ public class Menu extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        Menu.select = 1;
         StackPane root = new StackPane();
         primaryStage.setTitle("Mac-Pan-Pac-Man");
         primaryStage.getIcons().add(new Image("file:src/main/resources/pacman.png"));  
