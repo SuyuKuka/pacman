@@ -12,6 +12,18 @@ import java.util.Map;
 
 import static config.Cell.Content.ENERGIZER;
 
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Pane;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+
 import static model.Ghost.*;
 import static model.Direction.*;
 
@@ -50,11 +62,12 @@ public final class MazeState {
         gridState = new boolean[height][width];
         setGrid();
         initialPos = Map.of(
-                PacMan.INSTANCE, config.getPacManPos().toRealCoordinates(1.0),
-                BLINKY, config.getBlinkyPos().toRealCoordinates(1.0),
-                INKY, config.getInkyPos().toRealCoordinates(1.0),
-                CLYDE, config.getClydePos().toRealCoordinates(1.0),
-                PINKY, config.getPinkyPos().toRealCoordinates(1.0));
+            PacMan.INSTANCE, config.getPacManPos().toRealCoordinates(1.0),
+            BLINKY, config.getBlinkyPos().toRealCoordinates(1.0),
+            INKY, config.getInkyPos().toRealCoordinates(1.0),
+            CLYDE, config.getClydePos().toRealCoordinates(1.0),
+            PINKY, config.getPinkyPos().toRealCoordinates(1.0)
+        );
         resetCritters();
     }
 
@@ -96,132 +109,75 @@ public final class MazeState {
      */
     private void updatePacMan(long deltaTns) {
         // Si Pac-Man mange un ENERGIZER
-        if (config.getCell(new IntCoordinates((int) PacMan.INSTANCE.getPos().x(), (int) PacMan.INSTANCE.getPos().y()))
-                .initialContent().equals(ENERGIZER)) {
+        if (config.getCell(new IntCoordinates((int) PacMan.INSTANCE.getPos().x(), (int) PacMan.INSTANCE.getPos().y())).initialContent().equals(ENERGIZER)) {
             PacMan.INSTANCE.setEnergized(true);
         }
         var curPos = PacMan.INSTANCE.getPos();
         var nextPos = PacMan.INSTANCE.nextPos(deltaTns);
 
-        // Nécessaire pour éviter les problèmes de détermination du target selon la
-        // direction de Pac-Man
+        // Nécessaire pour éviter les problèmes de détermination du target selon la direction de Pac-Man
         if (PacMan.INSTANCE.getDirection() != NONE)
             PacMan.INSTANCE.setLastDirection(PacMan.INSTANCE.getDirection());
 
-        if (updatePacManDirection(deltaTns)) {
+        // Modifie ou non la direction de PacMan en fonction du terrain du buffer
+        if (canPacManTurn(PacMan.INSTANCE.getBufferDirection(), deltaTns)) {
             nextPos = PacMan.INSTANCE.nextPos(deltaTns, PacMan.INSTANCE.getBufferDirection());
+            PacMan.INSTANCE.setDirection(PacMan.INSTANCE.getBufferDirection());
+            PacMan.INSTANCE.setBufferDirection(Direction.NONE);
         }
-        nextPos = updatePacManPos(curPos, nextPos);
+        nextPos = calibratePacManPos(curPos, nextPos);
         PacMan.INSTANCE.calibratePos(deltaTns, curPos, nextPos, height, width);
-        PacMan.INSTANCE.increaseBufferDurationTime(deltaTns);
+        PacMan.INSTANCE.updateBufferDurationTime(deltaTns);
     }
 
-    /**
-     * Méthode qui actualise la {@code Direction} de {@code Pac-Man} en fonction du
-     * terrain et de son {@code bufferDirection}.
+     /**
+     * Méthode qui calcul la position à la frame suivante de PacMan en fonction de {@code Direction}. <br><br>
+     * Si cette position est valable, change la {@code Direction} de PacMan sinon, garde l'ancienne {@code Direction}.
      * 
-     * @param deltaTns Temps écoulé en nanosecondes.
-     * @return Retourne vraie si la {@code Direction} de {@code Pac-Man} devrait
-     *         changer ou faux sinon.
+     * @param Maze MazeConfig utilisée.
+     * @param direction Calcul par rapport à cette direction.
+     * @param deltaTns Temps écoulée.
+     * @return Retourne vraie si un changement de direction est possible, faux sinon.
      */
-    public boolean updatePacManDirection(long deltaTns) {
-        var curNeighbours = PacMan.INSTANCE.getPos().intNeighbours();
+    public boolean canPacManTurn(Direction direction, long deltaTns) {
+        if (PacMan.INSTANCE.getDirection() == direction) {
+            return false;
+        }
         var nextNeighbours = PacMan.INSTANCE.nextPos(deltaTns).intNeighbours();
-        if (PacMan.INSTANCE.getDirection() != PacMan.INSTANCE.getBufferDirection()
-                && PacMan.INSTANCE.getBufferDirection() != Direction.NONE) {
-            boolean isBufferUsed = !(nextNeighbours.size() >= 4);
-            if (isBufferUsed) {
-                switch (PacMan.INSTANCE.getBufferDirection()) {
-                    case NORTH -> {
-                        for (var n : curNeighbours) {
-                            if (config.getCell(n).northWall()) {
-                                isBufferUsed = false;
-                                break;
-                            }
-                        }
-                    }
-                    case EAST -> {
-                        for (var n : curNeighbours) {
-                            if (config.getCell(n).eastWall()) {
-                                isBufferUsed = false;
-                                break;
-                            }
-                        }
-                    }
-                    case SOUTH -> {
-                        for (var n : curNeighbours) {
-                            if (config.getCell(n).southWall()) {
-                                isBufferUsed = false;
-                                break;
-                            }
-                        }
-                    }
-                    case WEST -> {
-                        for (var n : curNeighbours) {
-                            if (config.getCell(n).westWall()) {
-                                isBufferUsed = false;
-                                break;
-                            }
-                        }
-                    }
-                    default -> {
-                        break;
-                    }
-                }
+        if (nextNeighbours.size() >= 4) {
+            return false;
+        }
+        if (nextNeighbours.size() == 2) {
+            if ((direction == Direction.NORTH || direction == Direction.SOUTH) && (int) PacMan.INSTANCE.getPos().x() != PacMan.INSTANCE.getPos().x()) {
+                return false;
             }
-            if (isBufferUsed) {
-                PacMan.INSTANCE.setDirection(PacMan.INSTANCE.getBufferDirection());
-                PacMan.INSTANCE.setBufferDirection(Direction.NONE);
-                return true;
+            if ((direction == Direction.EAST || direction == Direction.WEST) && (int) PacMan.INSTANCE.getPos().y() != PacMan.INSTANCE.getPos().y()) {
+                return false;
+            }
+            var curNeighbours = PacMan.INSTANCE.getPos().intNeighbours();
+            for (var n: curNeighbours) {
+                if (direction.wall(config.getCell(n))) {
+                    return false;
+                }
             }
         }
-        return false;
+        return true;
     }
 
     /**
-     * Méthode qui actualise la position ({@code RealCoordinates}) de
-     * {@code Pac-Man} en fonction du terrain.
-     * 
+     * Méthode qui arrête la course de PacMan et retire sa direction si il rencontre un mur de face.
      * @param curPos  {@code RealCoordinates} actuelle de {@code Pac-Man}.
-     * @param nextPos {@code RealCoordinates} supposée (si il ne traverse pas de
-     *                mur) de {@code Pac-Man}.
-     * @return Retourne un {@code RealCoordinates} (modifié ou non).
+     * @param nextPos {@code RealCoordinates} supposée (= s'il ne traverse pas de mur) de {@code Pac-Man}.
+     * @return Retourne {@code nextPos} modifié ou non.
      */
-    public RealCoordinates updatePacManPos(RealCoordinates curPos, RealCoordinates nextPos) {
-        var curNeighbours = curPos.intNeighbours();
-        var nextNeighbours = nextPos.intNeighbours();
-        if (!curNeighbours.containsAll(nextNeighbours)) { // the critter would overlap new cells. Do we allow it?
-            switch (PacMan.INSTANCE.getDirection()) {
-                case NORTH -> {
-                    for (var n : curNeighbours)
-                        if (config.getCell(n).northWall()) {
-                            PacMan.INSTANCE.setDirection(Direction.NONE);
-                            return nextPos = curPos.floorY();
-                        }
-                }
-                case EAST -> {
-                    for (var n : curNeighbours)
-                        if (config.getCell(n).eastWall()) {
-                            PacMan.INSTANCE.setDirection(Direction.NONE);
-                            return nextPos = curPos.ceilX();
-                        }
-                }
-                case SOUTH -> {
-                    for (var n : curNeighbours)
-                        if (config.getCell(n).southWall()) {
-                            PacMan.INSTANCE.setDirection(Direction.NONE);
-                            return nextPos = curPos.ceilY();
-                        }
-                }
-                case WEST -> {
-                    for (var n : curNeighbours)
-                        if (config.getCell(n).westWall()) {
-                            PacMan.INSTANCE.setDirection(Direction.NONE);
-                            return nextPos = curPos.floorX();
-                        }
-                }
-                default -> {
-                    break;
+
+    public RealCoordinates calibratePacManPos(RealCoordinates curPos, RealCoordinates nextPos) {
+        if (!curPos.intNeighbours().containsAll(nextPos.intNeighbours())) {
+            for (var n: curPos.intNeighbours()) {
+                if (PacMan.INSTANCE.getDirection().wall(config.getCell(n))) {
+                    RealCoordinates newPos = PacMan.INSTANCE.getPos().adjustCoordinates(PacMan.INSTANCE.getDirection());
+                    PacMan.INSTANCE.setDirection(Direction.NONE);
+                    return newPos;
                 }
             }
         }
@@ -270,12 +226,10 @@ public final class MazeState {
                 CLYDE.setActivated(true);
                 critter.setDirection(WEST);
                 // Set direction aléatoire en FRIGHTENED mode
-            } else if (critter instanceof Ghost && !((Ghost) critter).isEaten() && mode == Mode.FRIGHTENED
-                    && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
+            } else if (critter instanceof Ghost && !((Ghost) critter).isEaten() && mode == Mode.FRIGHTENED && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
                 frightenedMode((Ghost) critter);
                 // Set direction la plus proche du target
-            } else if (critter instanceof Ghost && ((Ghost) critter).isActivated() && pos.x() % 1 == 0
-                    && pos.y() % 1 == 0) {
+            } else if (critter instanceof Ghost && ((Ghost) critter).isActivated() && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
                 critter.setDirection(((Ghost) critter).directionClosestToTarget(config));
             }
         }
@@ -296,7 +250,6 @@ public final class MazeState {
             long now = Instant.now().toEpochMilli();
             long startMilli = start.toEpochMilli();
             
-
             if (now > startMilli + 7 * 1000 ||
                     now > startMilli + (7 + 20 + 7) * 1000 ||
                     now > startMilli + (7 + 20 + 7 + 20 + 5) * 1000 ||
