@@ -20,11 +20,12 @@ public class MazeConfig {
     private final Cell[][] grid;
     private final IntCoordinates pacManPos, blinkyPos, pinkyPos, inkyPos, clydePos;
 
-    public MazeConfig(
-        Cell[][] grid, IntCoordinates pacManPos, IntCoordinates blinkyPos, IntCoordinates pinkyPos, IntCoordinates inkyPos, IntCoordinates clydePos) {
+    public MazeConfig(Cell[][] grid, IntCoordinates pacManPos, IntCoordinates blinkyPos, IntCoordinates pinkyPos, IntCoordinates inkyPos, IntCoordinates clydePos) {
         this.grid = new Cell[grid.length][grid[0].length];
         for (int i = 0; i < getHeight(); i++) {
-            if (getWidth() >= 0) System.arraycopy(grid[i], 0, this.grid[i], 0, getWidth());
+            if (getWidth() >= 0) {
+                System.arraycopy(grid[i], 0, this.grid[i], 0, getWidth());
+            }
         }
         this.pacManPos = pacManPos;
         this.blinkyPos = blinkyPos;
@@ -66,10 +67,8 @@ public class MazeConfig {
     }
 
     /**
-     * Convertie les données d'un fichier .txt en {@code Cell[][]} utilisé pour la
-     * configuration de la carte.
-     * Le fichier doit contenir des données nécessaires pour une carte
-     * rectangulaire.
+     * Convertie les données d'un fichier .txt en {@code Cell[][]} utilisé pour la configuration de la carte. <br></br>
+     * Le fichier doit contenir des données nécessaires pour une carte rectangulaire.
      * 
      * @param path Le chemin du fichier à importer.
      * @return {@code Cell[][] maze}
@@ -97,16 +96,12 @@ public class MazeConfig {
     }
 
     /**
-     * La méthode utilise la méthode {@code getAdjacentCellsCoordinates()} pour
-     * obtenir les cellules {@code Cell} adjacentes au fantôme.<br>
-     * <br>
-     * Si une coordonnée indique une position en dehors de la map, une cellule de
-     * type {@code CLOSED} sera ajoutée à la liste.
+     * La méthode utilise la méthode {@code getAdjacentCellsCoordinates()} pour obtenir les cellules {@code Cell} adjacentes au fantôme.<br></br>
+     * Si une coordonnée indique une position en dehors de la map, une cellule de type {@code CLOSED} sera ajoutée à la liste.
      * 
      * @param pos La position actuelle du fantôme.
      * @param dir La direction actuelle du fantôme.
-     * @return Une {@code List<Cell>} contenant les cellules adjacentes au fantôme.
-     *         Triées dans le sens horaire.
+     * @return Une {@code List<Cell>} contenant les cellules adjacentes au fantôme. Triées dans le sens horaire.
      */
     public List<Cell> getAdjacentCells(RealCoordinates pos, Direction dir) {
         List<IntCoordinates> adjacentCellCoordinates = pos.getAdjacentCellsCoordinates(dir);
