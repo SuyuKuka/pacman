@@ -36,6 +36,8 @@ public final class MazeState {
     private final int totalLives;
     private int lives;
     private int win=0;
+    private int maxScore=0;
+    private int pacgomme=0;
 
     private Scene gameScene;
 
@@ -354,10 +356,12 @@ public final class MazeState {
 
     private void addScore(int increment) {
         score += increment;
+        pacgomme++;
     }
 
     private void playerLost() {
         lives--;
+        System.out.println(maxScore);
         resetCritters();
     }
 
@@ -380,6 +384,7 @@ public final class MazeState {
     }
 
     private void resetCritters() {
+        score = 0;
         for (var critter : critters)
             resetCritter(critter);
     }
@@ -407,5 +412,13 @@ public final class MazeState {
 
     public int getTotalLive() {
         return totalLives;
+    }
+
+    public int getMaxScore() {
+        return maxScore;
+    }
+
+    public int getPacgomme() {
+        return pacgomme;
     }
 }
