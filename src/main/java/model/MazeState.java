@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import static config.Cell.Content.ENERGIZER;
+import static config.Cell.Content.*;
 
 import static model.Ghost.*;
 import static model.Direction.*;
@@ -49,7 +49,7 @@ public final class MazeState {
         width = config.getWidth();
         critters = List.of(PacMan.INSTANCE, CLYDE, BLINKY, INKY, PINKY);
         gridState = new boolean[height][width];
-        setGrid();
+        setGrid(config.getGrid());
         initialPos = Map.of(
             PacMan.INSTANCE, config.getPacManPos().toRealCoordinates(1.0),
             BLINKY, config.getBlinkyPos().toRealCoordinates(1.0),
@@ -310,11 +310,13 @@ public final class MazeState {
         }
     }
 
-    private void setGrid(){
-        Cell[][] maze = MazeConfig.getMaze("src/main/java/config/Level1.txt");
-        for (int i=0;i<getHeight();i++) {
-            for (int j=0;j<getWidth();j++){
-                if(maze[i][j].initialContent()!=Cell.Content.valueOf("DOT")){
+    /**
+     * La méthode met à jour l'état du gridState
+     */
+    private void setGrid(Cell[][] maze) {
+        for (int i = 0; i < getHeight(); i++) {
+            for (int j = 0; j < getWidth(); j++) {
+                if (maze[i][j].initialContent().equals(Cell.Content.NOTHING)) {
                     gridState[i][j]=true;
                 }
             }

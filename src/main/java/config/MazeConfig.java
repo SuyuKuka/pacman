@@ -66,6 +66,10 @@ public class MazeConfig {
         return grid[Math.floorMod(pos.y(), getHeight())][Math.floorMod(pos.x(), getWidth())];
     }
 
+    public Cell[][] getGrid() {
+        return grid;
+    }
+
     /**
      * Convertie les données d'un fichier .txt en {@code Cell[][]} utilisé pour la configuration de la carte. <br></br>
      * Le fichier doit contenir des données nécessaires pour une carte rectangulaire.
