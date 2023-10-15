@@ -11,18 +11,6 @@ import java.util.Map;
 
 import static config.Cell.Content.ENERGIZER;
 
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Pane;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
-
 import static model.Ghost.*;
 import static model.Direction.*;
 
