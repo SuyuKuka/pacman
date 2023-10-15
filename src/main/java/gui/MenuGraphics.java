@@ -52,7 +52,7 @@ public class MenuGraphics {
         }
         // Affiche le score
         scoreText.setText("Score: " + state.getScore()); // Total : 154 score en classique
-        if(state.getPacgomme()==state.getMaxScore() && winVerif<1){
+        if (state.getPacgomme() == state.getMaxScore() && winVerif < 1) {
             winVerif++;
             win(state);
         }

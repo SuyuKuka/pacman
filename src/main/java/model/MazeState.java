@@ -35,9 +35,9 @@ public final class MazeState {
     private final Map<Critter, RealCoordinates> initialPos;
     private final int totalLives;
     private int lives;
-    private int win=0;
-    private int maxScore=0;
-    private int pacgomme=0;
+    private int win = 0;
+    private int maxScore = 0;
+    private int pacgomme = 0;
 
     private Scene gameScene;
 
@@ -318,7 +318,10 @@ public final class MazeState {
     private void setGrid(Cell[][] maze) {
         for (int i = 0; i < getHeight(); i++) {
             for (int j = 0; j < getWidth(); j++) {
-                if (maze[i][j].initialContent().equals(Cell.Content.NOTHING)) {
+                if (maze[i][j].initialContent() == Cell.Content.DOT || maze[i][j].initialContent() == ENERGIZER) {
+                    maxScore++;
+                }
+                if (maze[i][j].initialContent() == Cell.Content.NOTHING) {
                     gridState[i][j]=true;
                 }
             }
@@ -367,7 +370,6 @@ public final class MazeState {
 
     public void playerWin(){
         win++;
-        //PacMan.INSTANCE.setPacManMoved(0);
         resetCritters();
     }
 
