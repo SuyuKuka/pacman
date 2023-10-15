@@ -35,9 +35,9 @@ public final class MazeState {
     private final Map<Critter, RealCoordinates> initialPos;
     private final int totalLives;
     private int lives;
-    private int win = 0;
-    private int maxScore = 0;
-    private int pacgomme = 0;
+    private boolean win;
+    private int maxScore;
+    private int pacgomme;
 
     private Scene gameScene;
 
@@ -47,6 +47,11 @@ public final class MazeState {
         totalLives = 3;
         lives = totalLives;
         PacMan.INSTANCE.setPacManMoved(0);
+        PacMan.INSTANCE.setEnergized(false);
+        PacMan.INSTANCE.setBufferDirection(NONE);
+        win = false;
+        maxScore = 0;
+        pacgomme = 0;
         height = config.getHeight();
         width = config.getWidth();
         critters = List.of(PacMan.INSTANCE, CLYDE, BLINKY, INKY, PINKY);
@@ -75,7 +80,7 @@ public final class MazeState {
     }
 
     public void update(long deltaTns) {
-        if (lives > 0 && win==0) {
+        if (lives > 0 && !win) {
             updatePacMan(deltaTns);
             // Active les fantômes après la première input
             if (PacMan.INSTANCE.getPacManMoved() == 1) {
@@ -186,6 +191,8 @@ public final class MazeState {
         mode = Mode.SCATTER;
         BLINKY.setActivated(true);
         PINKY.setActivated(true);
+        INKY.setActivated(false);
+        CLYDE.setActivated(false);
         BLINKY.setDirection(EAST);
         PINKY.setDirection(NORTH);
     }
@@ -209,11 +216,11 @@ public final class MazeState {
             }
 
             // Activation d'Inky à partir de 30 points
-            if (critter == INKY && !INKY.isActivated() && score == 30) {
+            if (critter == INKY && !INKY.isActivated() && pacgomme >= 30) {
                 INKY.setActivated(true);
                 critter.setDirection(EAST);
                 // Activation de Clyde lorsqu'un tier des points totaux a été obtenu
-            } else if (critter == CLYDE && !CLYDE.isActivated() && score == 146 / 3) {
+            } else if (critter == CLYDE && !CLYDE.isActivated() && pacgomme >= 146 / 3) {
                 CLYDE.setActivated(true);
                 critter.setDirection(WEST);
                 // Set direction aléatoire en FRIGHTENED mode
@@ -305,10 +312,10 @@ public final class MazeState {
      * La méthode incrémente le score de 1 après que Pac-Man mange un pac-gomme.
      */
     private void updateScore() {
-        var pacPos = PacMan.INSTANCE.getPos().round();
-        if (!gridState[pacPos.y()][pacPos.x()]) {
+        var pacPos = PacMan.INSTANCE.getPos();
+        if (!gridState[(int) pacPos.y()][(int) pacPos.x()]) {
             addScore(1);
-            gridState[pacPos.y()][pacPos.x()] = true;
+            gridState[(int) pacPos.y()][(int) pacPos.x()] = true;
         }
     }
 
@@ -322,7 +329,7 @@ public final class MazeState {
                     maxScore++;
                 }
                 if (maze[i][j].initialContent() == Cell.Content.NOTHING) {
-                    gridState[i][j]=true;
+                    gridState[i][j] = true;
                 }
             }
         }
@@ -359,26 +366,25 @@ public final class MazeState {
 
     private void addScore(int increment) {
         score += increment;
-        pacgomme++;
+        if (increment == 1) pacgomme++;
     }
 
     private void playerLost() {
         lives--;
-        System.out.println(maxScore);
         resetCritters();
     }
 
-    public void playerWin(){
-        win++;
+    public void playerWin() {
+        win = true;
         resetCritters();
     }
 
     private void resetCritter(Critter critter) {
-        if (critter == BLINKY || critter == INKY && score >= 30)
+        if (critter == BLINKY || critter == INKY && pacgomme >= 30)
             critter.setDirection(EAST);
         else if (critter == PINKY)
             critter.setDirection(NORTH);
-        else if (critter == CLYDE && score >= 146 / 3)
+        else if (critter == CLYDE && pacgomme >= 146 / 3)
             critter.setDirection(WEST);
         else
             critter.setDirection(NONE);
@@ -386,7 +392,6 @@ public final class MazeState {
     }
 
     private void resetCritters() {
-        score = 0;
         for (var critter : critters)
             resetCritter(critter);
     }

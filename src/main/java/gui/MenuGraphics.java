@@ -28,11 +28,11 @@ public class MenuGraphics {
     private Group[] livegroup;
     private boolean lose = false;
     private StackPane Interface = new StackPane();
-    private int winVerif=0;
+    private boolean winVerif = false;
 
     public MenuGraphics(Scene gameScene, Stage primaryStage) {
         this.gameScene = gameScene;
-        this.primaryStage=primaryStage;
+        this.primaryStage = primaryStage;
     }
 
     public void displayScore(MazeState state) {
@@ -51,9 +51,9 @@ public class MenuGraphics {
             ((Pane) gameScene.getRoot()).getChildren().add(root);
         }
         // Affiche le score
-        scoreText.setText("Score: " + state.getScore()); // Total : 154 score en classique
-        if (state.getPacgomme() == state.getMaxScore() && winVerif < 1) {
-            winVerif++;
+        scoreText.setText("Score: " + state.getScore()); // Total : 150 score en classique
+        if (state.getPacgomme() == state.getMaxScore() && !winVerif) {
+            winVerif = true;
             win(state);
         }
     }
