@@ -7,6 +7,7 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import config.MazeConfig;
 import model.MazeState;
+import utils.Music;//ajouter le fichier utils/Music
 
 public class App extends Application {
         @Override
@@ -23,6 +24,8 @@ public class App extends Application {
                 primaryStage.setScene(gameScene);
                 primaryStage.show();
                 gameView.animate();
+
+                Music.playLoopingBgMusic("bgm.wav");//file du fond de music en boucle(obligé:.wav)
         }
 
 }
