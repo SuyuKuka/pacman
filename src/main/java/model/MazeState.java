@@ -42,7 +42,7 @@ public final class MazeState {
     public MazeState(MazeConfig config) {
         this.config = config;
         // Ajouter difficulté dans config et faire un switch (difficulté) pour le nb de total live
-        totalLives = 1;
+        totalLives = 3;
         lives = totalLives;
         PacMan.INSTANCE.setPacManMoved(0);
         height = config.getHeight();
