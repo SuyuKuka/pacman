@@ -151,7 +151,7 @@ public class Menu extends Application {
 
         public static void selector(Scene scene, Text[] selects) {
                 int numberSelect = selects.length;
-                
+
                 for(int i=1; i<numberSelect; i=i+1){
                         selects[i].setVisible(false);
                 }

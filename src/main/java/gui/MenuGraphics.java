@@ -26,7 +26,7 @@ public class MenuGraphics {
     private StackPane root = new StackPane();
     private Text text_score;
     private Group[] livegroup;
-    private int select = 1;
+    //private int select = 1;
     private boolean lose = false;
     private StackPane Interface = new StackPane();
     private Rectangle Transparent;
@@ -43,8 +43,6 @@ public class MenuGraphics {
             // Position du score 
             text_score.setTranslateX((state.getWidth() + state.getHeight()) * 30 / 2);
             text_score.setTranslateY((state.getHeight() + state.getWidth()) * 30 / 6 - 50);
-            System.out.println(primaryStage.getWidth());
-            System.out.println(primaryStage.getHeight());
             // Configuration du texte
             text_score.setFont(Font.loadFont("file:src\\main\\resources\\fonts\\slkscr.ttf", 24));
             text_score.setFill(Color.WHITE);
@@ -95,7 +93,6 @@ public class MenuGraphics {
         if(lose){
             Transparent = new Rectangle(0, 0, primaryStage.getWidth(), primaryStage.getHeight()-40);
             
-
             Transparent.setFill(Color.GRAY);
             Transparent.setOpacity(0.6);
 
@@ -114,6 +111,7 @@ public class MenuGraphics {
             HBox option2 = Menu.createHBox(20, select2, Retry);
             select2.setVisible(false);
             Retry.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
+                    Menu.select=1;
                     lose =false;
                     Solo.classique(primaryStage);
             });
@@ -157,15 +155,14 @@ public class MenuGraphics {
 
             gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
                 if (keyEvent.getCode() == KeyCode.ENTER) {
-                    System.out.println("enter "+ select);
                     // (fonction)
                     if (Menu.select == 1) {
                         // Continue sur le prochain niveau
                     }else if (Menu.select == 2) {
+                        Menu.select=1;
                         lose =false;
                         Solo.classique(primaryStage);
                     }else if (Menu.select == 3) {
-                        System.out.println("quit");
                         Menu menu = new Menu();
                         menu.start(primaryStage);
                     }
