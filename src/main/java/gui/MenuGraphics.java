@@ -28,6 +28,7 @@ public class MenuGraphics {
     private Group[] livegroup;
     private boolean lose = false;
     private StackPane Interface = new StackPane();
+    private int winVerif=0;
 
     public MenuGraphics(Scene gameScene, Stage primaryStage) {
         this.gameScene = gameScene;
@@ -51,6 +52,10 @@ public class MenuGraphics {
         }
         // Affiche le score
         scoreText.setText("Score: " + state.getScore()); // Total : 154 score en classique
+        if(state.getScore()==171 && winVerif<1){
+            winVerif++;
+            win(state);
+        }
     }
 
     private ImageView setLives(MazeState state) {
@@ -177,6 +182,98 @@ public class MenuGraphics {
 
             ((Pane) gameScene.getRoot()).getChildren().add(Interface);
         }
+    }
+
+    public void win(MazeState state){
+        state.playerWin();
+
+        Rectangle transparent = new Rectangle(0, 0, primaryStage.getWidth(), primaryStage.getHeight() - 40);
+            
+        transparent.setFill(Color.GRAY);
+        transparent.setOpacity(0.6);
+
+        Text win = Menu.createText("You Win !", 104);
+        Text score = Menu.createText("Score : " + state.getScore(), 64);
+    
+        Text continuer = Menu.createText("Continue", 38);
+        Text select1 = Menu.createText(">", 38);
+        HBox option1 = Menu.createHBox(20, select1, continuer);
+        continuer.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
+                
+        });
+
+        Text retry = Menu.createText("Retry", 38);
+        Text select2 = Menu.createText(">", 38);
+        HBox option2 = Menu.createHBox(20, select2, retry);
+        select2.setVisible(false);
+        retry.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
+            Menu.selected = 1;
+            lose = false;
+            Solo.classique(primaryStage);
+        });
+
+        Text quitter = Menu.createText("Quit", 38);
+        Text select3 = Menu.createText(">", 38);
+        HBox option3 = Menu.createHBox(20, select3, quitter);
+        select3.setVisible(false);
+        quitter.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
+            Menu quit = new Menu();
+            quit.start(primaryStage);
+        });
+
+        Text cleanPosition = Menu.createText(" ", 38);
+        HBox posHBox = Menu.createHBox(40, cleanPosition);
+
+        VBox position = new VBox(100);
+        VBox titlePos = new VBox(0);
+        VBox titlePosPos = new VBox(50);
+        VBox textPos = new VBox(15);
+                
+        textPos.getChildren().addAll(option1, option2, option3);
+        textPos.setAlignment(Pos.CENTER);
+
+        titlePos.getChildren().addAll(win, score);
+        titlePos.setAlignment(Pos.CENTER);
+
+        titlePosPos.getChildren().addAll(titlePos, textPos);
+        titlePosPos.setAlignment(Pos.CENTER);
+
+        position.getChildren().addAll(posHBox, titlePosPos);
+        position.setAlignment(Pos.TOP_CENTER);
+
+
+        ((Pane) gameScene.getRoot()).getChildren().remove(Interface);
+
+        Interface.getChildren().addAll(transparent, position);
+
+        Text[] allText = {select1, select2, select3};
+        Menu.selector(gameScene, allText);
+
+        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
+            if (keyEvent.getCode() == KeyCode.ENTER) {
+                switch (Menu.selected) {
+                    case 1:
+                        // Continue sur le prochain niveau
+                        break;
+
+                    case 2:
+                        Menu.selected = 1;
+                        lose = false;
+                        Solo.classique(primaryStage);
+                        break;
+
+                    case 3:
+                        Menu menu = new Menu();
+                        menu.start(primaryStage);
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        });
+
+        ((Pane) gameScene.getRoot()).getChildren().add(Interface);
     }
 
 }

@@ -35,6 +35,7 @@ public final class MazeState {
     private final Map<Critter, RealCoordinates> initialPos;
     private final int totalLives;
     private int lives;
+    private int win=0;
 
     private Scene gameScene;
 
@@ -72,7 +73,7 @@ public final class MazeState {
     }
 
     public void update(long deltaTns) {
-        if (lives > 0) {
+        if (lives > 0 && win==0) {
             updatePacMan(deltaTns);
             // Active les fantômes après la première input
             if (PacMan.INSTANCE.getPacManMoved() == 1) {
@@ -355,6 +356,12 @@ public final class MazeState {
 
     private void playerLost() {
         lives--;
+        resetCritters();
+    }
+
+    public void playerWin(){
+        win++;
+        //PacMan.INSTANCE.setPacManMoved(0);
         resetCritters();
     }
 
