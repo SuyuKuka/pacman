@@ -30,8 +30,6 @@ public class MenuGraphics {
     private boolean lose = false;
     private StackPane Interface = new StackPane();
     private Rectangle Transparent;
-    private Rectangle TextPos;
-    
 
     public MenuGraphics(Scene gameScene, Stage primaryStage) {
         this.gameScene = gameScene;
@@ -43,8 +41,10 @@ public class MenuGraphics {
             // Création d'un texte
             text_score = new Text();
             // Position du score // 30 = scale, 2 et 6 valeur arbitraire
-            text_score.setX((state.getWidth() + state.getHeight()) * 30 / 2);
-            text_score.setY((state.getHeight() + state.getWidth()) * 30 / 6);
+            text_score.setTranslateX(primaryStage.getWidth()/1.18);
+            text_score.setTranslateY(primaryStage.getHeight()/4);
+            System.out.println(primaryStage.getWidth());
+            System.out.println(primaryStage.getHeight());
             // Configuration du texte
             text_score.setFont(Font.loadFont("file:src\\main\\resources\\fonts\\slkscr.ttf", 24));
             text_score.setFill(Color.WHITE);
@@ -92,16 +92,14 @@ public class MenuGraphics {
     }
 
     public void GameOver(MazeState state) {
-        /* 
-        Transparent = new Rectangle(0, 0, state.getHeight() * 100, state.getWidth() * 100);
-        TextPos = new Rectangle(0, 0, state.getHeight() * 30, state.getWidth() * 30);
+        Transparent = new Rectangle(0, 0, primaryStage.getWidth(), primaryStage.getHeight()-40);
+        
 
-        Transparent.setFill(Color.BLACK);
-        Transparent.setOpacity(0.4);
+        Transparent.setFill(Color.GRAY);
+        Transparent.setOpacity(0.6);
 
-        TextPos.setOpacity(0);
-        */
-        Text GameOver = Menu.createText("GameOver", 38);
+        Text GameOver = Menu.createText("GameOver", 124);
+        Text Score = Menu.createText("Score : " + state.getScore(), 64);
        
         Text Continue = Menu.createText("Continue", 38);
         Text select1 = Menu.createText(">", 38);
@@ -113,6 +111,7 @@ public class MenuGraphics {
         Text Retry = Menu.createText("Retry", 38);
         Text select2 = Menu.createText(">", 38);
         HBox option2 = Menu.createHBox(20, select2, Retry);
+        select2.setVisible(false);
         Retry.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
                 
         });
@@ -120,13 +119,13 @@ public class MenuGraphics {
         Text Quit = Menu.createText("Quit", 38);
         Text select3 = Menu.createText(">", 38);
         HBox option3 = Menu.createHBox(20, select3, Quit);
+        select3.setVisible(false);
         Quit.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                
+                Menu quit = new Menu();
+                quit.start(primaryStage);
         });
 
-        Text Score = Menu.createText("Score : " + state.getScore(), 46);
-
-        VBox titlePos = new VBox(100);
+        VBox titlePos = new VBox(40);
         VBox textPos = new VBox(20);
                 
         textPos.getChildren().addAll(Score, option1, option2, option3);
@@ -135,9 +134,10 @@ public class MenuGraphics {
         titlePos.getChildren().addAll(GameOver, textPos);
         titlePos.setAlignment(Pos.CENTER);
 
-        Interface.getChildren().addAll(titlePos);
+        Interface.getChildren().addAll(Transparent, titlePos);
 
-        //Interface.getChildren().addAll(Transparent, TextPos);
+        Text[] allText = {select1, select2, select3};
+        Menu.selector(gameScene, allText);
 
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
