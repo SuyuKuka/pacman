@@ -6,6 +6,7 @@ import gui.PacmanController;
 import config.MazeConfig;
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
+import utils.Music;
 
 import java.time.Instant;
 import java.util.List;
@@ -385,6 +386,7 @@ public final class MazeState {
     private void updateScore() {
         var pacPos = PacMan.INSTANCE.getPos().round();
         if (!gridState[pacPos.y()][pacPos.x()]) {
+            Music.playSound("eat.wav");//Music pour eat
             addScore(1);
             gridState[pacPos.y()][pacPos.x()] = true;
         }
@@ -614,7 +616,7 @@ public final class MazeState {
     private void playerLost() {
         // FIXME: this should be displayed in the JavaFX view, not in the console. A
         // game over screen would be nice too.
-
+        Music.playSound("fail.wav");//ajouter le son à la mort
         lives--;
         switch (lives) {
             case 0:

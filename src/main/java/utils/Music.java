@@ -34,10 +34,7 @@ public class Music {
     
     // jouera l'effet sonore en boucle
     public static void playLoopingBgMusic(String soundFileName) {
-        //Si y'en a d'autre music en train de jouer en boucle, on l'arrète et commencera la nouvelle musique
-        if (bgMusicClip != null && bgMusicClip.isRunning()) {
-            bgMusicClip.stop();
-        }
+
         try {
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(Music.class.getResource("/"+ soundFileName));
             bgMusicClip = AudioSystem.getClip();
@@ -47,4 +44,6 @@ public class Music {
             e.printStackTrace();
         }
     }
+
+    
 }
