@@ -294,8 +294,7 @@ public final class MazeState {
             mode = Mode.FRIGHTENED;
             // Changement du mode selon le temps de jeu
         } else if (!PacMan.INSTANCE.isEnergized()) {
-            start = Instant.now();
-            mode = Mode.SCATTER;
+            //start=Instant.now();
             long now = Instant.now().toEpochMilli();
             long startMilli = start.toEpochMilli();
             
@@ -446,13 +445,10 @@ public final class MazeState {
         // Réinitialiser d'autres états du jeu si nécessaire
         // ...
         score = 0;
+        PacMan.INSTANCE.setPacManMoved(0);
         lives = totalLive;
     
         resetCritters();
-        // Réinitialiser le mode, le temps de début, etc.
-        mode = Mode.SCATTER;  
-        start = Instant.now();
-        
     }
     
 

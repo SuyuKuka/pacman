@@ -92,7 +92,6 @@ public class MenuGraphics {
     }
 
     public void GameOver(MazeState state) {
-        System.out.println(lose);
         if(lose){
             Transparent = new Rectangle(0, 0, primaryStage.getWidth(), primaryStage.getHeight()-40);
             
@@ -115,7 +114,9 @@ public class MenuGraphics {
             HBox option2 = Menu.createHBox(20, select2, Retry);
             select2.setVisible(false);
             Retry.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                    
+                    lose =false;
+                    state.reset();
+                    Solo.classique(primaryStage);
             });
 
             Text Quit = Menu.createText("Quit", 38);
@@ -150,6 +151,7 @@ public class MenuGraphics {
                     if (Menu.select == 1) {
                         // Continue sur le prochain niveau
                     }else if (Menu.select == 2) {
+                        ((Pane) gameScene.getRoot()).getChildren().clear();
                         lose =false;
                         state.reset();
                         Solo.classique(primaryStage);
