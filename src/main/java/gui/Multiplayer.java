@@ -12,19 +12,20 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-public class Multiplayer extends Application{
+public class Multiplayer extends Application {
     private StackPane background;
 
-    public Multiplayer(StackPane background){
-        this.background=background;
+    public Multiplayer(StackPane background) {
+        this.background = background;
     }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         StackPane root = new StackPane();
-        Menu.select=1;
+        Menu.selected = 1;
         
         Text gameSelection = Menu.createText("Game Selection", 68);
-        HBox option0 = Menu.createHBox(100,  gameSelection);
+        HBox option0 = Menu.createHBox(100, gameSelection);
 
         Text versus = Menu.createText("Versus", 38);
         Text select1 = Menu.createText(">", 38);
@@ -73,13 +74,22 @@ public class Multiplayer extends Application{
 
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
-                if (Menu.select == 1) {
-                    versus(primaryStage);
-                }else if (Menu.select == 2) {
-                    coop(primaryStage);
-                }else if (Menu.select == 3){
-                    Menu menuBack = new Menu();
-                    menuBack.start(primaryStage);
+                switch (Menu.selected) {
+                    case 1:
+                        versus(primaryStage);
+                        break;
+                    
+                    case 2:
+                        coop(primaryStage);
+                        break;
+                    
+                    case 3:
+                        Menu menuBack = new Menu();
+                        menuBack.start(primaryStage);
+                        break;
+    
+                    default:
+                        break;
                 }
             }
         });
@@ -90,12 +100,12 @@ public class Multiplayer extends Application{
     }
 
     private void versus(Stage primaryStage) {
-        int select = Menu.select;
+        int selected = Menu.selected;
         
     }
 
     private void coop(Stage primaryStage) {
-        int select = Menu.select;
+        int selected = Menu.selected;
     }
     
     

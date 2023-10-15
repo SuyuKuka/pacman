@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import static config.Cell.Content.ENERGIZER;
-import model.Direction;
-import model.PacMan;
 
 import static model.Ghost.*;
 import static model.Direction.*;
@@ -34,7 +32,7 @@ public final class MazeState {
     private int score;
 
     private final Map<Critter, RealCoordinates> initialPos;
-    private final int totalLive;
+    private final int totalLives;
     private int lives;
 
     private Scene gameScene;
@@ -42,8 +40,8 @@ public final class MazeState {
     public MazeState(MazeConfig config) {
         this.config = config;
         // Ajouter difficulté dans config et faire un switch (difficulté) pour le nb de total live
-        totalLive = 1;
-        lives = totalLive;
+        totalLives = 1;
+        lives = totalLives;
         PacMan.INSTANCE.setPacManMoved(0);
         height = config.getHeight();
         width = config.getWidth();
@@ -432,7 +430,7 @@ public final class MazeState {
         return gridState[pos.y()][pos.x()];
     }
 
-    public int getLive() {
+    public int getLives() {
         return lives;
     }
 
@@ -445,6 +443,6 @@ public final class MazeState {
     }
 
     public int getTotalLive() {
-        return totalLive;
+        return totalLives;
     }
 }

@@ -2,7 +2,6 @@ package gui;
 
 import geometry.IntCoordinates;
 import javafx.animation.AnimationTimer;
-import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 
 import model.Ghost;
@@ -48,7 +47,7 @@ public class GameView {
         for (int x = 0; x < maze.getWidth(); x++)
             for (int y = 0; y < maze.getHeight(); y++)
                 addGraphics(cellFactory.makeGraphics(maze, new IntCoordinates(x, y)));
-        graphics.displayLive(maze);
+        graphics.displayLives(maze);
         graphics.displayScore(maze);
     }
 
@@ -69,13 +68,13 @@ public class GameView {
 
                 // Décommenter ce block pour afficher le target
                 /*
-                 * var cellFactory = new CellGraphicsFactory(25);
-                 * Ghost ghost = CLYDE;
-                 * if (ghost.getTarget() != null) {
-                 * addGraphics(cellFactory.showTarget(new
-                 * IntCoordinates((int)(ghost.getTarget().x()), (int)(ghost.getTarget().y()))));
-                 * }
-                 */
+                var cellFactory = new CellGraphicsFactory(30);
+                Ghost ghost = CLYDE;
+                if (ghost.getTarget() != null) {
+                addGraphics(cellFactory.showTarget(new
+                IntCoordinates((int)(ghost.getTarget().x()), (int)(ghost.getTarget().y()))));
+                }
+                */
 
                 for (var updater : graphicsUpdaters) {
                     updater.update();

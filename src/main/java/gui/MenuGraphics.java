@@ -24,12 +24,10 @@ public class MenuGraphics {
     private Stage primaryStage;
     private Scene gameScene;
     private StackPane root = new StackPane();
-    private Text text_score;
+    private Text scoreText;
     private Group[] livegroup;
-    //private int select = 1;
     private boolean lose = false;
     private StackPane Interface = new StackPane();
-    private Rectangle Transparent;
 
     public MenuGraphics(Scene gameScene, Stage primaryStage) {
         this.gameScene = gameScene;
@@ -37,27 +35,27 @@ public class MenuGraphics {
     }
 
     public void displayScore(MazeState state) {
-        if (text_score == null) {
+        if (scoreText == null) {
             // Création d'un texte
-            text_score = new Text();
+            scoreText = new Text();
             // Position du score 
-            text_score.setTranslateX((state.getWidth() + state.getHeight()) * 30 / 2);
-            text_score.setTranslateY((state.getHeight() + state.getWidth()) * 30 / 6 - 50);
+            scoreText.setTranslateX((state.getWidth() + state.getHeight()) * 30 / 2);
+            scoreText.setTranslateY((state.getHeight() + state.getWidth()) * 30 / 6 - 50);
             // Configuration du texte
-            text_score.setFont(Font.loadFont("file:src\\main\\resources\\fonts\\slkscr.ttf", 24));
-            text_score.setFill(Color.WHITE);
+            scoreText.setFont(Font.loadFont("file:src/main/resources/fonts/slkscr.ttf", 24));
+            scoreText.setFill(Color.WHITE);
             // Ajoute le texte au groupe root
-            root.getChildren().add(text_score);
+            root.getChildren().add(scoreText);
             // Met le group dans la scene
             ((Pane) gameScene.getRoot()).getChildren().add(root);
         }
         // Affiche le score
-        text_score.setText("Score: " + state.getScore()); // Total : 154 score en classique
+        scoreText.setText("Score: " + state.getScore()); // Total : 154 score en classique
     }
 
-    private ImageView setLive(MazeState state) {
+    private ImageView setLives(MazeState state) {
         ImageView imageView = new ImageView();
-        Image image = new Image("file:src\\main\\resources\\pacman.png");
+        Image image = new Image("file:src/main/resources/pacman.png");
         imageView.setImage(image);
         imageView.setY((state.getHeight() + state.getWidth()) * 30 / 2 - 50);
         imageView.setFitWidth(state.getWidth() * 1.4);
@@ -65,10 +63,10 @@ public class MenuGraphics {
         return imageView;
     }
 
-    public void displayLive(MazeState state) {
-        livegroup = new Group[state.getLive()];
-        for (int i = 0; i < livegroup.length; i = i + 1) {
-            ImageView live = setLive(state);
+    public void displayLives(MazeState state) {
+        livegroup = new Group[state.getLives()];
+        for (int i = 0; i < livegroup.length; i++) {
+            ImageView live = setLives(state);
             live.setX(((state.getWidth() + state.getHeight() + i * 1.9) * 30 / 2));
             livegroup[i] = new Group();
             livegroup[i].getChildren().add(live);
@@ -79,50 +77,50 @@ public class MenuGraphics {
     }
 
     public void removeLife(MazeState state) {
-        if (state.getLive() < state.getTotalLive()) {
-            livegroup[state.getLive()].setVisible(false);
+        if (state.getLives() < state.getTotalLive()) {
+            livegroup[state.getLives()].setVisible(false);
         }
 
-        if (state.getLive() == 0 && !lose) {
+        if (state.getLives() == 0 && !lose) {
             lose = true;
-            GameOver(state);
+            gameOver(state);
         }
     }
 
-    public void GameOver(MazeState state) {
+    public void gameOver(MazeState state) {
         if(lose){
-            Transparent = new Rectangle(0, 0, primaryStage.getWidth(), primaryStage.getHeight()-40);
+            Rectangle transparent = new Rectangle(0, 0, primaryStage.getWidth(), primaryStage.getHeight() - 40);
             
-            Transparent.setFill(Color.GRAY);
-            Transparent.setOpacity(0.6);
+            transparent.setFill(Color.GRAY);
+            transparent.setOpacity(0.6);
 
-            Text GameOver = Menu.createText("GameOver", 104);
-            Text Score = Menu.createText("Score : " + state.getScore(), 64);
+            Text gameover = Menu.createText("GameOver", 104);
+            Text score = Menu.createText("Score : " + state.getScore(), 64);
         
-            Text Continue = Menu.createText("Continue", 38);
+            Text continuer = Menu.createText("Continue", 38);
             Text select1 = Menu.createText(">", 38);
-            HBox option1 = Menu.createHBox(20, select1, Continue);
-            Continue.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
+            HBox option1 = Menu.createHBox(20, select1, continuer);
+            continuer.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
                     
             });
 
-            Text Retry = Menu.createText("Retry", 38);
+            Text retry = Menu.createText("Retry", 38);
             Text select2 = Menu.createText(">", 38);
-            HBox option2 = Menu.createHBox(20, select2, Retry);
+            HBox option2 = Menu.createHBox(20, select2, retry);
             select2.setVisible(false);
-            Retry.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                    Menu.select=1;
-                    lose =false;
-                    Solo.classique(primaryStage);
+            retry.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
+                Menu.selected = 1;
+                lose = false;
+                Solo.classique(primaryStage);
             });
 
-            Text Quit = Menu.createText("Quit", 38);
+            Text quitter = Menu.createText("Quit", 38);
             Text select3 = Menu.createText(">", 38);
-            HBox option3 = Menu.createHBox(20, select3, Quit);
+            HBox option3 = Menu.createHBox(20, select3, quitter);
             select3.setVisible(false);
-            Quit.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                    Menu quit = new Menu();
-                    quit.start(primaryStage);
+            quitter.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
+                Menu quit = new Menu();
+                quit.start(primaryStage);
             });
 
             Text cleanPosition = Menu.createText(" ", 38);
@@ -136,7 +134,7 @@ public class MenuGraphics {
             textPos.getChildren().addAll(option1, option2, option3);
             textPos.setAlignment(Pos.CENTER);
 
-            titlePos.getChildren().addAll(GameOver, Score);
+            titlePos.getChildren().addAll(gameover, score);
             titlePos.setAlignment(Pos.CENTER);
 
             titlePosPos.getChildren().addAll(titlePos, textPos);
@@ -148,23 +146,31 @@ public class MenuGraphics {
 
             ((Pane) gameScene.getRoot()).getChildren().remove(Interface);
 
-            Interface.getChildren().addAll(Transparent, position);
+            Interface.getChildren().addAll(transparent, position);
 
             Text[] allText = {select1, select2, select3};
             Menu.selector(gameScene, allText);
 
             gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
                 if (keyEvent.getCode() == KeyCode.ENTER) {
-                    // (fonction)
-                    if (Menu.select == 1) {
-                        // Continue sur le prochain niveau
-                    }else if (Menu.select == 2) {
-                        Menu.select=1;
-                        lose =false;
-                        Solo.classique(primaryStage);
-                    }else if (Menu.select == 3) {
-                        Menu menu = new Menu();
-                        menu.start(primaryStage);
+                    switch (Menu.selected) {
+                        case 1:
+                            // Continue sur le prochain niveau
+                            break;
+
+                        case 2:
+                            Menu.selected = 1;
+                            lose = false;
+                            Solo.classique(primaryStage);
+                            break;
+
+                        case 3:
+                            Menu menu = new Menu();
+                            menu.start(primaryStage);
+                            break;
+
+                        default:
+                            break;
                     }
                 }
             });

@@ -15,52 +15,45 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import model.MazeState;
 
-public class Solo extends Application{
+public class Solo extends Application {
     private StackPane background;
 
-    public Solo(StackPane background){
-        this.background=background;
+    public Solo(StackPane background) {
+        this.background = background;
     }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
             StackPane root = new StackPane();
-            Menu.select=1;
+            Menu.selected = 1;
             //Solo
             Text levelSelector = Menu.createText("Level Selector", 68);
-            HBox option0 = Menu.createHBox(0,  levelSelector);
+            HBox option0 = Menu.createHBox(0, levelSelector);
 
             Text classique = Menu.createText("Classique", 38);
             Text select1 = Menu.createText(">", 38);
             HBox option1 = Menu.createHBox(20, select1, classique);
-            classique.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                classique(primaryStage);
-            });
+            classique.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> classique(primaryStage));
 
             Text facile = Menu.createText("Facile", 38);
             Text select2 = Menu.createText(">", 38);
             HBox option2 = Menu.createHBox(20, select2, facile);
-            facile.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                facile(primaryStage);
-            });
+            facile.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> facile(primaryStage));
+
             Text moyen = Menu.createText("Moyen", 38);
             Text select3 = Menu.createText(">", 38);
             HBox option3 = Menu.createHBox(20, select3, moyen);
-            moyen.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                moyen(primaryStage);
-            });
+            moyen.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> moyen(primaryStage));
+
             Text difficile = Menu.createText("Difficile", 38);
             Text select4 = Menu.createText(">", 38);
             HBox option4 = Menu.createHBox(20, select4, difficile);
-            difficile.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                difficile(primaryStage);
-            });
+            difficile.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> difficile(primaryStage));
 
             Text impossible = Menu.createText("Impossible", 38);
             Text select5 = Menu.createText(">", 38);
             HBox option5 = Menu.createHBox(20, select5, impossible);
-            impossible.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                impossible(primaryStage);
-            });
+            impossible.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> impossible(primaryStage));
 
             Text back = Menu.createText("Back", 38);
             Text selectback = Menu.createText(">", 38);
@@ -94,32 +87,46 @@ public class Solo extends Application{
 
             gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
                 if (keyEvent.getCode() == KeyCode.ENTER) {
-                    if (Menu.select == 1) {
-                        classique(primaryStage);
-                    }else if (Menu.select == 2) {
-                        facile(primaryStage);
-                    }else if (Menu.select == 3) {
-                        moyen(primaryStage);
-                    }else if (Menu.select == 4){
-                        difficile(primaryStage);
-                    }else if (Menu.select == 5){
-                        impossible(primaryStage);
-                    }else if (Menu.select == 6){
-                        Menu menuBack = new Menu();
-                        menuBack.start(primaryStage);
+                    switch (Menu.selected) {
+                        case 1:
+                            classique(primaryStage);
+                            break;
+                    
+                        case 2:
+                            facile(primaryStage);
+                            break;
+                        
+                        case 3:
+                            moyen(primaryStage);
+                            break;
+
+                        case 4:
+                            difficile(primaryStage);
+                            break;
+
+                        case 5:
+                            impossible(primaryStage);
+                            break;
+
+                        case 6:
+                            Menu menuBack = new Menu();
+                            menuBack.start(primaryStage);
+                            break;
+                    
+                        default:
+                            break;
                     }
-                
-            }});
+                }
+            });
 
             primaryStage.setScene(gameScene);
-            
             primaryStage.sizeToScene();
             primaryStage.show();
     }
 
     //Une fonction par niveau
     public static void classique(Stage primaryStage){
-            int level = Menu.select; //permet de  savoir on est sur quel niveau pour le retry ou continue
+            int level = Menu.selected; // Permet de  savoir on est sur quel niveau pour le retry ou continue
             //Classique
             Pane root = new Pane();
             Scene gameScene = new Scene(root);
