@@ -40,9 +40,9 @@ public class MenuGraphics {
         if (text_score == null) {
             // Création d'un texte
             text_score = new Text();
-            // Position du score // 30 = scale, 2 et 6 valeur arbitraire
-            text_score.setTranslateX(primaryStage.getWidth()/1.18);
-            text_score.setTranslateY(primaryStage.getHeight()/4);
+            // Position du score 
+            text_score.setTranslateX((state.getWidth() + state.getHeight()) * 30 / 2);
+            text_score.setTranslateY((state.getHeight() + state.getWidth()) * 30 / 6 - 50);
             System.out.println(primaryStage.getWidth());
             System.out.println(primaryStage.getHeight());
             // Configuration du texte
@@ -99,7 +99,7 @@ public class MenuGraphics {
             Transparent.setFill(Color.GRAY);
             Transparent.setOpacity(0.6);
 
-            Text GameOver = Menu.createText("GameOver", 124);
+            Text GameOver = Menu.createText("GameOver", 104);
             Text Score = Menu.createText("Score : " + state.getScore(), 64);
         
             Text Continue = Menu.createText("Continue", 38);
@@ -115,7 +115,6 @@ public class MenuGraphics {
             select2.setVisible(false);
             Retry.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
                     lose =false;
-                    state.reset();
                     Solo.classique(primaryStage);
             });
 
@@ -128,18 +127,30 @@ public class MenuGraphics {
                     quit.start(primaryStage);
             });
 
-            VBox titlePos = new VBox(40);
-            VBox textPos = new VBox(20);
+            Text cleanPosition = Menu.createText(" ", 38);
+            HBox posHBox = Menu.createHBox(40, cleanPosition);
+
+            VBox position = new VBox(100);
+            VBox titlePos = new VBox(0);
+            VBox titlePosPos = new VBox(50);
+            VBox textPos = new VBox(15);
                     
-            textPos.getChildren().addAll(Score, option1, option2, option3);
+            textPos.getChildren().addAll(option1, option2, option3);
             textPos.setAlignment(Pos.CENTER);
 
-            titlePos.getChildren().addAll(GameOver, textPos);
+            titlePos.getChildren().addAll(GameOver, Score);
             titlePos.setAlignment(Pos.CENTER);
+
+            titlePosPos.getChildren().addAll(titlePos, textPos);
+            titlePosPos.setAlignment(Pos.CENTER);
+
+            position.getChildren().addAll(posHBox, titlePosPos);
+            position.setAlignment(Pos.TOP_CENTER);
+
 
             ((Pane) gameScene.getRoot()).getChildren().remove(Interface);
 
-            Interface.getChildren().addAll(Transparent, titlePos);
+            Interface.getChildren().addAll(Transparent, position);
 
             Text[] allText = {select1, select2, select3};
             Menu.selector(gameScene, allText);
@@ -151,9 +162,7 @@ public class MenuGraphics {
                     if (Menu.select == 1) {
                         // Continue sur le prochain niveau
                     }else if (Menu.select == 2) {
-                        ((Pane) gameScene.getRoot()).getChildren().clear();
                         lose =false;
-                        state.reset();
                         Solo.classique(primaryStage);
                     }else if (Menu.select == 3) {
                         System.out.println("quit");

@@ -38,10 +38,9 @@ public class Menu extends Application {
                 root.setBackground(background);
                 
                 
-
-                //Lance la vidéo du lore?
                 Text titre = createText("Mac-Pan-Pac-Man", 68);
                 HBox option0 = createHBox(100,  titre);
+                //Lance la vidéo du lore?
                 titre.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
                         //lancement de l'histoire
                 });
@@ -54,7 +53,6 @@ public class Menu extends Application {
                         try {
                                 soloMenu.start(primaryStage);
                         } catch (Exception e) {
-                                // TODO Auto-generated catch block
                                 e.printStackTrace();
                         }
                 });
@@ -62,9 +60,13 @@ public class Menu extends Application {
                 Text multiplayer = createText("Multiplayer", 38);
                 Text select2 = createText(">", 38);
                 HBox option2 = createHBox(20, select2, multiplayer);
-
                 multiplayer.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                        
+                        Multiplayer multiMenu = new Multiplayer(backgroundPane);
+                        try {
+                                multiMenu.start(primaryStage);
+                        } catch (Exception e) {
+                                e.printStackTrace();
+                        }
                 });
 
                 Text settings = createText("Settings", 38);
@@ -106,7 +108,12 @@ public class Menu extends Application {
                                         e.printStackTrace();
                                 }
                         }else if (Menu.select == 2) {
-                                // Multi
+                                Multiplayer multiMenu = new Multiplayer(backgroundPane);
+                                try {
+                                        multiMenu.start(primaryStage);
+                                } catch (Exception e) {
+                                        e.printStackTrace();
+                                }
                         }else if (Menu.select == 3) {
                                 // Settings
                         }else if (Menu.select == 4){

@@ -44,10 +44,9 @@ public final class MazeState {
         // Ajouter difficulté dans config et faire un switch (difficulté) pour le nb de total live
         totalLive = 1;
         lives = totalLive;
+        PacMan.INSTANCE.setPacManMoved(0);
         height = config.getHeight();
         width = config.getWidth();
-        System.out.println(height);
-        System.out.println(width);
         critters = List.of(PacMan.INSTANCE, CLYDE, BLINKY, INKY, PINKY);
         gridState = new boolean[height][width];
         initialPos = Map.of(
@@ -294,7 +293,6 @@ public final class MazeState {
             mode = Mode.FRIGHTENED;
             // Changement du mode selon le temps de jeu
         } else if (!PacMan.INSTANCE.isEnergized()) {
-            //start=Instant.now();
             long now = Instant.now().toEpochMilli();
             long startMilli = start.toEpochMilli();
             
@@ -404,9 +402,6 @@ public final class MazeState {
     }
 
     private void playerLost() {
-        // FIXME: this should be displayed in the JavaFX view, not in the console. A
-        // game over screen would be nice too.
-
         lives--;
         resetCritters();
     }
@@ -426,29 +421,6 @@ public final class MazeState {
     private void resetCritters() {
         for (var critter : critters)
             resetCritter(critter);
-    }
-
-    public void reset() {
-        // Réinitialiser la position et la direction de Pac-Man
-        PacMan.INSTANCE.setDirection(Direction.NONE);
-        PacMan.INSTANCE.setPos(config.getPacManPos().toRealCoordinates(1.0));
-    
-        // Réinitialiser la position et la direction des fantômes
-        for (var critter : critters) {
-            if (critter instanceof Ghost) {
-                Ghost ghost = (Ghost) critter;
-                ghost.setEaten(false);
-                resetCritter(ghost);
-            }
-        }
-    
-        // Réinitialiser d'autres états du jeu si nécessaire
-        // ...
-        score = 0;
-        PacMan.INSTANCE.setPacManMoved(0);
-        lives = totalLive;
-    
-        resetCritters();
     }
     
 

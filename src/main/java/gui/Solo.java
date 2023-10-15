@@ -1,11 +1,9 @@
 package gui;
 
 import config.MazeConfig;
-import geometry.IntCoordinates;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -28,8 +26,8 @@ public class Solo extends Application{
             StackPane root = new StackPane();
             Menu.select=1;
             //Solo
-            Text levelSelector = Menu.createText("Level Selector", 56);
-            HBox option0 = Menu.createHBox(100,  levelSelector);
+            Text levelSelector = Menu.createText("Level Selector", 68);
+            HBox option0 = Menu.createHBox(0,  levelSelector);
 
             Text classique = Menu.createText("Classique", 38);
             Text select1 = Menu.createText(">", 38);
@@ -71,19 +69,23 @@ public class Solo extends Application{
                 Menu menu = new Menu();
                 menu.start(primaryStage);
             });
-            optionback.setAlignment(Pos.TOP_LEFT);
+            optionback.setAlignment(Pos.BOTTOM_LEFT);
 
 
-            VBox listPos = new VBox(80);
-            VBox levelPos = new VBox(20);
+            VBox titlePos = new VBox(40);
+            VBox textPos = new VBox(15);
+            VBox backPos = new VBox(45);
                 
-            levelPos.getChildren().addAll(option1, option2, option3, option4, option5, optionback);
-            levelPos.setAlignment(Pos.CENTER);
+            textPos.getChildren().addAll(option1, option2, option3, option4, option5);
+            textPos.setAlignment(Pos.CENTER);
 
-            listPos.getChildren().addAll(option0, levelPos);
-            listPos.setAlignment(Pos.CENTER);
+            titlePos.getChildren().addAll(option0, textPos);
+            titlePos.setAlignment(Pos.CENTER);
 
-            root.getChildren().addAll(background, listPos);
+            backPos.getChildren().addAll(titlePos ,optionback);
+            backPos.setAlignment(Pos.BOTTOM_LEFT);
+
+            root.getChildren().addAll(background, backPos);
 
             Scene gameScene = new Scene(root, 690, 510);
             Text[] allText = {select1, select2, select3, select4, select5, selectback};
@@ -117,6 +119,7 @@ public class Solo extends Application{
 
     //Une fonction par niveau
     public static void classique(Stage primaryStage){
+            int level = Menu.select; //permet de  savoir on est sur quel niveau pour le retry ou continue
             //Classique
             Pane root = new Pane();
             Scene gameScene = new Scene(root);
@@ -124,14 +127,7 @@ public class Solo extends Application{
             gameScene.setOnKeyPressed(pacmanController::keyPressedHandler);
             gameScene.setOnKeyReleased(pacmanController::keyReleasedHandler);
 
-            MazeConfig map = new MazeConfig( MazeConfig.getMaze("src/main/java/config/Level1.txt"),
-                new IntCoordinates(8, 16), // Pacman
-                new IntCoordinates(8, 8), // Blinky (Rouge)
-                new IntCoordinates(8, 10), // Pinky (Rose)
-                new IntCoordinates(7, 10), // Inky (Bleu)
-                new IntCoordinates(9, 10) // Clyde (Orange)
-            );
-            MazeState maze = new MazeState(map);
+            MazeState maze = new MazeState(MazeConfig.makeExample1());
             
             primaryStage.setScene(gameScene);
             MenuGraphics graphics = new MenuGraphics(gameScene, primaryStage);
