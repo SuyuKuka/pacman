@@ -25,7 +25,7 @@ public class Menu extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Menu.selected = 1;
+        selected = 1;
         StackPane root = new StackPane();
         primaryStage.setTitle("Mac-Pan-Pac-Man");
         primaryStage.getIcons().add(new Image("file:src/main/resources/pacman.png"));  
@@ -41,9 +41,9 @@ public class Menu extends Application {
                 
         Text titre = createText("Mac-Pan-Pac-Man", 68);
         HBox option0 = createHBox(100, titre);
-        //Lance la vidéo du lore?
+        // Lance la vidéo du lore?
         titre.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                //lancement de l'histoire
+            // Lancement de l'histoire
         });
         
         Text solo = createText("Solo", 38);
