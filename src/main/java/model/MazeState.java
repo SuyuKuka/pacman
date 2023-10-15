@@ -48,11 +48,12 @@ public final class MazeState {
         critters = List.of(PacMan.INSTANCE, CLYDE, BLINKY, INKY, PINKY);
         gridState = new boolean[height][width];
         initialPos = Map.of(
-                PacMan.INSTANCE, config.getPacManPos().toRealCoordinates(1.0),
-                BLINKY, config.getBlinkyPos().toRealCoordinates(1.0),
-                INKY, config.getInkyPos().toRealCoordinates(1.0),
-                CLYDE, config.getClydePos().toRealCoordinates(1.0),
-                PINKY, config.getPinkyPos().toRealCoordinates(1.0));
+            PacMan.INSTANCE, config.getPacManPos().toRealCoordinates(1.0),
+            BLINKY, config.getBlinkyPos().toRealCoordinates(1.0),
+            INKY, config.getInkyPos().toRealCoordinates(1.0),
+            CLYDE, config.getClydePos().toRealCoordinates(1.0),
+            PINKY, config.getPinkyPos().toRealCoordinates(1.0)
+        );
         resetCritters();
     }
 
@@ -94,8 +95,7 @@ public final class MazeState {
      */
     private void updatePacMan(long deltaTns) {
         // Si Pac-Man mange un ENERGIZER
-        if (config.getCell(new IntCoordinates((int) PacMan.INSTANCE.getPos().x(), (int) PacMan.INSTANCE.getPos().y()))
-                .initialContent().equals(ENERGIZER)) {
+        if (config.getCell(new IntCoordinates((int) PacMan.INSTANCE.getPos().x(), (int) PacMan.INSTANCE.getPos().y())).initialContent().equals(ENERGIZER)) {
             PacMan.INSTANCE.setEnergized(true);
         }
         var curPos = PacMan.INSTANCE.getPos();
@@ -125,9 +125,8 @@ public final class MazeState {
     public boolean updatePacManDirection(long deltaTns) {
         var curNeighbours = PacMan.INSTANCE.getPos().intNeighbours();
         var nextNeighbours = PacMan.INSTANCE.nextPos(deltaTns).intNeighbours();
-        if (PacMan.INSTANCE.getDirection() != PacMan.INSTANCE.getBufferDirection()
-                && PacMan.INSTANCE.getBufferDirection() != Direction.NONE) {
-            boolean isBufferUsed = !(nextNeighbours.size() >= 4);
+        if (PacMan.INSTANCE.getDirection() != PacMan.INSTANCE.getBufferDirection() && PacMan.INSTANCE.getBufferDirection() != Direction.NONE) {
+            boolean isBufferUsed = nextNeighbours.size() < 4;
             if (isBufferUsed) {
                 switch (PacMan.INSTANCE.getBufferDirection()) {
                     case NORTH -> {
@@ -268,12 +267,10 @@ public final class MazeState {
                 CLYDE.setActivated(true);
                 critter.setDirection(WEST);
                 // Set direction aléatoire en FRIGHTENED mode
-            } else if (critter instanceof Ghost && !((Ghost) critter).isEaten() && mode == Mode.FRIGHTENED
-                    && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
+            } else if (critter instanceof Ghost && !((Ghost) critter).isEaten() && mode == Mode.FRIGHTENED && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
                 frightenedMode((Ghost) critter);
                 // Set direction la plus proche du target
-            } else if (critter instanceof Ghost && ((Ghost) critter).isActivated() && pos.x() % 1 == 0
-                    && pos.y() % 1 == 0) {
+            } else if (critter instanceof Ghost && ((Ghost) critter).isActivated() && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
                 critter.setDirection(((Ghost) critter).directionClosestToTarget(config));
             }
         }
@@ -294,7 +291,6 @@ public final class MazeState {
             long now = Instant.now().toEpochMilli();
             long startMilli = start.toEpochMilli();
             
-
             if (now > startMilli + 7 * 1000 ||
                     now > startMilli + (7 + 20 + 7) * 1000 ||
                     now > startMilli + (7 + 20 + 7 + 20 + 5) * 1000 ||
