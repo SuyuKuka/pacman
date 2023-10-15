@@ -141,13 +141,14 @@ public class MenuGraphics {
 
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
+                System.out.println("enter "+ select);
                 // (fonction)
-                if (select == 1) {
+                if (Menu.select == 1) {
                     // Continue sur le prochain niveau
-                }else if (select == 2) {
-                    //test
+                }else if (Menu.select == 2) {
                     Solo.classique(primaryStage);
-                }else if (select == 3) {
+                }else if (Menu.select == 3) {
+                    System.out.println("quit");
                     Menu menu = new Menu();
                     menu.start(primaryStage);
                 }
