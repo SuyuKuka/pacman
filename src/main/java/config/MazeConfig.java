@@ -20,12 +20,11 @@ public class MazeConfig {
     private final Cell[][] grid;
     private final IntCoordinates pacManPos, blinkyPos, pinkyPos, inkyPos, clydePos;
 
-    public MazeConfig(Cell[][] grid, IntCoordinates pacManPos, IntCoordinates blinkyPos, IntCoordinates pinkyPos,
-            IntCoordinates inkyPos, IntCoordinates clydePos) {
+    public MazeConfig(
+        Cell[][] grid, IntCoordinates pacManPos, IntCoordinates blinkyPos, IntCoordinates pinkyPos, IntCoordinates inkyPos, IntCoordinates clydePos) {
         this.grid = new Cell[grid.length][grid[0].length];
         for (int i = 0; i < getHeight(); i++) {
-            if (getWidth() >= 0)
-                System.arraycopy(grid[i], 0, this.grid[i], 0, getWidth());
+            if (getWidth() >= 0) System.arraycopy(grid[i], 0, this.grid[i], 0, getWidth());
         }
         this.pacManPos = pacManPos;
         this.blinkyPos = blinkyPos;
@@ -115,8 +114,7 @@ public class MazeConfig {
 
         for (IntCoordinates intCoordinates : adjacentCellCoordinates) {
             // Si la cellule est en dehors de la map, elle sera considérée comme CLOSED
-            if (intCoordinates.x() < 0 || intCoordinates.x() == grid[0].length || intCoordinates.y() < 0
-                    || intCoordinates.y() == grid.length) {
+            if (intCoordinates.x() < 0 || intCoordinates.x() == grid[0].length || intCoordinates.y() < 0 || intCoordinates.y() == grid.length) {
                 adjacentCells.add(new Cell(true, true, true, true, null));
             } else {
                 adjacentCells.add(grid[intCoordinates.y()][intCoordinates.x()]);

@@ -11,7 +11,7 @@ public final class PacMan implements Critter {
     private Direction lastDirection;
     private RealCoordinates pos;
     private boolean energized;
-    private int pacManMoved = 0;
+    private int pacManMoved;
     /* Buffer */
     private Direction bufferDirection = Direction.NONE; // Direction stockée dans le buffer
     private final double bufferMaxTime = 0.7; // Temps en seconde avant que la direction stockée dans le buffer se retire
