@@ -8,6 +8,7 @@
 !src/**/build/
 **/.metadata/
 **/.DS_store/
+**/.vscode/
 
 # Ignore Gradle GUI config
 gradle-app.setting
