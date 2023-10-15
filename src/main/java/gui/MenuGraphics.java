@@ -92,71 +92,77 @@ public class MenuGraphics {
     }
 
     public void GameOver(MazeState state) {
-        Transparent = new Rectangle(0, 0, primaryStage.getWidth(), primaryStage.getHeight()-40);
+        System.out.println(lose);
+        if(lose){
+            Transparent = new Rectangle(0, 0, primaryStage.getWidth(), primaryStage.getHeight()-40);
+            
+
+            Transparent.setFill(Color.GRAY);
+            Transparent.setOpacity(0.6);
+
+            Text GameOver = Menu.createText("GameOver", 124);
+            Text Score = Menu.createText("Score : " + state.getScore(), 64);
         
+            Text Continue = Menu.createText("Continue", 38);
+            Text select1 = Menu.createText(">", 38);
+            HBox option1 = Menu.createHBox(20, select1, Continue);
+            Continue.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
+                    
+            });
 
-        Transparent.setFill(Color.GRAY);
-        Transparent.setOpacity(0.6);
+            Text Retry = Menu.createText("Retry", 38);
+            Text select2 = Menu.createText(">", 38);
+            HBox option2 = Menu.createHBox(20, select2, Retry);
+            select2.setVisible(false);
+            Retry.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
+                    
+            });
 
-        Text GameOver = Menu.createText("GameOver", 124);
-        Text Score = Menu.createText("Score : " + state.getScore(), 64);
-       
-        Text Continue = Menu.createText("Continue", 38);
-        Text select1 = Menu.createText(">", 38);
-        HBox option1 = Menu.createHBox(20, select1, Continue);
-        Continue.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                
-        });
+            Text Quit = Menu.createText("Quit", 38);
+            Text select3 = Menu.createText(">", 38);
+            HBox option3 = Menu.createHBox(20, select3, Quit);
+            select3.setVisible(false);
+            Quit.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
+                    Menu quit = new Menu();
+                    quit.start(primaryStage);
+            });
 
-        Text Retry = Menu.createText("Retry", 38);
-        Text select2 = Menu.createText(">", 38);
-        HBox option2 = Menu.createHBox(20, select2, Retry);
-        select2.setVisible(false);
-        Retry.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                
-        });
+            VBox titlePos = new VBox(40);
+            VBox textPos = new VBox(20);
+                    
+            textPos.getChildren().addAll(Score, option1, option2, option3);
+            textPos.setAlignment(Pos.CENTER);
 
-        Text Quit = Menu.createText("Quit", 38);
-        Text select3 = Menu.createText(">", 38);
-        HBox option3 = Menu.createHBox(20, select3, Quit);
-        select3.setVisible(false);
-        Quit.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                Menu quit = new Menu();
-                quit.start(primaryStage);
-        });
+            titlePos.getChildren().addAll(GameOver, textPos);
+            titlePos.setAlignment(Pos.CENTER);
 
-        VBox titlePos = new VBox(40);
-        VBox textPos = new VBox(20);
-                
-        textPos.getChildren().addAll(Score, option1, option2, option3);
-        textPos.setAlignment(Pos.CENTER);
+            ((Pane) gameScene.getRoot()).getChildren().remove(Interface);
 
-        titlePos.getChildren().addAll(GameOver, textPos);
-        titlePos.setAlignment(Pos.CENTER);
+            Interface.getChildren().addAll(Transparent, titlePos);
 
-        Interface.getChildren().addAll(Transparent, titlePos);
+            Text[] allText = {select1, select2, select3};
+            Menu.selector(gameScene, allText);
 
-        Text[] allText = {select1, select2, select3};
-        Menu.selector(gameScene, allText);
-
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
-            if (keyEvent.getCode() == KeyCode.ENTER) {
-                System.out.println("enter "+ select);
-                // (fonction)
-                if (Menu.select == 1) {
-                    // Continue sur le prochain niveau
-                }else if (Menu.select == 2) {
-                    Solo.classique(primaryStage);
-                }else if (Menu.select == 3) {
-                    System.out.println("quit");
-                    Menu menu = new Menu();
-                    menu.start(primaryStage);
+            gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
+                if (keyEvent.getCode() == KeyCode.ENTER) {
+                    System.out.println("enter "+ select);
+                    // (fonction)
+                    if (Menu.select == 1) {
+                        // Continue sur le prochain niveau
+                    }else if (Menu.select == 2) {
+                        lose =false;
+                        state.reset();
+                        Solo.classique(primaryStage);
+                    }else if (Menu.select == 3) {
+                        System.out.println("quit");
+                        Menu menu = new Menu();
+                        menu.start(primaryStage);
+                    }
                 }
-            }
-        });
+            });
 
-        ((Pane) gameScene.getRoot()).getChildren().add(Interface);
-        
+            ((Pane) gameScene.getRoot()).getChildren().add(Interface);
+        }
     }
 
 }

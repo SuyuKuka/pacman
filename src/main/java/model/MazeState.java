@@ -294,8 +294,11 @@ public final class MazeState {
             mode = Mode.FRIGHTENED;
             // Changement du mode selon le temps de jeu
         } else if (!PacMan.INSTANCE.isEnergized()) {
-            long startMilli = start.toEpochMilli();
+            start = Instant.now();
+            mode = Mode.SCATTER;
             long now = Instant.now().toEpochMilli();
+            long startMilli = start.toEpochMilli();
+            
 
             if (now > startMilli + 7 * 1000 ||
                     now > startMilli + (7 + 20 + 7) * 1000 ||
@@ -425,6 +428,33 @@ public final class MazeState {
         for (var critter : critters)
             resetCritter(critter);
     }
+
+    public void reset() {
+        // Réinitialiser la position et la direction de Pac-Man
+        PacMan.INSTANCE.setDirection(Direction.NONE);
+        PacMan.INSTANCE.setPos(config.getPacManPos().toRealCoordinates(1.0));
+    
+        // Réinitialiser la position et la direction des fantômes
+        for (var critter : critters) {
+            if (critter instanceof Ghost) {
+                Ghost ghost = (Ghost) critter;
+                ghost.setEaten(false);
+                resetCritter(ghost);
+            }
+        }
+    
+        // Réinitialiser d'autres états du jeu si nécessaire
+        // ...
+        score = 0;
+        lives = totalLive;
+    
+        resetCritters();
+        // Réinitialiser le mode, le temps de début, etc.
+        mode = Mode.SCATTER;  
+        start = Instant.now();
+        
+    }
+    
 
     public MazeConfig getConfig() {
         return config;
