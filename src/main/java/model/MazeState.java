@@ -611,6 +611,7 @@ public final class MazeState {
         // Menu, Option1);
 
         ((Pane) gameScene.getRoot()).getChildren().add(Interface);
+        Music.stopBgMusic();//stop music-loop
     }
 
     private void playerLost() {
