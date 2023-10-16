@@ -10,6 +10,7 @@ import model.PacMan;
 
 public final class CritterGraphicsFactory {
     private final double scale;
+    private boolean isPacManMouthOpen = false;
 
     public CritterGraphicsFactory(double scale) {
         this.scale = scale;
@@ -55,15 +56,35 @@ public final class CritterGraphicsFactory {
             PacMan pacMan = (PacMan) critter;
             switch (pacMan.getDirection()) {
                 case NORTH:
-                    return "pacman_north.png";
+                    isPacManMouthOpen = !isPacManMouthOpen;
+                    if (isPacManMouthOpen) {
+                        return "pacman_north.png";
+                    } else {
+                        return "pacman_north_ferm.png";
+                    }
                 case EAST:
-                    return "pacman_east.png";
+                    isPacManMouthOpen = !isPacManMouthOpen;
+                    if (isPacManMouthOpen) {
+                        return "pacman_east.png";
+                    } else {
+                        return "pacman_east_ferm.png";
+                    }
                 case SOUTH:
-                    return "pacman_south.png";
+                    isPacManMouthOpen = !isPacManMouthOpen;
+                    if (isPacManMouthOpen) {
+                        return "pacman_south.png";
+                    } else {
+                        return "pacman_south_ferm.png";
+                    }
                 case WEST:
-                    return "pacman_west.png";
+                    isPacManMouthOpen = !isPacManMouthOpen;
+                    if (isPacManMouthOpen) {
+                        return "pacman_west.png";
+                    } else {
+                        return "pacman_west_ferm.png";
+                    }
                 default:
-                    return "pacman_east.png";
+                    return "default_pacman.png";
                     //On peut mettre "return url" pour "default:"" en gardant l'ancien direction fait par pacman(mettre url ds paramètre)
                     //mais il enleve l'image de pacman à point initial
             }
