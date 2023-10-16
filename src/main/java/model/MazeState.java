@@ -104,10 +104,6 @@ public final class MazeState {
      * @param deltaTns La variation du temps entre deux instants.
      */
     private void updatePacMan(long deltaTns) {
-        // Si Pac-Man mange un ENERGIZER
-        if (config.getCell(new IntCoordinates((int) PacMan.INSTANCE.getPos().x(), (int) PacMan.INSTANCE.getPos().y())).initialContent().equals(ENERGIZER)) {
-            PacMan.INSTANCE.setEnergized(true);
-        }
         var curPos = PacMan.INSTANCE.getPos();
         var nextPos = PacMan.INSTANCE.nextPos(deltaTns);
 
@@ -124,6 +120,14 @@ public final class MazeState {
         nextPos = calibratePacManPos(curPos, nextPos);
         PacMan.INSTANCE.calibratePos(deltaTns, curPos, nextPos, height, width);
         PacMan.INSTANCE.updateBufferDurationTime(deltaTns);
+
+        // Si Pac-Man mange un ENERGIZER
+        var pacPos = PacMan.INSTANCE.getPos().round();
+        if (!gridState[pacPos.y()][pacPos.x()]) {
+            PacMan.INSTANCE.containsEnergizer(config);
+            PacMan.INSTANCE.resetTimerSiRepasseEnergizer(config);
+        }
+        PacMan.INSTANCE.increaseEnergizedTimer(deltaTns);
     }
 
      /**
@@ -241,7 +245,7 @@ public final class MazeState {
     private void updateMode() {
         // Pac-Man est ENERGIZED, changement du mode en FRIGHTENED
         if (PacMan.INSTANCE.isEnergized() && mode != Mode.FRIGHTENED) {
-            reverseGhostsDirection();
+            reverseGhostsDirection(config);
             mode = Mode.FRIGHTENED;
             // Changement du mode selon le temps de jeu
         } else if (!PacMan.INSTANCE.isEnergized()) {
@@ -253,7 +257,7 @@ public final class MazeState {
                     now > startMilli + (7 + 20 + 7 + 20 + 5) * 1000 ||
                     now > startMilli + (7 + 20 + 7 + 20 + 5 + 20 + 5) * 1000) {
                 if (mode == Mode.SCATTER) {
-                    Ghost.reverseGhostsDirection();
+                    Ghost.reverseGhostsDirection(config);
                 }
                 chaseMode();
             }
@@ -263,7 +267,7 @@ public final class MazeState {
                     now > startMilli + (7 + 20 + 7 + 20 + 5 + 20) * 1000
                             && now <= startMilli + (7 + 20 + 7 + 20 + 5 + 20 + 5) * 1000) {
                 if (mode == Mode.CHASE) {
-                    Ghost.reverseGhostsDirection();
+                    Ghost.reverseGhostsDirection(config);
                 }
                 mode = Mode.SCATTER;
                 scatterMode();
@@ -305,17 +309,16 @@ public final class MazeState {
         }
     }
 
-    // FIXME Pac-Man rules should somehow be in Pacman class (mettre updateScore et
-    // updateCollision dans PacMan ?)
+    // FIXME Pac-Man rules should somehow be in Pacman class (mettre updateScore et updateCollision dans PacMan ?)
 
     /**
      * La méthode incrémente le score de 1 après que Pac-Man mange un pac-gomme.
      */
     private void updateScore() {
-        var pacPos = PacMan.INSTANCE.getPos();
-        if (!gridState[(int) pacPos.y()][(int) pacPos.x()]) {
+        var pacPos = PacMan.INSTANCE.getPos().round();
+        if (!gridState[pacPos.y()][pacPos.x()]) {
             addScore(1);
-            gridState[(int) pacPos.y()][(int) pacPos.x()] = true;
+            gridState[pacPos.y()][pacPos.x()] = true;
         }
     }
 
