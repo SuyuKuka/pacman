@@ -133,6 +133,7 @@ public class Menu extends Application {
                 }
             }
         });
+        gameScene.setFill(Color.BLACK);
         primaryStage.setScene(gameScene);
         primaryStage.show();
     }

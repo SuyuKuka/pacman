@@ -1,41 +1,57 @@
-import javax.print.attribute.standard.Media;
+package gui;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
-import javafx.scene.shape.MeshView;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.MediaView;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
-public class Intro<MediaPlayer> extends Application {
+import java.io.File;
 
-    public static void main(String[] args) {
-        Application.launch(args);
-    }
-
+public class Intro extends Application {
     @Override
     public void start(Stage primaryStage) {
+        primaryStage.setTitle("Mac-Pan-Pac-Man");
+        primaryStage.getIcons().add(new Image("file:src/main/resources/pacman.png"));  
+        // Chemin vers la vidéo
+        String videoPath = "src\\main\\resources\\mp4\\tenders_org.mp4";
 
+        // Créer un objet Media en utilisant le chemin de la vidéo
+        Media media = new Media(new File(videoPath).toURI().toString());
+
+        // Créer un lecteur multimédia
+        MediaPlayer mediaPlayer = new MediaPlayer(media);
+
+        // Créer une vue multimédia associée au lecteur multimédia
+        MediaView mediaView = new MediaView(mediaPlayer);
+
+        // Créer un conteneur StackPane et y ajouter la vue multimédia
         StackPane root = new StackPane();
+        root.getChildren().add(mediaView);
 
-        MediaPlayer player = new MediaPlayer( new Media(getClass().getResource("video.mp4").toExternalForm()));
-        MeshView mediaView = new MediaView(player);
+        // Créer une scène avec le conteneur StackPane
+        Scene gameScene = new Scene(root, 690, 510);
 
-        root.getChildren().add( mediaView);
-
-        Scene scene = new Scene(root, 1024, 768);
-
-        primaryStage.setScene(scene);
+        // Configurer la scène et le stage
+        gameScene.setFill(Color.BLACK);
+        primaryStage.setScene(gameScene);
         primaryStage.show();
 
+        // Associer le lecteur multimédia à la vue multimédia
+        mediaView.setMediaPlayer(mediaPlayer);
 
-        player.play();
+        // Définir l'écouteur pour détecter la fin de la vidéo
+        mediaPlayer.setOnEndOfMedia(() -> {
+            // Action à effectuer lorsque la vidéo est terminée
+            Menu launchMenu = new Menu();
+            launchMenu.start(primaryStage);
+        });
 
+        // Commencer la lecture de la vidéo
+        mediaPlayer.play();
     }
-
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'start'");
-    }
-
 }
