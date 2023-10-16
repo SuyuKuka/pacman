@@ -24,4 +24,4 @@ javafx {
     modules = [ 'javafx.controls' ]
 }
 
-mainClassName = 'gui.Menu'
+mainClassName = 'gui.Intro'
