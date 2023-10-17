@@ -1,5 +1,7 @@
 package gui;
 
+import java.nio.file.Paths;
+
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -28,11 +30,11 @@ public class Menu extends Application {
         selected = 1;
         StackPane root = new StackPane();
         primaryStage.setTitle("Mac-Pan-Pac-Man");
-        primaryStage.getIcons().add(new Image("file:src/main/resources/pacman.png"));  
+        primaryStage.getIcons().add(new Image(Paths.get("src/main/resources/pacman.png").toUri().toString()));  
             
-        Image backgroundImage = new Image("file:src/main/resources/background.png");
+        Image backgroundImage = new Image(Paths.get("src/main/resources/background.png").toUri().toString());
         BackgroundImage backgroundImg = new BackgroundImage(
-            backgroundImage, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, null
+        backgroundImage, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, null
         );
         Background background = new Background(backgroundImg);
         StackPane backgroundPane = new StackPane();

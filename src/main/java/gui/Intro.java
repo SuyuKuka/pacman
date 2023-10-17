@@ -38,6 +38,7 @@ public class Intro extends Application {
         root.getChildren().add(mediaView);
 
         Scene gameScene = new Scene(root, 690, 510);
+        System.out.println("Taille initiale de la scène : " + gameScene.getWidth() + " x " + gameScene.getHeight());
         gameScene.setFill(Color.BLACK);
 
         primaryStage.setScene(gameScene);
