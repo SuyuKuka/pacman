@@ -18,7 +18,7 @@ public class Intro extends Application {
         primaryStage.setTitle("Mac-Pan-Pac-Man");
         primaryStage.getIcons().add(new Image("file:src/main/resources/pacman.png"));  
         // Chemin vers la vidéo
-        String videoPath = "src\\main\\resources\\mp4\\tenders_org.mp4";
+        String videoPath = "file:src/main/ressources/mp4/tenders_org.mp4";
 
         // Créer un objet Media en utilisant le chemin de la vidéo
         Media media = new Media(new File(videoPath).toURI().toString());
