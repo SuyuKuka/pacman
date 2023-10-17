@@ -24,4 +24,4 @@ javafx {
     modules = [ 'javafx.controls', 'javafx.media']//ajouter javafx.media pour le music
 }
 
-mainClassName = 'gui.App'
+mainClassName = 'gui.Menu'

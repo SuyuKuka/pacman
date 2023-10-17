@@ -2,7 +2,6 @@ package gui;
 
 import geometry.IntCoordinates;
 import javafx.animation.AnimationTimer;
-import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 
 import model.Ghost;
@@ -16,6 +15,7 @@ public class GameView {
     // class parameters
     private final MazeState maze;
     private final Pane gameRoot; // main node of the game
+    private MenuGraphics graphics;
 
     private final List<GraphicsUpdater> graphicsUpdaters;
 
@@ -31,12 +31,12 @@ public class GameView {
      *              affiché
      * @param scale le nombre de pixels représentant une unité du labyrinthe
      */
-    public GameView(MazeState maze, Pane root, double scale) {
+    public GameView(MazeState maze, Pane root, double scale, MenuGraphics graphics) {
         this.maze = maze;
         this.gameRoot = root;
-        maze.displayLive();
+        this.graphics = graphics;
         // pixels per cell
-        root.setMinWidth(maze.getWidth() * scale + 300);
+        root.setMinWidth(maze.getWidth() * scale+300);
         root.setMinHeight(maze.getHeight() * scale);
         root.setStyle("-fx-background-color: #000000");
         var critterFactory = new CritterGraphicsFactory(scale);
@@ -47,6 +47,8 @@ public class GameView {
         for (int x = 0; x < maze.getWidth(); x++)
             for (int y = 0; y < maze.getHeight(); y++)
                 addGraphics(cellFactory.makeGraphics(maze, new IntCoordinates(x, y)));
+        graphics.displayLives(maze);
+        graphics.displayScore(maze);
     }
 
     public void animate() {
@@ -61,13 +63,16 @@ public class GameView {
                 }
                 var deltaT = now - last;
                 maze.update(deltaT);
+                graphics.displayScore(maze);
+                graphics.removeLife(maze);
 
                 // Décommenter ce block pour afficher le target
                 /*
-                var cellFactory = new CellGraphicsFactory(25);
+                var cellFactory = new CellGraphicsFactory(30);
                 Ghost ghost = CLYDE;
                 if (ghost.getTarget() != null) {
-                    addGraphics(cellFactory.showTarget(new IntCoordinates((int)(ghost.getTarget().x()), (int)(ghost.getTarget().y()))));
+                addGraphics(cellFactory.showTarget(new
+                IntCoordinates((int)(ghost.getTarget().x()), (int)(ghost.getTarget().y()))));
                 }
                 */
 

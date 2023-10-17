@@ -1,8 +1,7 @@
 package model;
 
-import gui.App;
-import gui.GameView;
-import gui.PacmanController;
+import config.Cell;
+import javafx.scene.Scene;
 import config.MazeConfig;
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
@@ -12,21 +11,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import static config.Cell.Content.ENERGIZER;
-import model.Direction;
-import model.PacMan;
-
-import javafx.scene.Group;
-import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.Pane;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Rectangle;
+import static config.Cell.Content.*;
 
 import static model.Ghost.*;
 import static model.Direction.*;
@@ -49,45 +34,38 @@ public final class MazeState {
     private int score;
 
     private final Map<Critter, RealCoordinates> initialPos;
-    private int lives = 3;
+    private final int totalLives;
+    private int lives;
+    private boolean win;
+    private int maxScore;
+    private int pacgomme;
 
     private Scene gameScene;
-    private Text text_score;
-    private Group root = new Group();
-    private Group livegroup1 = new Group();
-    private Group livegroup2 = new Group();
-    private Group livegroup3 = new Group();
-    private int select = 1;
-    private boolean lose;
-    private PacmanController testtesController = new PacmanController();
-    private Group Interface = new Group();
-    private Rectangle Transparent;
-    private Rectangle TextPos;
-    private Text GameOver = new Text("GameOver");
-    private Text Continue = new Text("Continue");
-    private Text Retry = new Text("Retry");
-    private Text Menu = new Text("Quit");
-    private Text Option1 = new Text(">");
-    private Text Option2 = new Text(">");
-    private Text Option3 = new Text(">");
-    private boolean retry = false;
 
-    public MazeState(MazeConfig config, Scene gameScene) {
+    public MazeState(MazeConfig config) {
         this.config = config;
-        this.gameScene = gameScene;
-
+        // Ajouter difficulté dans config et faire un switch (difficulté) pour le nb de total live
+        totalLives = 3;
+        lives = totalLives;
+        PacMan.INSTANCE.setPacManMoved(0);
+        PacMan.INSTANCE.setEnergized(false);
+        PacMan.INSTANCE.setBufferDirection(NONE);
+        win = false;
+        maxScore = 0;
+        pacgomme = 0;
         height = config.getHeight();
         width = config.getWidth();
         critters = List.of(PacMan.INSTANCE, CLYDE, BLINKY, INKY, PINKY);
         gridState = new boolean[height][width];
+        setGrid(config.getGrid());
         initialPos = Map.of(
-                PacMan.INSTANCE, config.getPacManPos().toRealCoordinates(1.0),
-                BLINKY, config.getBlinkyPos().toRealCoordinates(1.0),
-                INKY, config.getInkyPos().toRealCoordinates(1.0),
-                CLYDE, config.getClydePos().toRealCoordinates(1.0),
-                PINKY, config.getPinkyPos().toRealCoordinates(1.0));
+            PacMan.INSTANCE, config.getPacManPos().toRealCoordinates(1.0),
+            BLINKY, config.getBlinkyPos().toRealCoordinates(1.0),
+            INKY, config.getInkyPos().toRealCoordinates(1.0),
+            CLYDE, config.getClydePos().toRealCoordinates(1.0),
+            PINKY, config.getPinkyPos().toRealCoordinates(1.0)
+        );
         resetCritters();
-        displayLive();
     }
 
     public List<Critter> getCritters() {
@@ -103,7 +81,7 @@ public final class MazeState {
     }
 
     public void update(long deltaTns) {
-        if (lives > 0) {
+        if (lives > 0 && !win) {
             updatePacMan(deltaTns);
             // Active les fantômes après la première input
             if (PacMan.INSTANCE.getPacManMoved() == 1) {
@@ -134,124 +112,69 @@ public final class MazeState {
         var curPos = PacMan.INSTANCE.getPos();
         var nextPos = PacMan.INSTANCE.nextPos(deltaTns);
 
-        // Nécessaire pour éviter les problèmes de détermination du target selon la
-        // direction de Pac-Man
+        // Nécessaire pour éviter les problèmes de détermination du target selon la direction de Pac-Man
         if (PacMan.INSTANCE.getDirection() != NONE)
             PacMan.INSTANCE.setLastDirection(PacMan.INSTANCE.getDirection());
 
-        if (updatePacManDirection(deltaTns)) {
+        // Modifie ou non la direction de PacMan en fonction du terrain du buffer
+        if (canPacManTurn(PacMan.INSTANCE.getBufferDirection(), deltaTns)) {
             nextPos = PacMan.INSTANCE.nextPos(deltaTns, PacMan.INSTANCE.getBufferDirection());
+            PacMan.INSTANCE.setDirection(PacMan.INSTANCE.getBufferDirection());
+            PacMan.INSTANCE.setBufferDirection(Direction.NONE);
         }
-        nextPos = updatePacManPos(curPos, nextPos);
+        nextPos = calibratePacManPos(curPos, nextPos);
         PacMan.INSTANCE.calibratePos(deltaTns, curPos, nextPos, height, width);
-        PacMan.INSTANCE.increaseBufferDurationTime(deltaTns);
+        PacMan.INSTANCE.updateBufferDurationTime(deltaTns);
     }
 
-    /**
-     * Méthode qui actualise la {@code Direction} de {@code Pac-Man} en fonction du
-     * terrain et de son {@code bufferDirection}.
+     /**
+     * Méthode qui calcul la position à la frame suivante de PacMan en fonction de {@code Direction}. <br><br>
+     * Si cette position est valable, change la {@code Direction} de PacMan sinon, garde l'ancienne {@code Direction}.
      * 
-     * @param deltaTns Temps écoulé en nanosecondes.
-     * @return Retourne vraie si la {@code Direction} de {@code Pac-Man} devrait
-     *         changer ou faux sinon.
+     * @param Maze MazeConfig utilisée.
+     * @param direction Calcul par rapport à cette direction.
+     * @param deltaTns Temps écoulée.
+     * @return Retourne vraie si un changement de direction est possible, faux sinon.
      */
-    public boolean updatePacManDirection(long deltaTns) {
-        var curNeighbours = PacMan.INSTANCE.getPos().intNeighbours();
+    public boolean canPacManTurn(Direction direction, long deltaTns) {
+        if (PacMan.INSTANCE.getDirection() == direction) {
+            return false;
+        }
         var nextNeighbours = PacMan.INSTANCE.nextPos(deltaTns).intNeighbours();
-        if (PacMan.INSTANCE.getDirection() != PacMan.INSTANCE.getBufferDirection() && PacMan.INSTANCE.getBufferDirection() != Direction.NONE) {
-            boolean isBufferUsed = !(nextNeighbours.size() >= 4);
-            if (isBufferUsed) {
-                switch (PacMan.INSTANCE.getBufferDirection()) {
-                case NORTH -> {
-                    for (var n: curNeighbours) { 
-                        if (config.getCell(n).northWall()) { 
-                            isBufferUsed = false;
-                            break;
-                        }
-                    }
-                }
-                case EAST -> {
-                    for (var n: curNeighbours) {
-                        if (config.getCell(n).eastWall()) {
-                            isBufferUsed = false;
-                        break;
-                        }
-                    }
-                }
-                case SOUTH -> {
-                    for (var n: curNeighbours) {
-                        if (config.getCell(n).southWall()) {
-                            isBufferUsed = false;
-                            break;
-                        }
-                    }
-                }
-                case WEST -> {
-                    for (var n: curNeighbours) {
-                        if (config.getCell(n).westWall()) { 
-                            isBufferUsed = false;
-                            break;
-                        }
-                    }
-                }
-                default -> {
-                    break;
-                }
+        if (nextNeighbours.size() >= 4) {
+            return false;
+        }
+        if (nextNeighbours.size() == 2) {
+            if ((direction == Direction.NORTH || direction == Direction.SOUTH) && (int) PacMan.INSTANCE.getPos().x() != PacMan.INSTANCE.getPos().x()) {
+                return false;
             }
+            if ((direction == Direction.EAST || direction == Direction.WEST) && (int) PacMan.INSTANCE.getPos().y() != PacMan.INSTANCE.getPos().y()) {
+                return false;
             }
-            if (isBufferUsed) {
-                PacMan.INSTANCE.setDirection(PacMan.INSTANCE.getBufferDirection());
-                PacMan.INSTANCE.setBufferDirection(Direction.NONE);
-                return true;
+            var curNeighbours = PacMan.INSTANCE.getPos().intNeighbours();
+            for (var n: curNeighbours) {
+                if (direction.wall(config.getCell(n))) {
+                    return false;
+                }
             }
         }
-        return false;
+        return true;
     }
 
     /**
-     * Méthode qui actualise la position ({@code RealCoordinates}) de
-     * {@code Pac-Man} en fonction du terrain.
-     * 
+     * Méthode qui arrête la course de PacMan et retire sa direction si il rencontre un mur de face.
      * @param curPos  {@code RealCoordinates} actuelle de {@code Pac-Man}.
-     * @param nextPos {@code RealCoordinates} supposée (si il ne traverse pas de
-     *                mur) de {@code Pac-Man}.
-     * @return Retourne un {@code RealCoordinates} (modifié ou non).
+     * @param nextPos {@code RealCoordinates} supposée (= s'il ne traverse pas de mur) de {@code Pac-Man}.
+     * @return Retourne {@code nextPos} modifié ou non.
      */
-    public RealCoordinates updatePacManPos(RealCoordinates curPos, RealCoordinates nextPos) {
-        var curNeighbours = curPos.intNeighbours();
-        var nextNeighbours = nextPos.intNeighbours();
-        if (!curNeighbours.containsAll(nextNeighbours)) { // the critter would overlap new cells. Do we allow it?
-            switch (PacMan.INSTANCE.getDirection()) {
-                case NORTH -> {
-                    for (var n : curNeighbours)
-                        if (config.getCell(n).northWall()) {
-                            PacMan.INSTANCE.setDirection(Direction.NONE);
-                            return nextPos = curPos.floorY();
-                        }
-                }
-                case EAST -> {
-                    for (var n : curNeighbours)
-                        if (config.getCell(n).eastWall()) {
-                            PacMan.INSTANCE.setDirection(Direction.NONE);
-                            return nextPos = curPos.ceilX();
-                        }
-                }
-                case SOUTH -> {
-                    for (var n : curNeighbours)
-                        if (config.getCell(n).southWall()) {
-                            PacMan.INSTANCE.setDirection(Direction.NONE);
-                            return nextPos = curPos.ceilY();
-                        }
-                }
-                case WEST -> {
-                    for (var n : curNeighbours)
-                        if (config.getCell(n).westWall()) {
-                            PacMan.INSTANCE.setDirection(Direction.NONE);
-                            return nextPos = curPos.floorX();
-                        }
-                }
-                default -> {
-                    break;
+
+    public RealCoordinates calibratePacManPos(RealCoordinates curPos, RealCoordinates nextPos) {
+        if (!curPos.intNeighbours().containsAll(nextPos.intNeighbours())) {
+            for (var n: curPos.intNeighbours()) {
+                if (PacMan.INSTANCE.getDirection().wall(config.getCell(n))) {
+                    RealCoordinates newPos = PacMan.INSTANCE.getPos().adjustCoordinates(PacMan.INSTANCE.getDirection());
+                    PacMan.INSTANCE.setDirection(Direction.NONE);
+                    return newPos;
                 }
             }
         }
@@ -269,6 +192,8 @@ public final class MazeState {
         mode = Mode.SCATTER;
         BLINKY.setActivated(true);
         PINKY.setActivated(true);
+        INKY.setActivated(false);
+        CLYDE.setActivated(false);
         BLINKY.setDirection(EAST);
         PINKY.setDirection(NORTH);
     }
@@ -283,23 +208,27 @@ public final class MazeState {
      */
     private void updateGhost(long deltaTns) {
         for (Critter critter : critters) {
-            if (critter instanceof Ghost)
-                critter.calibratePos(deltaTns, critter.getPos(), critter.nextPos(deltaTns), height, width);
+            if (critter instanceof Ghost) critter.calibratePos(deltaTns, critter.getPos(), critter.nextPos(deltaTns), height, width);
             RealCoordinates pos = critter.getPos();
 
+            // Lorsque le fantôme mangé retourne au spawn
+            if (critter instanceof Ghost && ((Ghost) critter).isEaten() && pos.equals(new IntCoordinates(8, 10).toRealCoordinates(1.0))) {
+                ((Ghost) critter).setEaten(false);
+            }
+
             // Activation d'Inky à partir de 30 points
-            if (critter == INKY && !INKY.isActivated() && score == 30) {
+            if (critter == INKY && !INKY.isActivated() && pacgomme >= 30) {
                 INKY.setActivated(true);
                 critter.setDirection(EAST);
                 // Activation de Clyde lorsqu'un tier des points totaux a été obtenu
-            } else if (critter == CLYDE && !CLYDE.isActivated() && score == 146 / 3) {
+            } else if (critter == CLYDE && !CLYDE.isActivated() && pacgomme >= 146 / 3) {
                 CLYDE.setActivated(true);
                 critter.setDirection(WEST);
-            // Set direction aléatoire en FRIGHTENED mode
-            } else if (critter instanceof Ghost && !((Ghost) critter).isEaten() && mode == Mode.FRIGHTENED && pos.x()%1 == 0 && pos.y()%1 == 0) {
+                // Set direction aléatoire en FRIGHTENED mode
+            } else if (critter instanceof Ghost && !((Ghost) critter).isEaten() && mode == Mode.FRIGHTENED && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
                 frightenedMode((Ghost) critter);
-            // Set direction la plus proche du target
-            } else if (critter instanceof Ghost && ((Ghost) critter).isActivated() && pos.x()%1 == 0 && pos.y()%1 == 0) {
+                // Set direction la plus proche du target
+            } else if (critter instanceof Ghost && ((Ghost) critter).isActivated() && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
                 critter.setDirection(((Ghost) critter).directionClosestToTarget(config));
             }
         }
@@ -317,9 +246,9 @@ public final class MazeState {
             mode = Mode.FRIGHTENED;
             // Changement du mode selon le temps de jeu
         } else if (!PacMan.INSTANCE.isEnergized()) {
-            long startMilli = start.toEpochMilli();
             long now = Instant.now().toEpochMilli();
-
+            long startMilli = start.toEpochMilli();
+            
             if (now > startMilli + 7 * 1000 ||
                     now > startMilli + (7 + 20 + 7) * 1000 ||
                     now > startMilli + (7 + 20 + 7 + 20 + 5) * 1000 ||
@@ -384,11 +313,27 @@ public final class MazeState {
      * La méthode incrémente le score de 1 après que Pac-Man mange un pac-gomme.
      */
     private void updateScore() {
-        var pacPos = PacMan.INSTANCE.getPos().round();
-        if (!gridState[pacPos.y()][pacPos.x()]) {
+        var pacPos = PacMan.INSTANCE.getPos();
+        if (!gridState[(int) pacPos.y()][(int) pacPos.x()]) {
             Music.playSound("eat.wav");//Music pour eat
             addScore(1);
-            gridState[pacPos.y()][pacPos.x()] = true;
+            gridState[(int) pacPos.y()][(int) pacPos.x()] = true;
+        }
+    }
+
+    /**
+     * La méthode met à jour l'état du gridState
+     */
+    private void setGrid(Cell[][] maze) {
+        for (int i = 0; i < getHeight(); i++) {
+            for (int j = 0; j < getWidth(); j++) {
+                if (maze[i][j].initialContent() == Cell.Content.DOT || maze[i][j].initialContent() == ENERGIZER) {
+                    maxScore++;
+                }
+                if (maze[i][j].initialContent() == Cell.Content.NOTHING) {
+                    gridState[i][j] = true;
+                }
+            }
         }
     }
 
@@ -423,228 +368,26 @@ public final class MazeState {
 
     private void addScore(int increment) {
         score += increment;
-        displayScore();
-    }
-
-    private void displayScore() {
-        if (text_score == null) {
-            // Création d'un texte
-            text_score = new Text();
-            // Position du score // 30 = scale, 2 et 6 valeur arbitraire
-            text_score.setX((width + height) * 30 / 2);
-            text_score.setY((height + width) * 30 / 6);
-            // Configuration du texte
-            text_score.setFont(Font.loadFont("file:src\\main\\resources\\fonts\\slkscr.ttf", 24));
-            text_score.setFill(Color.WHITE);
-            // Ajoute le texte au groupe root
-            root.getChildren().add(text_score);
-            // Met le group dans la scene
-            ((Pane) gameScene.getRoot()).getChildren().add(root);
-        }
-        // Affiche le score
-        text_score.setText("Score: " + score); // Total : 154 score en classique
-    }
-
-    private ImageView setLive() {
-        ImageView imageView = new ImageView();
-        Image image = new Image("file:src\\main\\resources\\pacman.png");
-        imageView.setImage(image);
-        imageView.setY((height + width) * 30 / 2 - 50);
-        imageView.setFitWidth(width * 1.4);
-        imageView.setPreserveRatio(true);
-        return imageView;
-    }
-
-    public void displayLive() {
-        ImageView live_1 = setLive();
-        ImageView live_2 = setLive();
-        ImageView live_3 = setLive();
-        live_1.setX(((width + height + 0) * 30 / 2));
-        live_2.setX(((width + height + 1.9) * 30 / 2));
-        live_3.setX(((width + height + 3.8) * 30 / 2));
-
-        livegroup1.getChildren().add(live_1);
-        livegroup2.getChildren().add(live_2);
-        livegroup3.getChildren().add(live_3);
-
-        if (!((Pane) gameScene.getRoot()).getChildren().contains(livegroup1)) {
-            ((Pane) gameScene.getRoot()).getChildren().add(livegroup1);
-        }
-
-        if (!((Pane) gameScene.getRoot()).getChildren().contains(livegroup2)) {
-            ((Pane) gameScene.getRoot()).getChildren().add(livegroup2);
-        }
-
-        if (!((Pane) gameScene.getRoot()).getChildren().contains(livegroup3)) {
-            ((Pane) gameScene.getRoot()).getChildren().add(livegroup3);
-        }
-    }
-
-    public void GameOver() {
-        Transparent = new Rectangle(0, 0, height * 100, width * 100);
-        Rectangle TextPos = new Rectangle(0, 0, height * 30, width * 30);
-        lose = true;
-
-        Transparent.setFill(Color.BLACK);
-        Transparent.setOpacity(0.4);
-
-        // TextPos.setFill(Color.WHITE);
-        TextPos.setOpacity(0);
-
-        GameOver.setX(TextPos.getWidth() / 4 + 42);
-        GameOver.setY(200);
-        GameOver.setFont(Font.loadFont("file:src\\main\\resources\\fonts\\small_pixel-7.ttf", 120));
-        GameOver.setFill(Color.WHITE);
-
-        Text Score = new Text("Score: " + score);
-        Score.setX(TextPos.getWidth() / 3 + GameOver.getX() / 4 + 10);
-        Score.setY(280);
-        Score.setFont(Font.loadFont("file:src\\main\\resources\\fonts\\small_pixel-7.ttf", 75));
-        Score.setFill(Color.WHITE);
-
-        Continue.setX(TextPos.getWidth() / 3 + GameOver.getX() / 2 + 24);
-        Continue.setY(400);
-        Continue.setFont(Font.loadFont("file:src\\main\\resources\\fonts\\small_pixel-7.ttf", 42));
-        Continue.setFill(Color.WHITE);
-
-        Retry.setX(TextPos.getWidth() / 3 + GameOver.getX() / 2 + 42);
-        Retry.setY(440);
-        Retry.setFont(Font.loadFont("file:src\\main\\resources\\fonts\\small_pixel-7.ttf", 42));
-        Retry.setFill(Color.WHITE);
-
-        Menu.setX(TextPos.getWidth() / 3 + GameOver.getX() / 2 + 56);
-        Menu.setY(480);
-        Menu.setFont(Font.loadFont("file:src\\main\\resources\\fonts\\small_pixel-7.ttf", 42));
-        Menu.setFill(Color.WHITE);
-
-        Option1.setX(TextPos.getWidth() / 3 + GameOver.getX() / 2 + 5);
-        Option1.setY(400);
-        Option1.setFont(Font.loadFont("file:src\\main\\resources\\fonts\\small_pixel-7.ttf", 42));
-        Option1.setFill(Color.WHITE);
-
-        Option2.setX(TextPos.getWidth() / 3 + GameOver.getX() / 2 + 5);
-        Option2.setY(440);
-        Option2.setFont(Font.loadFont("file:src\\main\\resources\\fonts\\small_pixel-7.ttf", 42));
-        Option2.setFill(Color.WHITE);
-
-        Option3.setX(TextPos.getWidth() / 3 + GameOver.getX() / 2 + 5);
-        Option3.setY(480);
-        Option3.setFont(Font.loadFont("file:src\\main\\resources\\fonts\\small_pixel-7.ttf", 42));
-        Option3.setFill(Color.WHITE);
-
-        if (Interface.getChildren().isEmpty()) {
-            Interface.getChildren().addAll(Transparent, TextPos, GameOver, Score, Continue, Retry, Menu, Option1);
-        }
-
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
-            Interface.getChildren().clear(); // Supprimer les anciens éléments
-            if (!retry) {
-                if (keyEvent.getCode() == KeyCode.UP) {
-                    // Flèche vers le haut
-                    select--;
-                    if (select == 0 || select == -1) {
-                        select = 3;
-                    }
-                    if (select == 1) {
-                        Interface.getChildren().addAll(Transparent, TextPos, GameOver, Score, Continue, Retry, Menu,
-                                Option1);
-                    }
-                    if (select == 2) {
-                        Interface.getChildren().addAll(Transparent, TextPos, GameOver, Score, Continue, Retry, Menu,
-                                Option2);
-                    }
-                    if (select == 3) {
-                        Interface.getChildren().addAll(Transparent, TextPos, GameOver, Score, Continue, Retry, Menu,
-                                Option3);
-                    }
-                } else if (keyEvent.getCode() == KeyCode.DOWN) {
-                    // Flèche vers le bas
-                    select++;
-                    if (select == 4 || select == 5) {
-                        select = 1;
-                    }
-                    if (select == 1) {
-                        Interface.getChildren().addAll(Transparent, TextPos, GameOver, Score, Continue, Retry, Menu,
-                                Option1);
-                    }
-                    if (select == 2) {
-                        Interface.getChildren().addAll(Transparent, TextPos, GameOver, Score, Continue, Retry, Menu,
-                                Option2);
-                    }
-                    if (select == 3) {
-                        Interface.getChildren().addAll(Transparent, TextPos, GameOver, Score, Continue, Retry, Menu,
-                                Option3);
-                    }
-                } else if (keyEvent.getCode() == KeyCode.ENTER) {
-                    if (select == 1) {
-                        // Continue sur le prochain niveau
-                    }
-                    if (select == 2) {
-                        // Retry le jeu
-                        /*
-                         * lives = 3;
-                         * retry = true;
-                         * update(0);
-                         */
-                    }
-                    if (select == 3) {
-                        // Retourne au menu
-                    }
-                } else {
-                    if (select == 1) {
-                        Interface.getChildren().addAll(Transparent, TextPos, GameOver, Score, Continue, Retry, Menu,
-                                Option1);
-                    }
-                    if (select == 2) {
-                        Interface.getChildren().addAll(Transparent, TextPos, GameOver, Score, Continue, Retry, Menu,
-                                Option2);
-                    }
-                    if (select == 3) {
-                        Interface.getChildren().addAll(Transparent, TextPos, GameOver, Score, Continue, Retry, Menu,
-                                Option3);
-                    }
-                }
-            }
-        });
-
-        // Interface.getChildren().addAll(Transparent, TextPos, GameOver, Score, Retry,
-        // Menu, Option1);
-
-        ((Pane) gameScene.getRoot()).getChildren().add(Interface);
-        Music.stopBgMusic();//stop music-loop
+        if (increment == 1) pacgomme++;
     }
 
     private void playerLost() {
-        // FIXME: this should be displayed in the JavaFX view, not in the console. A
-        // game over screen would be nice too.
         Music.playSound("fail.wav");//ajouter le son à la mort
         lives--;
-        switch (lives) {
-            case 0:
-                livegroup1.setVisible(false);
-                break;
-            case 1:
-                livegroup2.setVisible(false);
-                break;
-            case 2:
-                livegroup3.setVisible(false);
-                break;
-        }
+        resetCritters();
+    }
 
-        if (lives == 0) { // interface a faire pour game over //arreter de bouger fantome + pacman?
-            // PacMan.INSTANCE.setDirection(Direction.NONE);
-            GameOver();
-            // System.exit(0);
-        }
+    public void playerWin() {
+        win = true;
         resetCritters();
     }
 
     private void resetCritter(Critter critter) {
-        if (critter == BLINKY || critter == INKY && score >= 30)
+        if (critter == BLINKY || critter == INKY && pacgomme >= 30)
             critter.setDirection(EAST);
         else if (critter == PINKY)
             critter.setDirection(NORTH);
-        else if (critter == CLYDE && score >= 146 / 3)
+        else if (critter == CLYDE && pacgomme >= 146 / 3)
             critter.setDirection(WEST);
         else
             critter.setDirection(NONE);
@@ -655,6 +398,7 @@ public final class MazeState {
         for (var critter : critters)
             resetCritter(critter);
     }
+    
 
     public MazeConfig getConfig() {
         return config;
@@ -664,7 +408,27 @@ public final class MazeState {
         return gridState[pos.y()][pos.x()];
     }
 
-    public int getLive() {
+    public int getLives() {
         return lives;
+    }
+
+    public int getScore() {
+        return score;
+    }
+
+    public Scene getGameScene() {
+        return gameScene;
+    }
+
+    public int getTotalLive() {
+        return totalLives;
+    }
+
+    public int getMaxScore() {
+        return maxScore;
+    }
+
+    public int getPacgomme() {
+        return pacgomme;
     }
 }
