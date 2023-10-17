@@ -19,7 +19,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 import model.MazeState;
-import utils.Music;
 
 public class MenuGraphics {
     private Stage primaryStage;
@@ -95,7 +94,6 @@ public class MenuGraphics {
 
     public void gameOver(MazeState state) {
         if(lose){
-
             Rectangle transparent = new Rectangle(0, 0, primaryStage.getWidth(), primaryStage.getHeight() - 40);
             
             transparent.setFill(Color.GRAY);

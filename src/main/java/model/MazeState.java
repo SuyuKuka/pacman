@@ -5,7 +5,6 @@ import javafx.scene.Scene;
 import config.MazeConfig;
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
-import utils.Music;
 
 import java.time.Instant;
 import java.util.List;
@@ -313,9 +312,8 @@ public final class MazeState {
      * La méthode incrémente le score de 1 après que Pac-Man mange un pac-gomme.
      */
     private void updateScore() {
-        var pacPos = PacMan.INSTANCE.getPos();
-        if (!gridState[(int) pacPos.y()][(int) pacPos.x()]) {
-            Music.playSound("eat.wav");//Music pour eat
+        var pacPos = PacMan.INSTANCE.getPos().round();
+        if (!gridState[pacPos.y()][pacPos.x()]) {
             addScore(1);
             gridState[(int) pacPos.y()][(int) pacPos.x()] = true;
         }
@@ -372,7 +370,6 @@ public final class MazeState {
     }
 
     private void playerLost() {
-        Music.playSound("fail.wav");//ajouter le son à la mort
         lives--;
         resetCritters();
     }

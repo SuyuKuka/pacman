@@ -9,7 +9,6 @@
 **/.metadata/
 **/.DS_store/
 **/.vscode/
-*.DS_Store
 
 # Ignore Gradle GUI config
 gradle-app.setting
