@@ -14,10 +14,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class Intro extends Application {
-    public static void main(String[] args) {
-        launch(args);
-    }
-
+    
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Mac-Pan-Pac-Man");
