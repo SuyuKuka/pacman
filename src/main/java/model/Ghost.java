@@ -294,7 +294,7 @@ public enum Ghost implements Critter {
         
         // Si le fantôme se trouve dans un cul-de-sac, il se retourne
         if (possibleDirections.isEmpty()) {
-            reverseDirection(config);
+            reverseDirection();
             return direction;
         }
 
@@ -361,7 +361,7 @@ public enum Ghost implements Critter {
             if (!possibles.isEmpty()) {
                 direction = possibles.get(0);
             } else {
-                reverseDirection(config);
+                reverseDirection();
             }
         }
         if (rand >= 16.3 && rand < 41.5) {
@@ -374,7 +374,7 @@ public enum Ghost implements Critter {
             } else if (possibles.contains(NORTH)) {
                 direction = NORTH;
             } else {
-                reverseDirection(config);
+                reverseDirection();
             }
         }
         if (rand >= 41.5 && rand < 70) {
@@ -385,7 +385,7 @@ public enum Ghost implements Critter {
             } else if (!possibles.isEmpty()) {
                 direction = possibles.get(0);
             } else {
-            reverseDirection(config);
+            reverseDirection();
             }
         }
         if (rand >= 70) {
@@ -394,39 +394,31 @@ public enum Ghost implements Critter {
             } else if (!possibles.isEmpty()) {
                 direction = possibles.get(0);
             } else {
-                reverseDirection(config);
+                reverseDirection();
             }
         }
     }
 
-    public static void reverseGhostsDirection(MazeConfig config) {
-        BLINKY.reverseDirection(config);
-        INKY.reverseDirection(config);
-        PINKY.reverseDirection(config);
-        CLYDE.reverseDirection(config);
+    public static void reverseGhostsDirection() {
+        BLINKY.reverseDirection();
+        INKY.reverseDirection();
+        PINKY.reverseDirection();
+        CLYDE.reverseDirection();
     }
 
-    public void reverseDirection(MazeConfig config) {
+    public void reverseDirection() {
         switch (direction) {
             case NORTH:
-                if (!config.getCell(new IntCoordinates(PacMan.INSTANCE.getPos().round().x(), PacMan.INSTANCE.getPos().round().y() + 1)).northWall()) {
-                    direction = SOUTH;
-                }
+                direction = SOUTH;
                 break;
             case EAST:
-                if (!config.getCell(new IntCoordinates(PacMan.INSTANCE.getPos().round().x() - 1, PacMan.INSTANCE.getPos().round().y())).eastWall()) {
-                    direction = WEST;
-                }
+                direction = WEST;
                 break;
             case SOUTH:
-                if (!config.getCell(new IntCoordinates(PacMan.INSTANCE.getPos().round().x(), PacMan.INSTANCE.getPos().round().y() - 1)).southWall()) {
-                    direction = NORTH;
-                }
+                direction = NORTH;
                 break;
             case WEST:
-                if (!config.getCell(new IntCoordinates(PacMan.INSTANCE.getPos().round().x() + 1, PacMan.INSTANCE.getPos().round().y())).westWall()) {
-                    direction = EAST;
-                }
+                direction = EAST;
                 break;
             default:
                 break;
