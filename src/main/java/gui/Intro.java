@@ -1,6 +1,5 @@
 package gui;
 
-import java.io.File;
 import java.nio.file.Paths;
 
 import javafx.application.Application;
@@ -14,7 +13,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class Intro extends Application {
-    
+
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Mac-Pan-Pac-Man");
@@ -46,3 +45,4 @@ public class Intro extends Application {
 
     }
 }
+

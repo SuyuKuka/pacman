@@ -5,6 +5,7 @@ import javafx.scene.Scene;
 import config.MazeConfig;
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
+import utils.Music;
 
 import java.time.Instant;
 import java.util.List;
@@ -237,6 +238,7 @@ public final class MazeState {
         }
     }
 
+
     /**
      * La méthode met à jour le mode selon le temps de jeu. A chaque changement de
      * mode sauf pour la fin du mode {@code FRIGHTENED}, les fantômes
@@ -314,6 +316,7 @@ public final class MazeState {
     private void updateScore() {
         var pacPos = PacMan.INSTANCE.getPos().round();
         if (!gridState[pacPos.y()][pacPos.x()]) {
+            Music.playSound("eat.wav");//Music pour eat
             addScore(1);
             gridState[pacPos.y()][pacPos.x()] = true;
         }
@@ -370,6 +373,7 @@ public final class MazeState {
     }
 
     private void playerLost() {
+        Music.playSound("fail.wav");//ajouter le son à la mort
         lives--;
         resetCritters();
     }

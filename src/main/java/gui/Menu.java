@@ -22,6 +22,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import utils.Music;//ajouter le fichier utils/Music
+
 public class Menu extends Application {
     protected static int selected = 1;
 
@@ -138,6 +140,8 @@ public class Menu extends Application {
         gameScene.setFill(Color.BLACK);
         primaryStage.setScene(gameScene);
         primaryStage.show();
+
+        Music.playLoopingBgMusic("bgm.wav");//file du fond de music en boucle(obligé:.wav)
     }
 
     public static Text createText(String str, int size) {
@@ -147,6 +151,7 @@ public class Menu extends Application {
         
         return text;
     }
+
 
     public static VBox createVBox(int spacing, Node... nodes) {
         VBox box = new VBox(spacing);
