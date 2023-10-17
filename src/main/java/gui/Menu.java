@@ -143,7 +143,8 @@ public class Menu extends Application {
     public static Text createText(String str, int size) {
         Text text = new Text(str);
         text.setFill(Color.WHITE);
-        text.setFont(Font.loadFont("file:src/main/resources/fonts/small_pixel-7.ttf", size));
+        text.setFont(Font.loadFont(Paths.get("src/main/resources/fonts/small_pixel-7.ttf").toUri().toString(), size));
+        
         return text;
     }
 
