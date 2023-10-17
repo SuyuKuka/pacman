@@ -1,11 +1,6 @@
 package model;
 
-import config.Cell.Content;
-import config.MazeConfig;
-
-import geometry.IntCoordinates;
 import geometry.RealCoordinates;
-
 
 /**
  * Implements Pac-Man character using singleton pattern. FIXME: check whether singleton is really a good idea.
@@ -24,9 +19,6 @@ public final class PacMan implements Critter {
     private double bufferDurationTime = 0; // Temps passé sans que l'utilisateur n'est appuyé une touche.
     /* Etat énergisé */
     private boolean energized;
-    /*Timer:*/
-    private double energizedTimer = 0;
-    private double maxEnergizedTime = 3; //Temps de l'etat ENERGIZED en seconds
 
     private PacMan() {
     }
@@ -63,31 +55,8 @@ public final class PacMan implements Critter {
      * @return whether Pac-Man just ate an energizer
      */
     public boolean isEnergized() {
+        // TODO handle timeout!
         return energized;
-    }
-
-    /* Décide si pacman est ENERGIZED */ 
-    public void containsEnergizer (MazeConfig mazeConfig) {
-        if (mazeConfig.getCell(new IntCoordinates(pos.round().x(), pos.round().y())).initialContent() == Content.ENERGIZER ) {
-            setEnergized(true);
-        }
-    }
-
-    /* Durée de l'état ENERGIZER */
-    public void increaseEnergizedTimer(long deltaTns) {
-        if(isEnergized()) {
-            energizedTimer += deltaTns / Math.pow(10,9);
-            if (energizedTimer >= maxEnergizedTime) {
-                energizedTimer = 0;
-                setEnergized(false);
-            }
-        }
-    }
-    /*Si pendant la durée, Pacman mange un autre Pac-gomme, la durée s'étend*/
-    public void resetTimerSiRepasseEnergizer(MazeConfig mazeConfig) {
-        if (isEnergized() && mazeConfig.getCell(new IntCoordinates(pos.round().x(), pos.round().y())).initialContent() == Content.ENERGIZER) {
-            energizedTimer = 0;
-        }
     }
 
     public void setEnergized(boolean energized) {
