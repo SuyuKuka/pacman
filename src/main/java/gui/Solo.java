@@ -11,10 +11,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import model.MazeState;
+import utils.Music;
 
 public class Solo extends Application {
     private StackPane background;
@@ -119,8 +119,7 @@ public class Solo extends Application {
                 }
             }
         });
-        
-        gameScene.setFill(Color.BLACK);
+
         primaryStage.setScene(gameScene);
         primaryStage.sizeToScene();
         primaryStage.show();
@@ -128,6 +127,7 @@ public class Solo extends Application {
 
     //Une fonction par niveau
     public static void classique(Stage primaryStage){
+        Music.stopBgMusic();
         int level = Menu.selected; // Permet de  savoir on est sur quel niveau pour le retry ou continue
         //Classique
         Pane root = new Pane();
