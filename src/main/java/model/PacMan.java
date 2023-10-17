@@ -7,18 +7,15 @@ import geometry.RealCoordinates;
  * (Faudra transformer Pac-Man en objet si on veut ajouter du multijoueur local et associer à chaque pacman un pacmanController)
  */
 public final class PacMan implements Critter {
-    /* Direction de PacMan */
     private Direction direction = Direction.NONE;
     private Direction lastDirection;
-    /* Position de PacMan */
     private RealCoordinates pos;
-    private int pacManMoved = 0;
-    /* Buffer du Controller de PacMan */
-    private Direction bufferDirection = Direction.NONE; // Direction stockée à l'appuie d'une touche.
-    private final double bufferMaxTime = 0.7; // Temps en seconde avant que la direction stockée dans le buffer se retire.
-    private double bufferDurationTime = 0; // Temps passé sans que l'utilisateur n'est appuyé une touche.
-    /* Etat énergisé */
     private boolean energized;
+    private int pacManMoved = 0;
+    /* Buffer */
+    private Direction bufferDirection = Direction.NONE; // Direction stockée dans le buffer
+    private final double bufferMaxTime = 0.7; // Temps en seconde avant que la direction stockée dans le buffer se retire
+    private double bufferDurationTime = 0; // Temps passé sans que l'utilisateur est input une touche
 
     private PacMan() {
     }
@@ -95,7 +92,7 @@ public final class PacMan implements Critter {
       return bufferDurationTime;
     }
 
-    public void updateBufferDurationTime(long deltaTns) {
+    public void increaseBufferDurationTime(long deltaTns) {
         bufferDurationTime += deltaTns / Math.pow(10, 9);
         if (bufferDurationTime >= bufferMaxTime) {
             bufferDurationTime = 0;
