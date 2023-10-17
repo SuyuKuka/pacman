@@ -25,13 +25,8 @@ public class Intro extends Application {
 
         // Chemin vers la vidéo
         String videoPath = Paths.get("src/main/resources/mp4/tenders_org.mp4").toUri().toString();
-        System.out.println("Video Path: " + videoPath);
         Media media = new Media(videoPath);
-        System.out.println("Media Created");
-            
         MediaPlayer mediaPlayer = new MediaPlayer(media);
-        System.out.println("MediaPlayer Created");
-
         MediaView mediaView = new MediaView(mediaPlayer);
 
         StackPane root = new StackPane();
