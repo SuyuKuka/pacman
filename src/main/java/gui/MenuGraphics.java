@@ -1,5 +1,7 @@
 package gui;
 
+import java.nio.file.Paths;
+
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -43,7 +45,8 @@ public class MenuGraphics {
             scoreText.setTranslateX((state.getWidth() + state.getHeight()) * 30 / 2);
             scoreText.setTranslateY((state.getHeight() + state.getWidth()) * 30 / 6 - 50);
             // Configuration du texte
-            scoreText.setFont(Font.loadFont("file:src/main/resources/fonts/slkscr.ttf", 24));
+            scoreText.setFont(Font.loadFont(Paths.get("src/main/resources/fonts/slkscr.ttf").toUri().toString(), 24));
+            
             scoreText.setFill(Color.WHITE);
             // Ajoute le texte au groupe root
             root.getChildren().add(scoreText);
@@ -60,7 +63,8 @@ public class MenuGraphics {
 
     private ImageView setLives(MazeState state) {
         ImageView imageView = new ImageView();
-        Image image = new Image("file:src/main/resources/pacman.png");
+        Image image = new Image(Paths.get("src/main/resources/pacman.png").toUri().toString());
+        
         imageView.setImage(image);
         imageView.setY((state.getHeight() + state.getWidth()) * 30 / 2 - 50);
         imageView.setFitWidth(state.getWidth() * 1.4);
