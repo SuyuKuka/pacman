@@ -38,7 +38,7 @@ public sealed interface Critter permits Ghost, PacMan {
      * @param width La largeur de la map
      */
     default void calibratePos(long deltaTns, RealCoordinates curPos, RealCoordinates nextPos, int height, int width) {
-        RealCoordinates calibratedPos = curPos.centerCell(nextPos);
+        RealCoordinates calibratedPos = curPos.calibrate(nextPos);
         if (nextPos.equals(calibratedPos)) {
             setPos(nextPos.warp(width, height));
         } else {

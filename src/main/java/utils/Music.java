@@ -34,7 +34,6 @@ public class Music {
     
     // jouera l'effet sonore en boucle
     public static void playLoopingBgMusic(String soundFileName) {
-        System.out.println("Attempting to play looping background music: " + soundFileName);
         stopBgMusic();
         try {
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(Music.class.getResource("/"+ soundFileName));
@@ -44,15 +43,12 @@ public class Music {
         } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
-        System.out.println("Finished attempting to play looping background music.");
     }
 
     //Si y'en a d'autre music en train de jouer en boucle, on l'arrète et commencera la nouvelle musique
     public static void stopBgMusic() {
-        System.out.println("Attempting to stop background music");
         if (bgMusicClip != null && bgMusicClip.isRunning()) {
             bgMusicClip.stop();
         }
-        System.out.println("Finished attempting to stop background music");
     }
 }
