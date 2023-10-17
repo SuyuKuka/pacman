@@ -27,7 +27,7 @@ public final class MazeState {
     }
 
     private Mode mode;
-    private Instant start;
+    private long start;
 
     private final List<Critter> critters;
     private int score;
@@ -191,7 +191,7 @@ public final class MazeState {
      * initialise les directions de {@code BLINKY} et de {@code PINKY}.
      */
     public void activateGhost() {
-        start = Instant.now();
+        start = Instant.now().toEpochMilli();
         mode = Mode.SCATTER;
         BLINKY.setActivated(true);
         PINKY.setActivated(true);
@@ -250,27 +250,24 @@ public final class MazeState {
             // Changement du mode selon le temps de jeu
         } else if (!PacMan.INSTANCE.isEnergized()) {
             long now = Instant.now().toEpochMilli();
-            long startMilli = start.toEpochMilli();
             
-            if (now > startMilli + 7 * 1000 ||
-                    now > startMilli + (7 + 20 + 7) * 1000 ||
-                    now > startMilli + (7 + 20 + 7 + 20 + 5) * 1000 ||
-                    now > startMilli + (7 + 20 + 7 + 20 + 5 + 20 + 5) * 1000) {
+            if (now < start + 7 * 1000 ||
+                now > start + (7 + 20) * 1000 && now <= start + (7 + 20 + 7) * 1000 ||
+                now > start + (7 + 20 + 7 + 20) * 1000 && now <= start + (7 + 20 + 7 + 20 + 5) * 1000 ||
+                now > start + (7 + 20 + 7 + 20 + 5 + 20) * 1000
+                && now <= start + (7 + 20 + 7 + 20 + 5 + 20 + 5) * 1000) {
+                if (mode == Mode.CHASE) {
+                    Ghost.reverseGhostsDirection(config);
+                }
+                scatterMode();
+            } else if (now > start + 7 * 1000 ||
+                now > start + (7 + 20 + 7) * 1000 ||
+                now > start + (7 + 20 + 7 + 20 + 5) * 1000 ||
+                now > start + (7 + 20 + 7 + 20 + 5 + 20 + 5) * 1000) {
                 if (mode == Mode.SCATTER) {
                     Ghost.reverseGhostsDirection(config);
                 }
                 chaseMode();
-            }
-            if (now < startMilli + 7 * 1000 ||
-                    now > startMilli + (7 + 20) * 1000 && now <= startMilli + (7 + 20 + 7) * 1000 ||
-                    now > startMilli + (7 + 20 + 7 + 20) * 1000 && now <= startMilli + (7 + 20 + 7 + 20 + 5) * 1000 ||
-                    now > startMilli + (7 + 20 + 7 + 20 + 5 + 20) * 1000
-                            && now <= startMilli + (7 + 20 + 7 + 20 + 5 + 20 + 5) * 1000) {
-                if (mode == Mode.CHASE) {
-                    Ghost.reverseGhostsDirection(config);
-                }
-                mode = Mode.SCATTER;
-                scatterMode();
             }
         }
     }

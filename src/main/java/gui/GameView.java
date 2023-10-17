@@ -69,10 +69,9 @@ public class GameView {
                 // Décommenter ce block pour afficher le target
                 /*
                 var cellFactory = new CellGraphicsFactory(30);
-                Ghost ghost = CLYDE;
+                Ghost ghost = BLINKY;
                 if (ghost.getTarget() != null) {
-                addGraphics(cellFactory.showTarget(new
-                IntCoordinates((int)(ghost.getTarget().x()), (int)(ghost.getTarget().y()))));
+                    addGraphics(cellFactory.showTarget(new IntCoordinates((int)(ghost.getTarget().x()), (int)(ghost.getTarget().y()))));
                 }
                 */
 

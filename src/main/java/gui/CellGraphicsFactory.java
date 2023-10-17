@@ -96,7 +96,7 @@ public class CellGraphicsFactory {
         dot.setRadius(5);
         dot.setCenterX(scale / 2);
         dot.setCenterY(scale / 2);
-        dot.setFill(Color.RED);
+        dot.setFill(Color.color(Math.random(), Math.random(), Math.random()));
         return new GraphicsUpdater() {
             @Override
             public void update() {

@@ -409,22 +409,22 @@ public enum Ghost implements Critter {
     public void reverseDirection(MazeConfig config) {
         switch (direction) {
             case NORTH:
-                if (!config.getCell(new IntCoordinates(PacMan.INSTANCE.getPos().round().x(), PacMan.INSTANCE.getPos().round().y() + 1)).northWall()) {
+                if (!config.getCell(new IntCoordinates(pos.round().x(), pos.round().y() + 1)).northWall()) {
                     direction = SOUTH;
                 }
                 break;
             case EAST:
-                if (!config.getCell(new IntCoordinates(PacMan.INSTANCE.getPos().round().x() - 1, PacMan.INSTANCE.getPos().round().y())).eastWall()) {
+                if (!config.getCell(new IntCoordinates(pos.round().x() - 1, pos.round().y())).eastWall()) {
                     direction = WEST;
                 }
                 break;
             case SOUTH:
-                if (!config.getCell(new IntCoordinates(PacMan.INSTANCE.getPos().round().x(), PacMan.INSTANCE.getPos().round().y() - 1)).southWall()) {
+                if (!config.getCell(new IntCoordinates(pos.round().x(), pos.round().y() - 1)).southWall()) {
                     direction = NORTH;
                 }
                 break;
             case WEST:
-                if (!config.getCell(new IntCoordinates(PacMan.INSTANCE.getPos().round().x() + 1, PacMan.INSTANCE.getPos().round().y())).westWall()) {
+                if (!config.getCell(new IntCoordinates(pos.round().x() + 1, pos.round().y())).westWall()) {
                     direction = EAST;
                 }
                 break;
