@@ -84,7 +84,7 @@ public final class CritterGraphicsFactory {
                         return "pacman_west_ferm.png";
                     }
                 default:
-                    return "pacman.png";
+                    return "pacman_defaut.png";
                     //On peut mettre "return url" pour "default:"" en gardant l'ancien direction fait par pacman(mettre url ds paramètre)
                     //mais il enleve l'image de pacman à point initial
             }
