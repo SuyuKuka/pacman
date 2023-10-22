@@ -30,6 +30,23 @@ public class Music {
         }
     } 
     
+    public static void playSound(String soundFileName, Runnable onFinished) {
+        try {
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(Music.class.getResource("/" + soundFileName));
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioInputStream);
+            clip.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) {
+                    onFinished.run(); 
+                    clip.close();
+                }
+            });
+            clip.start();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+    }
+    
     
     // jouera l'effet sonore en boucle
     public static void playLoopingBgMusic(String soundFileName) {
@@ -53,5 +70,9 @@ public class Music {
             bgMusicClip.stop();
         }
         System.out.println("Finished attempting to stop background music");
+    }
+    //fini "introMusicFileName" puis fait en loop "loopBgMusicFileName"
+    public static void playIntroMusicThenLoopBgMusic(String introMusicFileName, String loopBgMusicFileName) {
+        playSound(introMusicFileName, () -> playLoopingBgMusic(loopBgMusicFileName)); 
     }
 }
