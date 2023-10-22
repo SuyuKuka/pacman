@@ -41,6 +41,7 @@ public final class MazeState {
     private int pacgomme;
 
     private Scene gameScene;
+    private boolean isMusicPlaying = true;
 
     public MazeState(MazeConfig config) {
         this.config = config;
@@ -247,12 +248,20 @@ public final class MazeState {
     private void updateMode() {
         // Pac-Man est ENERGIZED, changement du mode en FRIGHTENED
         if (PacMan.INSTANCE.isEnergized() && mode != Mode.FRIGHTENED) {
+            if (isMusicPlaying) {
+                isMusicPlaying = false;
+            }
+            Music.stopBgMusic();
+            Music.playIntroMusicThenLoopBgMusic("energie.wav", "power_dot.wav");
             reverseGhostsDirection(config);
             mode = Mode.FRIGHTENED;
             // Changement du mode selon le temps de jeu
         } else if (!PacMan.INSTANCE.isEnergized()) {
             long now = Instant.now().toEpochMilli();
-            
+            if (!isMusicPlaying) {
+                Music.playLoopingBgMusic("Pacmanman.wav");
+                isMusicPlaying = true;
+            }
             if (now < start + 7 * 1000 ||
                 now > start + (7 + 20) * 1000 && now <= start + (7 + 20 + 7) * 1000 ||
                 now > start + (7 + 20 + 7 + 20) * 1000 && now <= start + (7 + 20 + 7 + 20 + 5) * 1000 ||
@@ -372,9 +381,16 @@ public final class MazeState {
         if (increment == 1) pacgomme++;
     }
 
-    private void playerLost() {
-        Music.playSound("fail.wav");//ajouter le son à la mort
+    private void playerLost() { 
         lives--;
+        if(lives == 0){//ajouter le son à la mort
+            Music.stopBgMusic();
+            Music.playSound("gameOver.wav");
+            
+        }else{
+            Music.playSound("fail.wav");
+            isMusicPlaying = false;
+        }
         resetCritters();
     }
 

@@ -21,6 +21,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 import model.MazeState;
+import utils.Music;
 
 public class MenuGraphics {
     private Stage primaryStage;
@@ -35,6 +36,7 @@ public class MenuGraphics {
     public MenuGraphics(Scene gameScene, Stage primaryStage) {
         this.gameScene = gameScene;
         this.primaryStage = primaryStage;
+        Music.playLoopingBgMusic("Pacmanman.wav");
     }
 
     public void displayScore(MazeState state) {
@@ -189,6 +191,8 @@ public class MenuGraphics {
     }
 
     public void win(MazeState state){
+        Music.stopBgMusic();
+        Music.playSound("gameWin.wav");
         state.playerWin();
 
         Rectangle transparent = new Rectangle(0, 0, primaryStage.getWidth(), primaryStage.getHeight() - 40);
