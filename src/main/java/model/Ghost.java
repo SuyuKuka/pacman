@@ -2,7 +2,10 @@ package model;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
+import model.MazeState.Mode;
+
 import static model.Direction.*;
+import static model.MazeState.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,16 +55,8 @@ public enum Ghost implements Critter {
         return target;
     }
 
-    public void setTarget(RealCoordinates target) {
-        this.target = target;
-    }
-
     public boolean isActivated() {
         return activated;
-    }
-
-    public void setActivated(boolean activated) {
-        this.activated = activated;
     }
 
     public boolean isEaten() {
@@ -86,10 +81,10 @@ public enum Ghost implements Critter {
     public static void updateBlinky() {
         // Lorsque le fantôme a été mangé
         if (BLINKY.eaten) {
-            BLINKY.setTarget(new IntCoordinates(8, 10).toRealCoordinates(1.0));
+            BLINKY.target = new IntCoordinates(8, 10).toRealCoordinates(1.0);
         // Cas général
         } else {
-            BLINKY.setTarget(PacMan.INSTANCE.getPos());
+            BLINKY.target = PacMan.INSTANCE.getPos();
         }
     }
 
@@ -99,11 +94,10 @@ public enum Ghost implements Critter {
     public static void updatePinky() {
         // Lorsque le fantôme a été mangé
         if (PINKY.eaten) {
-            PINKY.setTarget(new IntCoordinates(8, 10).toRealCoordinates(1.0));
+            PINKY.target = new IntCoordinates(8, 10).toRealCoordinates(1.0);
             return;
         }
 
-        RealCoordinates targetPos;
         double deltaX;
         double deltaY;
         // Pour éviter les situations lorsque Pac-Man est stationnaire
@@ -114,27 +108,23 @@ public enum Ghost implements Critter {
             case NORTH:
                 deltaX = new IntCoordinates(2, 0).toRealCoordinates(1.0).x();
                 deltaY = new IntCoordinates(0, 2).toRealCoordinates(1.0).y();
-                targetPos = new RealCoordinates(PacMan.INSTANCE.getPos().x() - deltaX, PacMan.INSTANCE.getPos().y() - deltaY);
-                PINKY.setTarget(targetPos);
+                PINKY.target = new RealCoordinates(PacMan.INSTANCE.getPos().x() - deltaX, PacMan.INSTANCE.getPos().y() - deltaY);
                 break;
             // Pour les autres directions, le target se trouvera 2 cases devant Pac-Man
             case EAST:
                 deltaX = new IntCoordinates(2, 0).toRealCoordinates(1.0).x();
-                targetPos = new RealCoordinates(PacMan.INSTANCE.getPos().x() + deltaX, PacMan.INSTANCE.getPos().y());
-                PINKY.setTarget(targetPos);
+                PINKY.target = new RealCoordinates(PacMan.INSTANCE.getPos().x() + deltaX, PacMan.INSTANCE.getPos().y());
                 break;
             case SOUTH:
                 deltaY = new IntCoordinates(0, 2).toRealCoordinates(1.0).y();
-                targetPos = new RealCoordinates(PacMan.INSTANCE.getPos().x(), PacMan.INSTANCE.getPos().y() + deltaY);
-                PINKY.setTarget(targetPos);
+                PINKY.target = new RealCoordinates(PacMan.INSTANCE.getPos().x(), PacMan.INSTANCE.getPos().y() + deltaY);
                 break;
             case WEST:
                 deltaX = new IntCoordinates(2, 0).toRealCoordinates(1.0).x();
-                targetPos = new RealCoordinates(PacMan.INSTANCE.getPos().x() - deltaX, PacMan.INSTANCE.getPos().y());
-                PINKY.setTarget(targetPos);
+                PINKY.target = new RealCoordinates(PacMan.INSTANCE.getPos().x() - deltaX, PacMan.INSTANCE.getPos().y());
                 break;
             default:
-                PINKY.setTarget(PacMan.INSTANCE.getPos());
+                PINKY.target = PacMan.INSTANCE.getPos();
                 break;
         }
     }
@@ -145,34 +135,29 @@ public enum Ghost implements Critter {
     public static void updateInky() {
         // Lorsque le fantôme a été mangé
         if (INKY.eaten) {
-            INKY.setTarget(new IntCoordinates(8, 10).toRealCoordinates(1.0));
+            INKY.target = new IntCoordinates(8, 10).toRealCoordinates(1.0);
             return;
         }
 
-        RealCoordinates targetPos;
         // Pour éviter les situations lorsque Pac-Man est stationnaire
         Direction pacDir = PacMan.INSTANCE.getDirection() == NONE ? PacMan.INSTANCE.getLastDirection() : PacMan.INSTANCE.getDirection();
 
         // Le target d'Inky se trouve à 2 fois la distances entre la position de Blinky et une case devant Pac-Man
         switch (pacDir) {
             case NORTH:
-                targetPos = new RealCoordinates(2 * PINKY.getTarget().x() + 2 - BLINKY.getPos().x(), 2 * PINKY.getTarget().y() + 2 - BLINKY.getPos().y());
-                INKY.setTarget(targetPos);
+                INKY.target = new RealCoordinates(2 * PINKY.target.x() + 2 - BLINKY.getPos().x(), 2 * PINKY.target.y() + 2 - BLINKY.getPos().y());
                 break;
             case EAST:
-                targetPos = new RealCoordinates(2 * PINKY.getTarget().x() - 2 - BLINKY.getPos().x(), 2 * PINKY.getTarget().y() - BLINKY.getPos().y());
-                INKY.setTarget(targetPos);
+                INKY.target = new RealCoordinates(2 * PINKY.target.x() - 2 - BLINKY.getPos().x(), 2 * PINKY.target.y() - BLINKY.getPos().y());
                 break;
             case SOUTH:
-                targetPos = new RealCoordinates(2 * PINKY.getTarget().x() - BLINKY.getPos().x(), 2 * PINKY.getTarget().y() - 2 - BLINKY.getPos().y());
-                INKY.setTarget(targetPos);
+                INKY.target = new RealCoordinates(2 * PINKY.target.x() - BLINKY.getPos().x(), 2 * PINKY.target.y() - 2 - BLINKY.getPos().y());
                 break;
             case WEST:
-                targetPos = new RealCoordinates(2 * PINKY.getTarget().x() + 2 - BLINKY.getPos().x(), 2 * PINKY.getTarget().y() - BLINKY.getPos().y());
-                INKY.setTarget(targetPos);
+                INKY.target = new RealCoordinates(2 * PINKY.target.x() + 2 - BLINKY.getPos().x(), 2 * PINKY.target.y() - BLINKY.getPos().y());
                 break;
             default:
-                INKY.setTarget(PacMan.INSTANCE.getPos());
+                INKY.target = PacMan.INSTANCE.getPos();
                 break;
         }
     }
@@ -183,7 +168,7 @@ public enum Ghost implements Critter {
     public static void updateClyde() {
         // Lorsque le fantôme a été mangé
         if (CLYDE.eaten) {
-            CLYDE.setTarget(new IntCoordinates(8, 10).toRealCoordinates(1.0));
+            CLYDE.target = new IntCoordinates(8, 10).toRealCoordinates(1.0);
             return;
         }
 
@@ -193,9 +178,9 @@ public enum Ghost implements Critter {
         // ici, ce rayon de 8 cases sera remplacé par 4 car le fonctionnement des cellules est différent (ici, les cellules sont plus grandes que celles du jeu original)
         int radiusRange = 4;
         if (Math.sqrt(Math.pow(CLYDE.getPos().x() - PacMan.INSTANCE.getPos().x(), 2) + Math.pow(CLYDE.getPos().y() - PacMan.INSTANCE.getPos().y(), 2)) < radiusRange) {
-            CLYDE.setTarget(new IntCoordinates(0, 21).toRealCoordinates(1.0));
+            CLYDE.target = new IntCoordinates(0, 21).toRealCoordinates(1.0);
         } else {
-            CLYDE.setTarget(PacMan.INSTANCE.getPos());
+            CLYDE.target = PacMan.INSTANCE.getPos();
         }
     }
 
@@ -309,16 +294,16 @@ public enum Ghost implements Critter {
         for (Direction dir : possibleDirections) {
             switch (dir) {
                 case NORTH:
-                    deltaDist[0] = Math.sqrt(Math.pow(getTarget().x() - pos.x(), 2) + Math.pow((getTarget().y() - (pos.y() - 1)), 2));
+                    deltaDist[0] = Math.sqrt(Math.pow(target.x() - pos.x(), 2) + Math.pow((target.y() - (pos.y() - 1)), 2));
                     break;
                 case WEST:
-                    deltaDist[1] = Math.sqrt(Math.pow(getTarget().x() - (pos.x() - 1), 2) + Math.pow((getTarget().y() - pos.y()), 2));
+                    deltaDist[1] = Math.sqrt(Math.pow(target.x() - (pos.x() - 1), 2) + Math.pow((target.y() - pos.y()), 2));
                     break;
                 case SOUTH:
-                    deltaDist[2] = Math.sqrt(Math.pow(getTarget().x() - pos.x(), 2) + Math.pow((getTarget().y() - (pos.y() + 1)), 2));
+                    deltaDist[2] = Math.sqrt(Math.pow(target.x() - pos.x(), 2) + Math.pow((target.y() - (pos.y() + 1)), 2));
                     break;
                 case EAST:
-                    deltaDist[3] = Math.sqrt(Math.pow(getTarget().x() - (pos.x() + 1), 2) + Math.pow((getTarget().y() - pos.y()), 2));
+                    deltaDist[3] = Math.sqrt(Math.pow(target.x() - (pos.x() + 1), 2) + Math.pow((target.y() - pos.y()), 2));
                     break;
                 default:
                     break;
@@ -431,5 +416,73 @@ public enum Ghost implements Critter {
             default:
                 break;
         }
+    }
+
+    public void resetGhostPos(MazeState state) {
+        if (this == BLINKY || this == INKY && state.getPacgomme() >= 30) direction = EAST;
+        else if (this == PINKY) direction = NORTH;
+        else if (this == CLYDE && state.getPacgomme() >= 146 / 3) direction = WEST;
+        else direction = NONE;
+        
+        pos = (state.getInitialPos().get(this));
+    }
+
+    /**
+     * La méthode initialise la variable {@code start} qui garde l'heure UNIX au
+     * lancement de la partie (lorsque Pac-Man bouge pour la première fois),
+     * initialise le premier mode en {@code SCATTER} et
+     * initialise les directions de {@code BLINKY} et de {@code PINKY}.
+     */
+    public static void activateGhost() {
+        BLINKY.activated = true;
+        PINKY.activated = true;
+        INKY.activated = false;
+        CLYDE.activated = false;
+        BLINKY.direction = EAST;
+        PINKY.direction = NORTH;
+    }
+
+    /**
+     * La méthode met à jour les targets de chaque fantôme selon le mode courant.
+     * Elle met aussi à jour la direction de chaque fantôme
+     * lorsqu'il entre dans une intersection. {@code INKY} et {@code CLYDE} ne
+     * peuvent bouger seulement lorsqu'un score a été atteint.
+     * 
+     * @param deltaTns La variation du temps entre deux instants.
+     */
+    public static void updateGhost(long deltaTns, MazeState state) {
+        List<Ghost> critters = List.of(CLYDE, BLINKY, INKY, PINKY);
+        for (Ghost critter : critters) {
+            critter.calibratePos(deltaTns, critter.getPos(), critter.nextPos(deltaTns), state.getHeight(), state.getWidth());
+            RealCoordinates pos = critter.getPos();
+
+            // Lorsque le fantôme mangé retourne au spawn
+            if (critter.eaten && pos.equals(new IntCoordinates(8, 10).toRealCoordinates(1.0))) {
+                critter.eaten = false;
+            }
+
+            // Activation d'Inky à partir de 30 points
+            if (critter == INKY && !INKY.activated && state.getPacgomme() >= 30) {
+                INKY.activated = true;
+                critter.direction = EAST;
+                // Activation de Clyde lorsqu'un tier des points totaux a été obtenu
+            } else if (critter == CLYDE && !CLYDE.activated && state.getPacgomme() >= state.getMaxScore() / 3) {
+                CLYDE.activated = true;
+                critter.direction = WEST;
+                // Set direction aléatoire en FRIGHTENED mode
+            } else if (!critter.eaten && state.getMode() == Mode.FRIGHTENED && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
+                state.frightenedMode(critter);
+                // Set direction la plus proche du target
+            } else if (critter.activated && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
+                critter.direction = critter.directionClosestToTarget(state.getConfig());
+            }
+        }
+    }
+
+    public static void setScatterTarget() {
+        BLINKY.target = new IntCoordinates(16, 0).toRealCoordinates(1.0);
+        INKY.target = new IntCoordinates(16, 21).toRealCoordinates(1.0);
+        PINKY.target = new IntCoordinates(0, 0).toRealCoordinates(1.0);
+        CLYDE.target = new IntCoordinates(0, 21).toRealCoordinates(1.0);
     }
 }

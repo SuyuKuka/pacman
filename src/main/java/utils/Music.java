@@ -8,14 +8,14 @@ public class Music {
 
     private static Clip bgMusicClip = null;
     
-    // jouera l'effet sonore une fois, sans boucle
-    public static void playSound(String soundFileName) {//“soundFileName” Nom du fichier audio dans le répertoire “resources”
+    // Jouera l'effet sonore une fois, sans boucle
+    public static void playSound(String soundFileName) {// "soundFileName" Nom du fichier audio dans le répertoire "resources"
         try {
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(Music.class.getResource("/" + soundFileName));
             Clip clip = AudioSystem.getClip();
             clip.open(audioInputStream);
             clip.start();
-        }catch (UnsupportedAudioFileException e) {
+        } catch (UnsupportedAudioFileException e) {
             e.printStackTrace();
             System.out.println("le format du fichier audio n'est pas supporté");
         } catch (IOException e) {

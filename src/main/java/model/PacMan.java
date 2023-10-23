@@ -69,7 +69,7 @@ public final class PacMan implements Critter {
     /* Décide si pacman est ENERGIZED */ 
     public void containsEnergizer (MazeConfig mazeConfig) {
         if (mazeConfig.getCell(new IntCoordinates(pos.round().x(), pos.round().y())).initialContent() == Content.ENERGIZER ) {
-            setEnergized(true);
+            energized = true;
         }
     }
 
@@ -79,7 +79,7 @@ public final class PacMan implements Critter {
             energizedTimer += deltaTns / Math.pow(10,9);
             if (energizedTimer >= maxEnergizedTime) {
                 energizedTimer = 0;
-                setEnergized(false);
+                energized = false;
             }
         }
     }
@@ -90,16 +90,8 @@ public final class PacMan implements Critter {
         }
     }
 
-    public void setEnergized(boolean energized) {
-        this.energized = energized;
-    }
-
     public Direction getLastDirection() {
         return lastDirection;
-    }
-
-    public void setLastDirection(Direction lastDirection) {
-        this.lastDirection = lastDirection;
     }
 
     public int getPacManMoved() {
@@ -122,10 +114,6 @@ public final class PacMan implements Critter {
       this.bufferDirection = bufferDirection;
     }
 
-    public double getBufferDurationTime() {
-      return bufferDurationTime;
-    }
-
     public void updateBufferDurationTime(long deltaTns) {
         bufferDurationTime += deltaTns / Math.pow(10, 9);
         if (bufferDurationTime >= bufferMaxTime) {
@@ -134,4 +122,100 @@ public final class PacMan implements Critter {
         }
     }
 
+    public void resetPacMan() {
+        PacMan.INSTANCE.pacManMoved = 0;
+        PacMan.INSTANCE.energized = false;
+        PacMan.INSTANCE.bufferDirection = Direction.NONE;
+    }
+
+    public void resetPacManPos(MazeState state) {
+        PacMan.INSTANCE.direction = Direction.NONE;
+        PacMan.INSTANCE.pos = state.getInitialPos().get(PacMan.INSTANCE);
+    }
+
+    /**
+     * La méthode arrête Pac-Man lorsqu'il rencontre un mur. Elle met aussi à jour
+     * sa position lorsqu'il traverse une case pour faciliter les
+     * virages.
+     * 
+     * @param deltaTns La variation du temps entre deux instants.
+     */
+    public void updatePacMan(long deltaTns, MazeState state) {
+        var curPos = pos;
+        var nextPos = nextPos(deltaTns);
+
+        // Nécessaire pour éviter les problèmes de détermination du target selon la direction de Pac-Man
+        if (direction != Direction.NONE) lastDirection = direction;
+
+        // Modifie ou non la direction de PacMan en fonction du terrain du buffer
+        if (canPacManTurn(bufferDirection, deltaTns, state.getConfig())) {
+            nextPos = nextPos(deltaTns, bufferDirection);
+            direction = bufferDirection;
+            bufferDirection = Direction.NONE;
+        }
+        nextPos = calibratePacManPos(curPos, nextPos, state.getConfig());
+        calibratePos(deltaTns, curPos, nextPos, state.getHeight(), state.getWidth());
+        updateBufferDurationTime(deltaTns);
+
+        // Si Pac-Man mange un ENERGIZER
+        var pacPos = PacMan.INSTANCE.getPos().round();
+        if (!state.getGridState(new IntCoordinates(pacPos.x(), pacPos.y()))) {
+            containsEnergizer(state.getConfig());
+            resetTimerSiRepasseEnergizer(state.getConfig());
+        }
+        increaseEnergizedTimer(deltaTns);
+    }
+
+    /**
+    * Méthode qui calcul la position à la frame suivante de PacMan en fonction de {@code Direction}. <br><br>
+    * Si cette position est valable, change la {@code Direction} de PacMan sinon, garde l'ancienne {@code Direction}.
+    * 
+    * @param Maze MazeConfig utilisée.
+    * @param direction Calcul par rapport à cette direction.
+    * @param deltaTns Temps écoulée.
+    * @return Retourne vraie si un changement de direction est possible, faux sinon.
+    */
+   public boolean canPacManTurn(Direction direction, long deltaTns, MazeConfig config) {
+       if (this.direction == direction) {
+           return false;
+       }
+       var nextNeighbours = nextPos(deltaTns).intNeighbours();
+       if (nextNeighbours.size() >= 4) {
+           return false;
+       }
+       if (nextNeighbours.size() == 2) {
+           if ((direction == Direction.NORTH || direction == Direction.SOUTH) && (int) pos.x() != pos.x()) {
+               return false;
+           }
+           if ((direction == Direction.EAST || direction == Direction.WEST) && (int) pos.y() != pos.y()) {
+               return false;
+           }
+           var curNeighbours = pos.intNeighbours();
+           for (var n: curNeighbours) {
+               if (direction.wall(config.getCell(n))) {
+                   return false;
+               }
+           }
+       }
+       return true;
+   }
+
+    /**
+     * Méthode qui arrête la course de PacMan et retire sa direction si il rencontre un mur de face.
+     * @param curPos  {@code RealCoordinates} actuelle de {@code Pac-Man}.
+     * @param nextPos {@code RealCoordinates} supposée (= s'il ne traverse pas de mur) de {@code Pac-Man}.
+     * @return Retourne {@code nextPos} modifié ou non.
+     */
+     public RealCoordinates calibratePacManPos(RealCoordinates curPos, RealCoordinates nextPos, MazeConfig config) {
+        if (!curPos.intNeighbours().containsAll(nextPos.intNeighbours())) {
+            for (var n : curPos.intNeighbours()) {
+                if (direction.wall(config.getCell(n))) {
+                    RealCoordinates newPos = pos.adjustCoordinates(direction);
+                    direction = Direction.NONE;
+                    return newPos;
+                }
+            }
+        }
+        return nextPos;
+    }
 }
