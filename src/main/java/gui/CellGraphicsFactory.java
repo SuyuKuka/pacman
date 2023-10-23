@@ -8,8 +8,6 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import model.MazeState;
 
-import static config.Cell.Content.DOT;
-
 public class CellGraphicsFactory {
     private final double scale;
 

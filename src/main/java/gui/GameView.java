@@ -7,17 +7,22 @@ import javafx.scene.layout.Pane;
 import model.Ghost;
 import static model.Ghost.*;
 import model.MazeState;
+import utils.FpsAndThreads;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class GameView {
+public final class GameView {
     // class parameters
-    private final MazeState maze;
-    private final Pane gameRoot; // main node of the game
-    private MenuGraphics graphics;
+    private MazeState maze;
+    private Pane gameRoot; // main node of the game
+    private AnimationTimer animationTimer;
 
-    private final List<GraphicsUpdater> graphicsUpdaters;
+    private List<GraphicsUpdater> graphicsUpdaters;
+
+    private GameView() {}
+
+    public static final GameView INSTANCE = new GameView();
 
     private void addGraphics(GraphicsUpdater updater) {
         gameRoot.getChildren().add(updater.getNode());
@@ -25,18 +30,15 @@ public class GameView {
     }
 
     /**
-     * @param maze  le "modèle" de cette vue (le labyrinthe et tout ce qui s'y
-     *              trouve)
-     * @param root  le nœud racine dans la scène JavaFX dans lequel le jeu sera
-     *              affiché
+     * @param maze  le "modèle" de cette vue (le labyrinthe et tout ce qui s'y trouve)
+     * @param root  le nœud racine dans la scène JavaFX dans lequel le jeu sera affiché
      * @param scale le nombre de pixels représentant une unité du labyrinthe
      */
-    public GameView(MazeState maze, Pane root, double scale, MenuGraphics graphics) {
-        this.maze = maze;
-        this.gameRoot = root;
-        this.graphics = graphics;
+    public void setGameView(MazeState maze, Pane root, double scale) {
+        INSTANCE.maze = maze;
+        INSTANCE.gameRoot = root;
         // pixels per cell
-        root.setMinWidth(maze.getWidth() * scale+300);
+        root.setMinWidth(maze.getWidth() * scale + 300);
         root.setMinHeight(maze.getHeight() * scale);
         root.setStyle("-fx-background-color: #000000");
         var critterFactory = new CritterGraphicsFactory(scale);
@@ -47,12 +49,12 @@ public class GameView {
         for (int x = 0; x < maze.getWidth(); x++)
             for (int y = 0; y < maze.getHeight(); y++)
                 addGraphics(cellFactory.makeGraphics(maze, new IntCoordinates(x, y)));
-        graphics.displayLives(maze);
-        graphics.displayScore(maze);
+        InGameGui.INSTANCE.displayLives(maze);
+        InGameGui.INSTANCE.displayScore(maze);
     }
 
     public void animate() {
-        new AnimationTimer() {
+        animationTimer = new AnimationTimer() {
             long last = 0;
 
             @Override
@@ -63,23 +65,38 @@ public class GameView {
                 }
                 var deltaT = now - last;
                 maze.update(deltaT);
-                graphics.displayScore(maze);
-                graphics.removeLife(maze);
-
-                // Décommenter ce block pour afficher le target
-                /*
-                var cellFactory = new CellGraphicsFactory(30);
-                Ghost ghost = BLINKY;
-                if (ghost.getTarget() != null) {
-                    addGraphics(cellFactory.showTarget(new IntCoordinates((int)(ghost.getTarget().x()), (int)(ghost.getTarget().y()))));
-                }
-                */
-
+                InGameGui.INSTANCE.updateScore(maze);
+                InGameGui.INSTANCE.updateLives(maze);
+                
+                // Changer les boolean pour afficher les infos respectifs
+                tests(deltaT, false, false, false);
+                
                 for (var updater : graphicsUpdaters) {
                     updater.update();
                 }
                 last = now;
             }
-        }.start();
+        };
+        animationTimer.start();
+    }
+
+    public void stopAnimation() {
+        if (animationTimer != null) animationTimer.stop();
+    }
+
+    public void tests(long deltaT, boolean showFps, boolean showThreads, boolean showTarget) {
+        if (showFps) {
+            FpsAndThreads.updateFps(deltaT);
+        }
+        if (showThreads) {
+            FpsAndThreads.updateThread(deltaT);
+        }
+        if (showTarget) {
+            var cellFactory = new CellGraphicsFactory(30);
+            Ghost ghost = BLINKY;
+            if (ghost.getTarget() != null) {
+                addGraphics(cellFactory.showTarget(new IntCoordinates((int)(ghost.getTarget().x()), (int)(ghost.getTarget().y()))));
+            }
+        }
     }
 }

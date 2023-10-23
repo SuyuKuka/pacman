@@ -1,6 +1,5 @@
 package gui;
 
-import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
@@ -13,7 +12,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-public class Multiplayer extends Application {
+public class Multiplayer extends Menu {
     private StackPane background;
 
     public Multiplayer(StackPane background) {
@@ -21,94 +20,60 @@ public class Multiplayer extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        StackPane root = new StackPane();
-        Menu.selected = 1;
+    public void start(Stage primaryStage) {
+        StackPane rootPane = new StackPane();
         
         Text gameSelection = Menu.createText("Game Selection", 68);
-        HBox option0 = Menu.createHBox(100, gameSelection);
+        HBox title = Menu.createHBox(100, Pos.CENTER, gameSelection);
 
+        Text select0 = Menu.createText(">", 38);
         Text versus = Menu.createText("Versus", 38);
-        Text select1 = Menu.createText(">", 38);
-        HBox option1 = Menu.createHBox(20, select1, versus);
-        versus.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-            versus(primaryStage);
-        });
+        HBox option0 = Menu.createHBox(20, Pos.CENTER, select0, versus);
+        versus.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> startLevel(primaryStage));
 
+        Text select1 = Menu.createText(">", 38);
         Text coop = Menu.createText("Coop", 38);
-        Text select2 = Menu.createText(">", 38);
-        HBox option2 = Menu.createHBox(20, select2, coop);
-        coop.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-            coop(primaryStage);
-        });
+        HBox option1 = Menu.createHBox(20, Pos.CENTER, select1, coop);
+        coop.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> startLevel(primaryStage));
         
-        Text back = Menu.createText("Back", 38);
         Text selectback = Menu.createText(">", 38);
-        HBox optionback = Menu.createHBox(20, selectback, back);
+        Text back = Menu.createText("Back", 38);
+        HBox optionBack = Menu.createHBox(20, Pos.CENTER, selectback, back);
         back.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
             Menu menu = new Menu();
             menu.start(primaryStage);
         });
-        optionback.setAlignment(Pos.BOTTOM_LEFT);
+        optionBack.setAlignment(Pos.BOTTOM_LEFT);
 
-        VBox position = new VBox(20);
-        VBox titlePos = new VBox(80);
-        VBox textPos = new VBox(20);
-        VBox backPos = new VBox(150);
+        VBox optionBox = createVBox(20, Pos.CENTER, option0, option1);
+        VBox subBox = createVBox(80, Pos.TOP_CENTER, title, optionBox);
+        VBox mainBox = createVBox(150, Pos.BOTTOM_LEFT, subBox, optionBack);
 
-            
-        textPos.getChildren().addAll(option1, option2);
-        textPos.setAlignment(Pos.CENTER);
+        rootPane.getChildren().addAll(background, mainBox);
 
-        titlePos.getChildren().addAll(position ,option0, textPos);
-        titlePos.setAlignment(Pos.TOP_CENTER);
-
-        backPos.getChildren().addAll(titlePos, optionback);
-        backPos.setAlignment(Pos.BOTTOM_LEFT);
-
-        root.getChildren().addAll(background, backPos);
-
-        Scene gameScene = new Scene(root, 690, 510);
-        Text[] allText = {select1, select2, selectback};
+        Scene gameScene = new Scene(rootPane, 690, 510);
+        Text[] choices = {select0, select1, selectback};
         
-        Menu.selector(gameScene, allText);
+        Menu.selector(gameScene, choices);
 
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
-                switch (Menu.selected) {
-                    case 1:
-                        versus(primaryStage);
-                        break;
-                    
-                    case 2:
-                        coop(primaryStage);
-                        break;
-                    
-                    case 3:
-                        Menu menuBack = new Menu();
-                        menuBack.start(primaryStage);
-                        break;
-    
-                    default:
-                        break;
+                if (Menu.selected == 2) {
+                    Menu menuBack = new Menu();
+                    menuBack.start(primaryStage);
+                } else {
+                    startLevel(primaryStage);
                 }
             }
         });
 
         gameScene.setFill(Color.BLACK);
         primaryStage.setScene(gameScene);
-        //primaryStage.sizeToScene();
+        // primaryStage.sizeToScene();
         primaryStage.show();
     }
 
-    private void versus(Stage primaryStage) {
-        int selected = Menu.selected;
-        
-    }
-
-    private void coop(Stage primaryStage) {
+    private void startLevel(Stage primaryStage) {
         int selected = Menu.selected;
     }
-    
-    
 }
