@@ -5,10 +5,14 @@ import geometry.RealCoordinates;
 import model.Direction;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.ArrayList;
-import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
 import static config.Cell.*;
 
@@ -100,6 +104,34 @@ public class MazeConfig {
     }
 
     /**
+     * Convertie les données d'un fichier .json en {@code Cell[][]} utilisé pour la configuration de la carte. <br></br>
+     * Le fichier doit contenir des données nécessaires pour une carte rectangulaire.
+     * 
+     * @param path Le chemin du fichier à importer.
+     * @return {@code Cell[][] maze}
+     */
+    public static Cell[][] getJsonMaze(String path) {
+        try {
+            String file = FileUtils.readFileToString(new File(path), StandardCharsets.UTF_8);
+            JSONObject jObject = new JSONObject(file);
+            JSONArray jArray = new JSONArray(jObject.getJSONArray("Line1"));
+            Cell[][] maze = new Cell[jObject.length()][jArray.length()];
+            for (int i = 0; i < jObject.length(); i++) {
+                jArray = new JSONArray(jObject.getJSONArray("Line" + (i+1)));
+                for (int k = 0; k < jArray.length(); k++) {
+                    String[] couple = jArray.getString(k).split(",");
+                    maze[i][k] = cell(Type.valueOf(couple[0]), Content.valueOf(couple[1]));
+                }
+            }
+            return maze;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new Cell[0][];
+    }
+
+    /**
      * La méthode utilise la méthode {@code getAdjacentCellsCoordinates()} pour obtenir les cellules {@code Cell} adjacentes au fantôme.<br></br>
      * Si une coordonnée indique une position en dehors de la map, une cellule de type {@code CLOSED} sera ajoutée à la liste.
      * 
@@ -124,7 +156,7 @@ public class MazeConfig {
 
     public static MazeConfig makeExample1() {
         return new MazeConfig(
-                getMaze("src/main/java/config/Level1.txt"),
+                getJsonMaze("src/main/java/config/Level1.json"),
                 new IntCoordinates(8, 16), // Pacman
                 new IntCoordinates(8, 8), // Blinky (Rouge)
                 new IntCoordinates(8, 10), // Pinky (Rose)

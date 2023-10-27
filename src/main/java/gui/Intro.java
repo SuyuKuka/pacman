@@ -1,7 +1,5 @@
 package gui;
 
-import java.nio.file.Paths;
-
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -11,16 +9,17 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import utils.Resources;
 
 public class Intro extends Application {
 
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Mac-Pan-Pac-Man");
-        primaryStage.getIcons().add(new Image(Paths.get("src/main/resources/pacman.png").toUri().toString()));
+        primaryStage.getIcons().add(Resources.getImage("pacman"));
 
         // Chemin vers la vidéo
-        String videoPath = Paths.get("src/main/resources/mp4/tenders_org.mp4").toUri().toString();
+        String videoPath = Resources.getFile("tenders_org");
         Media media = new Media(videoPath);
         MediaPlayer mediaPlayer = new MediaPlayer(media);
         MediaView mediaView = new MediaView(mediaPlayer);

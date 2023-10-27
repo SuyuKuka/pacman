@@ -19,6 +19,9 @@ dependencies {
     testImplementation group: 'org.testfx', name: 'testfx-junit5', version: '4.0.17'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.10.0'
     testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.10.0'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.14.0'
+    implementation group: 'org.json', name: 'json', version: '20231013'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.10.1'
 }
 
 javafx {

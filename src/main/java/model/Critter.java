@@ -45,6 +45,12 @@ public sealed interface Critter permits Ghost, PacMan {
             setPos(calibratedPos);
         }
     }
+    
+    /**
+     * La méthode renvoie {@code true} si le fantôme se trouve à l'entrée du spawn.
+     * @return {@code true} si au spawn entry
+     */
+    boolean atSpawnEntry();
 
     void setPos(RealCoordinates realCoordinates);
     void setDirection(Direction direction);
