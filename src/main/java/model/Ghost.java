@@ -46,9 +46,9 @@ public enum Ghost implements Critter {
     @Override
     public double getSpeed() {
         if (isInTunnel()) {
-            return 2;
+            return 3;
         }
-        return 3;
+        return 4;
     }
 
     public RealCoordinates getTarget() {
@@ -73,6 +73,10 @@ public enum Ghost implements Critter {
      */
     public boolean isInTunnel() {
         return ((int) pos.x() >= 0 && (int) pos.x() < 3 || (int) pos.x() <= 16 && (int) pos.x() > 13) && (int) pos.y() == 10;
+    }
+
+    public boolean atSpawnEntry() {
+        return (int) pos.x() == 8 && (int) pos.y() == 8;
     }
 
     /**
@@ -216,7 +220,7 @@ public enum Ghost implements Critter {
                 if (isInTunnel()) {
                     possibleDirections.add(EAST);
                 }
-                if (!adjacentCells.get(2).northWall()) {
+                if (!adjacentCells.get(2).northWall() && (!atSpawnEntry() || (eaten && atSpawnEntry()))) {
                     possibleDirections.add(SOUTH);
                 }
                 break;
@@ -237,7 +241,7 @@ public enum Ghost implements Critter {
                 if (!adjacentCells.get(0).southWall()) {
                     possibleDirections.add(NORTH);
                 }
-                if (!adjacentCells.get(1).northWall()) {
+                if (!adjacentCells.get(1).northWall() && (!atSpawnEntry() || (eaten && atSpawnEntry()))) {
                     possibleDirections.add(SOUTH);
                 }
                 if (!adjacentCells.get(2).eastWall()) {
@@ -384,14 +388,16 @@ public enum Ghost implements Critter {
         }
     }
 
-    public static void reverseGhostsDirection(MazeConfig config) {
-        BLINKY.reverseDirection(config);
-        INKY.reverseDirection(config);
-        PINKY.reverseDirection(config);
-        CLYDE.reverseDirection(config);
+    public static void reverseGhostsDirection(MazeConfig config, List<Critter> critters) {
+        for (Critter critter : critters) {
+            if (critter instanceof Ghost) {
+                ((Ghost) critter).reverseDirection(config);
+            }
+        }
     }
 
     public void reverseDirection(MazeConfig config) {
+        if (eaten) return;
         switch (direction) {
             case NORTH:
                 if (!config.getCell(new IntCoordinates(pos.round().x(), pos.round().y() + 1)).northWall()) {

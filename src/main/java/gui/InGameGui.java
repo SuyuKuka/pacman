@@ -1,7 +1,5 @@
 package gui;
 
-import java.nio.file.Paths;
-
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -20,11 +18,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 
 import model.MazeState;
+import utils.Resources;
 
 public final class InGameGui {
-    private static Stage primaryStage;
-    private static Scene gameScene;
-    private static StackPane endGamePane = new StackPane();
+    private Stage primaryStage;
+    private Scene gameScene;
+    private StackPane endGamePane = new StackPane();
     private StackPane rootPane = new StackPane();
     private Text scoreText;
     private ImageView[] lives;
@@ -33,8 +32,9 @@ public final class InGameGui {
     public static final InGameGui INSTANCE = new InGameGui();
 
     public static void setInGameGui(Stage stage, Scene scene) {
-        primaryStage = stage;
-        gameScene = scene;
+        INSTANCE.primaryStage = stage;
+        INSTANCE.gameScene = scene;
+        INSTANCE.end = false;
     }
 
     public void displayScore(MazeState state) {
@@ -44,7 +44,7 @@ public final class InGameGui {
         scoreText.setTranslateX((double) (state.getWidth() + state.getHeight()) * 30 / 2);
         scoreText.setTranslateY((double) (state.getHeight() + state.getWidth()) * 30 / 6 - 50);
         // Configuration du texte
-        scoreText.setFont(Font.loadFont(Paths.get("src/main/resources/fonts/slkscr.ttf").toUri().toString(), 24));
+        scoreText.setFont(Font.loadFont(Resources.getFile("slkscr"), 24));
         scoreText.setFill(Color.WHITE);
         // Ajoute le texte au groupe rootPane
         rootPane.getChildren().add(scoreText);
@@ -67,7 +67,7 @@ public final class InGameGui {
 
     private ImageView setLife(MazeState state) {
         ImageView imageView = new ImageView();
-        Image image = new Image(Paths.get("src/main/resources/pacman.png").toUri().toString());
+        Image image = Resources.getImage("pacman");
         
         imageView.setImage(image);
         imageView.setY((double) (state.getHeight() + state.getWidth()) * 30 / 2 - 50);
@@ -120,7 +120,9 @@ public final class InGameGui {
         Text retry = Menu.createText("Retry", 38);
         HBox option1 = Menu.createHBox(20, Pos.CENTER, select1, retry);
         select1.setVisible(false);
-        retry.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> reset());
+        retry.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
+            Solo.startLevel(primaryStage);
+        });
 
         Text quitter = Menu.createText("Quit", 38);
         Text select2 = Menu.createText(">", 38);
@@ -143,13 +145,13 @@ public final class InGameGui {
 
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
+                INSTANCE.endGamePane.getChildren().clear();
                 switch (Menu.selected) {
                     case 0:
                         // Continue sur le prochain niveau
                         break;
 
                     case 1:
-                        reset();
                         Solo.startLevel(primaryStage);
                         break;
 
@@ -163,13 +165,5 @@ public final class InGameGui {
                 }
             }
         });
-    }
-
-    private static void reset() {
-        INSTANCE.end = false;
-        ((Pane) gameScene.getRoot()).getChildren().remove(INSTANCE.scoreText);
-        ((Pane) gameScene.getRoot()).getChildren().remove(endGamePane);
-        endGamePane = new StackPane();
-        Menu.selected = 0;
     }
 }

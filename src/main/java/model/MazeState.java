@@ -4,6 +4,7 @@ import config.Cell;
 import config.MazeConfig;
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
+import gui.CritterGraphicsFactory;
 import utils.Music;
 
 import java.time.Instant;
@@ -89,7 +90,7 @@ public final class MazeState {
     private void updateMode() {
         // Pac-Man est ENERGIZED, changement du mode en FRIGHTENED
         if (PacMan.INSTANCE.isEnergized() && mode != Mode.FRIGHTENED) {
-            reverseGhostsDirection(config);
+            reverseGhostsDirection(config, critters);
             mode = Mode.FRIGHTENED;
             // Changement du mode selon le temps de jeu
         } else if (!PacMan.INSTANCE.isEnergized()) {
@@ -101,7 +102,7 @@ public final class MazeState {
                 now > start + (7 + 20 + 7 + 20 + 5 + 20) * 1000
                 && now <= start + (7 + 20 + 7 + 20 + 5 + 20 + 5) * 1000) {
                 if (mode == Mode.CHASE) {
-                    Ghost.reverseGhostsDirection(config);
+                    Ghost.reverseGhostsDirection(config, critters);
                 }
                 scatterMode();
             } else if (now > start + 7 * 1000 ||
@@ -109,7 +110,7 @@ public final class MazeState {
                 now > start + (7 + 20 + 7 + 20 + 5) * 1000 ||
                 now > start + (7 + 20 + 7 + 20 + 5 + 20 + 5) * 1000) {
                 if (mode == Mode.SCATTER) {
-                    Ghost.reverseGhostsDirection(config);
+                    Ghost.reverseGhostsDirection(config, critters);
                 }
                 chaseMode();
             }
@@ -142,7 +143,7 @@ public final class MazeState {
      * {@code FRIGHTENED} mode.
      */
     public void frightenedMode(Ghost ghost) {
-        if (ghost.isActivated()) {
+        if (ghost.isActivated() && !ghost.isEaten()) {
             ghost.setRandomDirection(config);
         }
     }
@@ -171,7 +172,7 @@ public final class MazeState {
     private void updateScore() {
         var pacPos = PacMan.INSTANCE.getPos().round();
         if (!gridState[pacPos.y()][pacPos.x()]) {
-            Music.playSound("eat.wav");//Music pour eat
+            Music.playSound("eat");//Music pour eat
             addScore(1);
             gridState[pacPos.y()][pacPos.x()] = true;
         }
@@ -183,9 +184,12 @@ public final class MazeState {
      * augmente de 10 et le fantôme revient à sa position initiale.
      */
     private void updateCollision() {
-        var pacPos = PacMan.INSTANCE.getPos().round();
+        double pacPosX = PacMan.INSTANCE.getPos().x();
+        double pacPosY = PacMan.INSTANCE.getPos().y();
+        double range = 0.4;
         for (var critter : critters) {
-            if (critter instanceof Ghost && critter.getPos().round().equals(pacPos)) {
+            if (critter instanceof Ghost
+                && Math.abs(pacPosX - critter.getPos().x()) <= range && Math.abs(pacPosY - critter.getPos().y()) <= range) {
                 if (PacMan.INSTANCE.isEnergized() && !((Ghost) critter).isEaten()) {
                     addScore(10);
                     ((Ghost) critter).setEaten(true);
@@ -212,7 +216,7 @@ public final class MazeState {
     }
 
     private void playerLost() {
-        Music.playSound("fail.wav");//ajouter le son à la mort
+        Music.playSound("fail");//ajouter le son à la mort
         lives--;
         resetCritters();
     }
@@ -232,6 +236,7 @@ public final class MazeState {
             ((Ghost) critter).resetGhostPos(this);
         } else {
             PacMan.INSTANCE.resetPacManPos(this);
+            CritterGraphicsFactory.setResetPacImg(true);
         }
     }
     

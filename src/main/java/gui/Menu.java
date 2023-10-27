@@ -20,9 +20,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
-import java.nio.file.Paths;
-
-import utils.Music;//ajouter le fichier utils/Music
+import utils.Music;
+import utils.Resources;
 
 public class Menu extends Application {
     protected static int selected = 0;
@@ -30,7 +29,7 @@ public class Menu extends Application {
     @Override
     public void start(Stage primaryStage) {
         primaryStage.setTitle("Mac-Pan-Pac-Man");
-        primaryStage.getIcons().add(new Image(Paths.get("src/main/resources/pacman.png").toUri().toString()));
+        primaryStage.getIcons().add(Resources.getImage("pacman"));
 
         StackPane rootPane = new StackPane();
         rootPane.setBackground(getBackground());
@@ -115,11 +114,11 @@ public class Menu extends Application {
         primaryStage.setScene(gameScene);
         primaryStage.show();
 
-        Music.playLoopingBgMusic("bgm.wav");//file du fond de music en boucle(obligé:.wav)
+        Music.playLoopingBgMusic("bgm"); // file du fond de music en boucle (obligé:.wav)
     }
 
     private static Background getBackground() {
-        Image image = new Image(Paths.get("src/main/resources/background.png").toUri().toString());
+        Image image = Resources.getImage("background");
         BackgroundImage backgroundImage = new BackgroundImage(
             image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, null
         );
@@ -129,7 +128,7 @@ public class Menu extends Application {
     public static Text createText(String str, int size) {
         Text text = new Text(str);
         text.setFill(Color.WHITE);
-        text.setFont(Font.loadFont(Paths.get("src/main/resources/fonts/small_pixel-7.ttf").toUri().toString(), size));
+        text.setFont(Font.loadFont(Resources.getFile("small_pixel-7"), size));
         return text;
     }
 

@@ -5,6 +5,7 @@ import config.MazeConfig;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
+import javafx.scene.image.Image;
 
 
 /**
@@ -40,7 +41,7 @@ public final class PacMan implements Critter {
 
     @Override
     public double getSpeed() {
-        return isEnergized() ? 9 : 6;
+        return isEnergized() ? 7 : 5;
     }
 
     @Override
@@ -176,7 +177,7 @@ public final class PacMan implements Critter {
     * @return Retourne vraie si un changement de direction est possible, faux sinon.
     */
    public boolean canPacManTurn(Direction direction, long deltaTns, MazeConfig config) {
-       if (this.direction == direction) {
+       if (this.direction == direction || atSpawnEntry()) {
            return false;
        }
        var nextNeighbours = nextPos(deltaTns).intNeighbours();
@@ -217,5 +218,9 @@ public final class PacMan implements Critter {
             }
         }
         return nextPos;
+    }
+
+    public boolean atSpawnEntry() {
+        return (int) pos.x() == 8 && (int) pos.y() == 8;
     }
 }
