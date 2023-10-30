@@ -2,7 +2,6 @@ package gui;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -13,8 +12,14 @@ import utils.Resources;
 
 public class Intro extends Application {
 
+    /**
+     * Méthode appelée au lancement du jeu. Elle joue l'introduction.
+     * La méthode {@link Menu#start} est appelée à la fin.
+     */
     @Override
-    public void start(Stage primaryStage) {
+    public void start(final Stage primaryStage) {
+        final int width = 690;
+        final int height = 510;
         primaryStage.setTitle("Mac-Pan-Pac-Man");
         primaryStage.getIcons().add(Resources.getImage("pacman"));
 
@@ -27,7 +32,7 @@ public class Intro extends Application {
         StackPane root = new StackPane();
         root.getChildren().add(mediaView);
 
-        Scene gameScene = new Scene(root, 690, 510);
+        Scene gameScene = new Scene(root, width, height);
         gameScene.setFill(Color.BLACK);
 
         primaryStage.setScene(gameScene);

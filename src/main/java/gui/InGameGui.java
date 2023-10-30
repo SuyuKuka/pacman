@@ -21,30 +21,57 @@ import model.MazeState;
 import utils.Resources;
 
 public final class InGameGui {
+    /** Le stage. */
     private Stage primaryStage;
+    /** La{@code Scene}actuelle. */
     private Scene gameScene;
+    /** Le{@code StackPane}de fin de jeu. */
     private StackPane endGamePane = new StackPane();
+    /** Le{@code StackPane}racine de tous les{@code Pane}. */
     private StackPane rootPane = new StackPane();
+    /** Le{@code Text}contenant le score. */
     private Text scoreText;
+    /** Un tableau contenant les images des vies de Pac-Man. */
     private ImageView[] lives;
+    /** Boolean indiquant si la partie est finie. */
     private boolean end;
 
+    /** Implémentation du singleton. */
     public static final InGameGui INSTANCE = new InGameGui();
 
-    public static void setInGameGui(Stage stage, Scene scene) {
+    /**
+     * Méthode qui change le {@link #primaryStage} et la scene du jeu
+     * {@link #gameScene}, et réinitialise {@link #end} en{@code false}.
+     * @param stage Le nouveau{@code Stage}
+     * @param scene La nouvelle{@code Scene}
+     */
+    public static void setInGameGui(final Stage stage, final Scene scene) {
         INSTANCE.primaryStage = stage;
         INSTANCE.gameScene = scene;
         INSTANCE.end = false;
     }
 
-    public void displayScore(MazeState state) {
+    /**
+     * Méthode qui affiche la zone du score lors du démarrage de la partie.
+     * @param state Le {@link MazeState} actuel
+     */
+    public void displayScore(final MazeState state) {
         // Création d'un texte
         scoreText = new Text();
-        // Position du score 
-        scoreText.setTranslateX((double) (state.getWidth() + state.getHeight()) * 30 / 2);
-        scoreText.setTranslateY((double) (state.getHeight() + state.getWidth()) * 30 / 6 - 50);
+        // Position du score
+        final int translateX = 30 / 2;
+        final int translateY1 = 30 / 6;
+        final int translateY2 = 50;
+        scoreText.setTranslateX(
+            (double) (state.getWidth() + state.getHeight()) * translateX
+        );
+        scoreText.setTranslateY(
+            (double) (state.getHeight() + state.getWidth())
+            * translateY1 - translateY2
+        );
         // Configuration du texte
-        scoreText.setFont(Font.loadFont(Resources.getFile("slkscr"), 24));
+        final int fontSize = 24;
+        scoreText.setFont(Font.loadFont(Resources.getFile("slkscr"), fontSize));
         scoreText.setFill(Color.WHITE);
         // Ajoute le texte au groupe rootPane
         rootPane.getChildren().add(scoreText);
@@ -54,7 +81,11 @@ public final class InGameGui {
         }
     }
 
-    public void updateScore(MazeState state) {
+    /**
+     * Méthode mettant à jour le score à chaque tick.
+     * @param state Le {@link MazeState} actuel
+     */
+    public void updateScore(final MazeState state) {
         // Affiche le score
         scoreText.setText("Score: " + state.getScore());
         // Total : 150 pac-gommes en classique
@@ -65,30 +96,55 @@ public final class InGameGui {
         }
     }
 
-    private ImageView setLife(MazeState state) {
+    /**
+     * Méthode qui initialise une image du tableau {@link #lives}.
+     * @param state Le {@link MazeState} actuel
+     * @return {@code ImageView}
+     */
+    private ImageView setLife(final MazeState state) {
         ImageView imageView = new ImageView();
         Image image = Resources.getImage("pacman");
-        
+
+        final int yScale1 = 30 / 2;
+        final int yScale2 = 50;
+        final double widthScale = 1.4;
         imageView.setImage(image);
-        imageView.setY((double) (state.getHeight() + state.getWidth()) * 30 / 2 - 50);
-        imageView.setFitWidth(state.getWidth() * 1.4);
+        imageView.setY(
+            (double) (state.getHeight() + state.getWidth()) * yScale1 - yScale2
+        );
+        imageView.setFitWidth(state.getWidth() * widthScale);
         imageView.setPreserveRatio(true);
         return imageView;
     }
 
-    public void displayLives(MazeState state) {
+    /**
+     * Méthode affichant les vies de Pac-Man au démarrage d'une partie.
+     * @param state Le {@link MazeState} actuel
+     */
+    public void displayLives(final MazeState state) {
+        final double spacing = 1.9;
+        final int translateX = 30 / 2;
         lives = new ImageView[state.getLives()];
         for (int i = 0; i < lives.length; i++) {
             ImageView life = setLife(state);
-            life.setX(((state.getWidth() + state.getHeight() + i * 1.9) * 30 / 2));
+            life.setX(
+                ((state.getWidth() + state.getHeight() + i * spacing)
+                * translateX)
+            );
             lives[i] = life;
-            if (!((Pane) gameScene.getRoot()).getChildren().contains(lives[i])) {
+            if (!((Pane) gameScene.getRoot()).getChildren()
+                .contains(lives[i])) {
                 ((Pane) gameScene.getRoot()).getChildren().add(lives[i]);
             }
         }
     }
 
-    public void updateLives(MazeState state) {
+    /**
+     * Méthode qui met à jour la visibilité des vies de Pac-Man.
+     * Si Pac-Man n'a plus de vie, {@link #endGame} est appelée.
+     * @param state Le {@link MazeState} actuel
+     */
+    public void updateLives(final MazeState state) {
         if (state.getLives() < state.getTotalLive()) {
             lives[state.getLives()].setVisible(false);
         }
@@ -99,34 +155,55 @@ public final class InGameGui {
         }
     }
 
-    public void endGame(boolean won, MazeState state) {
-        Rectangle transparent = new Rectangle(0, 0, primaryStage.getWidth(), primaryStage.getHeight() - 40);
-        
+    /**
+     * Méthode appelée en fin de partie. Elle ajoute {@link #endGamePane} au
+     * {@link #gameScene} ce qui affiche la fenêtre de fin de partie.
+     * @param won {@code boolean}indiquant le titre à afficher, win ou gameover
+     * @param state Le {@link MazeState} actuel
+     */
+    public void endGame(final boolean won, final MazeState state) {
+        final int heightDiff = 40;
+        final double opacity = 0.6;
+        final int titleSize = 104;
+        final int scoreSize = 64;
+        final int textSize = 38;
+        final int textSpacing = 20;
+        final int optionSpacing = 15;
+        final int mainBoxSpacing = 50;
+
+        Rectangle transparent = new Rectangle(
+            0, 0, primaryStage.getWidth(), primaryStage.getHeight() - heightDiff
+        );
+
         transparent.setFill(Color.GRAY);
-        transparent.setOpacity(0.6);
+        transparent.setOpacity(opacity);
 
         String title = won ? "You Win !" : "GameOver";
-        Text gameover = Menu.createText(title, 104);
-        Text score = Menu.createText("Score : " + state.getScore(), 64);
-    
-        Text select0 = Menu.createText(">", 38);
-        Text continuer = Menu.createText("Continue", 38);
-        HBox option0 = Menu.createHBox(20, Pos.CENTER, select0, continuer);
+        Text gameover = Menu.createText(title, titleSize);
+        Text score = Menu.createText("Score : " + state.getScore(), scoreSize);
+
+        Text select0 = Menu.createText(">", textSize);
+        Text continuer = Menu.createText("Continue", textSize);
+        HBox option0 = Menu.createHBox(
+            textSpacing, Pos.CENTER, select0, continuer
+        );
         continuer.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                
+
         });
 
-        Text select1 = Menu.createText(">", 38);
-        Text retry = Menu.createText("Retry", 38);
-        HBox option1 = Menu.createHBox(20, Pos.CENTER, select1, retry);
+        Text select1 = Menu.createText(">", textSize);
+        Text retry = Menu.createText("Retry", textSize);
+        HBox option1 = Menu.createHBox(textSpacing, Pos.CENTER, select1, retry);
         select1.setVisible(false);
         retry.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
             Solo.startLevel(primaryStage);
         });
 
-        Text quitter = Menu.createText("Quit", 38);
-        Text select2 = Menu.createText(">", 38);
-        HBox option2 = Menu.createHBox(20, Pos.CENTER, select2, quitter);
+        Text quitter = Menu.createText("Quit", textSize);
+        Text select2 = Menu.createText(">", textSize);
+        HBox option2 = Menu.createHBox(
+            textSpacing, Pos.CENTER, select2, quitter
+        );
         select2.setVisible(false);
         quitter.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
             Menu quit = new Menu();
@@ -134,8 +211,12 @@ public final class InGameGui {
         });
 
         VBox titleBox = Menu.createVBox(0, Pos.CENTER, gameover, score);
-        VBox optionBox = Menu.createVBox(15, Pos.CENTER, option0, option1, option2);
-        VBox mainBox = Menu.createVBox(50, Pos.CENTER, titleBox, optionBox);
+        VBox optionBox = Menu.createVBox(
+            optionSpacing, Pos.CENTER, option0, option1, option2
+        );
+        VBox mainBox = Menu.createVBox(
+            mainBoxSpacing, Pos.CENTER, titleBox, optionBox
+        );
 
         endGamePane.getChildren().addAll(transparent, mainBox);
         ((Pane) gameScene.getRoot()).getChildren().add(endGamePane);
@@ -146,7 +227,7 @@ public final class InGameGui {
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
                 INSTANCE.endGamePane.getChildren().clear();
-                switch (Menu.selected) {
+                switch (Menu.getSelected()) {
                     case 0:
                         // Continue sur le prochain niveau
                         break;
