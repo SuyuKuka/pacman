@@ -24,10 +24,32 @@ import utils.Music;
 import utils.Resources;
 
 public class Menu extends Application {
-    protected static int selected = 0;
+    /** Entier indiquant l'option choisie dans les menus. */
+    private static int selected = 0;
 
+    /**
+     * Retourne l'indice de l'option choisie.
+     * @return {@code int}
+     */
+    public static int getSelected() {
+        return selected;
+    }
+
+    /**
+     * Méthode appelée à la fin de l'intro ou lorsqu'on revient
+     * au menu principal.
+     */
     @Override
-    public void start(Stage primaryStage) {
+    public void start(final Stage primaryStage) {
+        final int titleSize = 68;
+        final int titleSpacing = 100;
+        final int textSize = 38;
+        final int textSpacing = 20;
+        final int optionSpacing = textSpacing;
+        final int mainBoxSpacing = 100;
+        final int width = 690;
+        final int height = 510;
+
         primaryStage.setTitle("Mac-Pan-Pac-Man");
         primaryStage.getIcons().add(Resources.getImage("pacman"));
 
@@ -36,71 +58,79 @@ public class Menu extends Application {
 
         StackPane backgroundPane = new StackPane();
         backgroundPane.setBackground(getBackground());
-                
-        Text titre = createText("Mac-Pan-Pac-Man", 68);
-        HBox title = createHBox(100, Pos.CENTER, titre);
+
+        Text titre = createText("Mac-Pan-Pac-Man", titleSize);
+        HBox title = createHBox(titleSpacing, Pos.CENTER, titre);
         // Lance la vidéo du lore?
         titre.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
             // Lancement de l'histoire
         });
 
-        Text select0 = createText(">", 38);
-        Text solo = createText("Solo", 38);
-        HBox option0 = createHBox(20, Pos.CENTER, select0, solo);
+        Text select0 = createText(">", textSize);
+        Text solo = createText("Solo", textSize);
+        HBox option0 = createHBox(textSpacing, Pos.CENTER, select0, solo);
         solo.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
             Solo soloMenu = new Solo(backgroundPane);
             soloMenu.start(primaryStage);
         });
 
-        Text select1 = createText(">", 38);
-        Text multiplayer = createText("Multiplayer", 38);
-        HBox option1 = createHBox(20, Pos.CENTER, select1, multiplayer);
+        Text select1 = createText(">", textSize);
+        Text multiplayer = createText("Multiplayer", textSize);
+        HBox option1 = createHBox(
+            textSpacing, Pos.CENTER, select1, multiplayer
+        );
         multiplayer.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
             Multiplayer multiMenu = new Multiplayer(backgroundPane);
             multiMenu.start(primaryStage);
         });
 
-        Text select2 = createText(">", 38);
-        Text settings = createText("Settings", 38);
-        HBox option2 = createHBox(20, Pos.CENTER, select2, settings);
+        Text select2 = createText(">", textSize);
+        Text settings = createText("Settings", textSize);
+        HBox option2 = createHBox(textSpacing, Pos.CENTER, select2, settings);
         settings.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                
+
         });
 
-        Text select3 = createText(">", 38);
-        Text quit = createText("Quit", 38);
-        HBox option3 = createHBox(20, Pos.CENTER, select3, quit);
+        Text select3 = createText(">", textSize);
+        Text quit = createText("Quit", textSize);
+        HBox option3 = createHBox(textSpacing, Pos.CENTER, select3, quit);
         quit.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
             primaryStage.close();
             System.exit(0);
         });
 
-        VBox optionBox = createVBox(20, Pos.CENTER, option0, option1, option2, option3);
-        VBox mainBox = createVBox(100, Pos.CENTER, title, optionBox);
+        VBox optionBox = createVBox(
+            optionSpacing, Pos.CENTER, option0, option1, option2, option3
+        );
+        VBox mainBox = createVBox(mainBoxSpacing, Pos.CENTER, title, optionBox);
 
         rootPane.getChildren().addAll(mainBox);
-        Scene gameScene = new Scene(rootPane, 690, 510);
+        Scene gameScene = new Scene(rootPane, width, height);
 
         Text[] choices = {select0, select1, select2, select3};
         selector(gameScene, choices);
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
+            final int soloCase = 0;
+            final int multiplayerCase = 1;
+            final int settingsCase = 2;
+            final int quitCase = 3;
             if (keyEvent.getCode() == KeyCode.ENTER) {
                 switch (selected) {
-                    case 0:
+                    case soloCase:
                         Solo soloMenu = new Solo(backgroundPane);
                         soloMenu.start(primaryStage);
                         break;
 
-                    case 1:
+                    case multiplayerCase:
                         Multiplayer multiMenu = new Multiplayer(backgroundPane);
                         multiMenu.start(primaryStage);
                         break;
-                        
-                    case 2:
+
+                    case settingsCase:
                         // Settings
                         break;
 
-                    case 3:
+                    case quitCase:
                         primaryStage.close();
                         System.exit(0);
                         break;
@@ -114,44 +144,81 @@ public class Menu extends Application {
         primaryStage.setScene(gameScene);
         primaryStage.show();
 
-        Music.playLoopingBgMusic("bgm"); // file du fond de music en boucle (obligé:.wav)
+        // Musique de fond jouée en boucle
+        Music.playLoopingBgMusic("bgm");
     }
 
     private static Background getBackground() {
         Image image = Resources.getImage("background");
         BackgroundImage backgroundImage = new BackgroundImage(
-            image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, null
+            image,
+            BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
+            BackgroundPosition.CENTER,
+            null
         );
         return new Background(backgroundImage);
     }
 
-    public static Text createText(String str, int size) {
+    /**
+     * Méthode qui retourne un{@code Text}initialisé avec les paramètres
+     * {@code str}et{@code size}.
+     * @param str Le texte contenu dans le nouveau{@code Text}
+     * @param size La taille du{@code Text}
+     * @return {@code Text}
+     */
+    public static Text createText(final String str, final int size) {
         Text text = new Text(str);
         text.setFill(Color.WHITE);
         text.setFont(Font.loadFont(Resources.getFile("small_pixel-7"), size));
         return text;
     }
 
-
-    public static VBox createVBox(int spacing, Pos position, Node... nodes) {
+    /**
+     * Méthode qui retourne un{@code VBox}initialisé avec les paramètres
+     * {@code spacing},{@code position}et{@code nodes}.
+     * @param spacing L'espace entre les différents{@code Node}
+     * @param position L'alignement des{@code Node}
+     * @param nodes Les{@code Node}à mettre dans la{@code VBox}
+     * @return {@code VBox}
+     */
+    public static VBox createVBox(
+        final int spacing, final Pos position, final Node... nodes
+        ) {
         VBox box = new VBox(spacing);
         box.getChildren().addAll(nodes);
         box.setAlignment(position);
         return box;
     }
 
-    public static HBox createHBox(int spacing, Pos position, Node... nodes) {
+    /**
+     * Méthode qui retourne un{@code HBox}initialisé avec les paramètres
+     * {@code spacing},{@code position}et{@code nodes}.
+     * @param spacing L'espace entre les différents{@code Node}
+     * @param position L'alignement des{@code Node}
+     * @param nodes Les{@code Node}à mettre dans la{@code HBox}
+     * @return {@code HBox}
+     */
+    public static HBox createHBox(
+        final int spacing, final Pos position, final Node... nodes
+        ) {
         HBox box = new HBox(spacing);
         box.getChildren().addAll(nodes);
         box.setAlignment(position);
         return box;
     }
 
-    public static void selector(Scene scene, Text[] choices) {
+    /**
+     * La méthode prend en argument un tableau contenant les
+     * différents ">". Lorsque la flèche du haut ou bas est appuyée,
+     * le ">" actuel est mis en invisible et le prochain est révélé.
+     * @param scene La{@code Scene}actuelle
+     * @param choices Tableau de{@code Text}(">")
+     */
+    public static void selector(final Scene scene, final Text[] choices) {
         selected = 0;
         int totalChoices = choices.length - 1;
 
-        for(int i = 1; i < totalChoices + 1; i++){
+        for (int i = 1; i < totalChoices + 1; i++) {
             choices[i].setVisible(false);
         }
 
@@ -160,16 +227,19 @@ public class Menu extends Application {
                 // Flèche vers le haut
                 choices[selected].setVisible(false);
                 selected--;
-                if (selected < 0) selected = totalChoices;
+                if (selected < 0) {
+                    selected = totalChoices;
+                }
                 choices[selected].setVisible(true);
             } else if (keyEvent.getCode() == KeyCode.DOWN) {
                 // Flèche vers le bas
                 choices[selected].setVisible(false);
                 selected++;
-                if (selected > totalChoices) selected = 0;
+                if (selected > totalChoices) {
+                    selected = 0;
+                }
                 choices[selected].setVisible(true);
             }
         });
     }
-
 }

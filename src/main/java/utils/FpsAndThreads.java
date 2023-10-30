@@ -2,30 +2,51 @@ package utils;
 
 import java.util.Set;
 
-public class FpsAndThreads {
-    private static long lastFpsCheck = 0;
+public final class FpsAndThreads {
+    /** Somme de tick. */
+    private static long fpsCheckTimer = 0;
+    /** Frames totales depuis le dernier check. */
     private static int totalFrames = 0;
 
-    private static long lastThreadCheck = 0;
+    /** Somme de tick. */
+    private static long threadCheckTimer = 0;
+    /** Ensemble de{@code Thread}. */
     private static Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
 
-    private FpsAndThreads() {}
+    /** Une nanoseconde. */
+    private static final double NANOSECONDS = Math.pow(10, 9);
 
-    public static void updateFps(long deltaTns) {
-        FpsAndThreads.lastFpsCheck += deltaTns;
+    private FpsAndThreads() {
+    }
+
+    /**
+     * Incrémente {@link #fpsCheckTimer} chaque tick.
+     * Si {@link #fpsCheckTimer} dépasse une seconde, les FPS
+     * sont print.
+     * @param deltaTns Un tick
+     */
+    public static void updateFps(final long deltaTns) {
+        FpsAndThreads.fpsCheckTimer += deltaTns;
         FpsAndThreads.totalFrames += 1;
-        if (lastFpsCheck / Math.pow(10, 9) > 1) {
+        if (fpsCheckTimer / NANOSECONDS > 1) {
             System.out.println("FPS : " + totalFrames);
             totalFrames = 0;
-            lastFpsCheck = 0;
+            fpsCheckTimer = 0;
         }
     }
 
-    public static void updateThread(long deltaTns) {
-        FpsAndThreads.lastThreadCheck += deltaTns;
-        if (lastThreadCheck / Math.pow(10, 9) > 5) {
+    /**
+     * Incrémente {@link #threadCheckTimer} chaque tick.
+     * Si {@link #threadCheckTimer} dépasse les 5 secondes, les Threads
+     * sont print.
+     * @param deltaTns Un tick
+     */
+    public static void updateThread(final long deltaTns) {
+        final int frequency = 5;
+        FpsAndThreads.threadCheckTimer += deltaTns;
+        if (threadCheckTimer / NANOSECONDS > frequency) {
             System.out.println("\n THREADS : " + threadSet);
-            lastThreadCheck = 0;
+            threadCheckTimer = 0;
         }
     }
 }

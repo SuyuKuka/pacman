@@ -1,30 +1,44 @@
 package utils;
 
-import javax.sound.sampled.*;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import java.net.URL;
 
-public class Music {
-
+public final class Music {
+    /** {@code Clip}de musique/son. */
     private static Clip bgMusicClip = null;
-    
-    // Jouera l'effet sonore une fois, sans boucle
-    public static void playSound(String soundFileName) {// "soundFileName" Nom du fichier audio dans le répertoire "resources"
+
+    private Music() {
+    }
+
+    /**
+     * Joue un effet sonore une fois.
+     * @param soundFileName Nom du fichier dans le répertoire "resources"
+     */
+    public static void playSound(final String soundFileName) {
         try {
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new URL(Resources.getFile(soundFileName)));
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
+                new URL(Resources.getFile(soundFileName))
+            );
             Clip clip = AudioSystem.getClip();
             clip.open(audioInputStream);
             clip.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
-    } 
-    
-    
-    // jouera l'effet sonore en boucle
-    public static void playLoopingBgMusic(String soundFileName) {
+    }
+
+    /**
+     * Joue la musique de fond en boucle.
+     * @param soundFileName Nom du fichier dans le répertoire "resources"
+     */
+    public static void playLoopingBgMusic(final String soundFileName) {
         stopBgMusic();
         try {
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new URL(Resources.getFile(soundFileName)));
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
+                new URL(Resources.getFile(soundFileName))
+            );
             bgMusicClip = AudioSystem.getClip();
             bgMusicClip.open(audioInputStream);
             bgMusicClip.loop(Clip.LOOP_CONTINUOUSLY);
@@ -33,7 +47,7 @@ public class Music {
         }
     }
 
-    //Si y'en a d'autre music en train de jouer en boucle, on l'arrète et commencera la nouvelle musique
+    /** Arrête la musique/son actuel. */
     public static void stopBgMusic() {
         if (bgMusicClip != null && bgMusicClip.isRunning()) {
             bgMusicClip.stop();

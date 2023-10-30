@@ -1,11 +1,38 @@
 package config;
 
-public record Cell(boolean northWall, boolean eastWall, boolean southWall, boolean westWall, Cell.Content initialContent) {
-    public enum Content {NOTHING, DOT, ENERGIZER}
-    public enum Type {OPEN, CLOSED, HPIPE, VPIPE, NWCOR, NECOR, SWCOR, SECOR, NU, EU, SU, WU, N, E, S, W}
+public record Cell(
+    boolean northWall, boolean eastWall, boolean southWall, boolean westWall,
+    Cell.Content initialContent
+    ) {
+    /** Contenus dans chaque cellule. */
+    public enum Content { NOTHING, DOT, ENERGIZER }
+    /** Types de cellule selon les murs qu'elle possède. */
+    public enum Type {
+        /** Cellule sans mur. */
+        OPEN,
+        /** Cellule avec les 4 murs. */
+        CLOSED,
+        /** Cellule avec les murs Nord et Sud. */
+        HPIPE,
+        /** Cellule avec les murs Ouest et Est. */
+        VPIPE,
+        /** Cellule avec murs en coin. */
+        NWCOR, NECOR, SWCOR, SECOR,
+        /** Cellule en U. */
+        NU, EU, SU, WU,
+        /** Cellule avec un seul mur. */
+        N, E, S, W
+    }
 
-    public static Cell cell(Type t, Content c) {
-        switch(t) {
+    /**
+     * Méthode qui renvoie une nouvelle cellule
+     * d'après le {@link #Type} et le {@link #Content}.
+     * @param t {@link #Type}de la cellule
+     * @param c {@link #Content}de la cellule
+     * @return Nouvelle cellule {@link #Cell}
+     */
+    public static Cell cell(final Type t, final Content c) {
+        switch (t) {
             case OPEN:
                 return new Cell(false, false, false, false, c);
             case CLOSED:
@@ -42,7 +69,8 @@ public record Cell(boolean northWall, boolean eastWall, boolean southWall, boole
                 return new Cell(false, false, true, false, c);
             case W:
                 return new Cell(false, false, false, true, c);
+            default:
+                return null;
         }
-        return null;
     }
 }

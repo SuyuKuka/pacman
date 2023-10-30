@@ -3,9 +3,16 @@ package model;
 import config.Cell;
 
 public enum Direction {
+    /** Directions possibles. */
     NONE, NORTH, EAST, SOUTH, WEST;
 
-    public boolean wall(Cell c) {
+    /**
+     * Méthode qui retourne true si la cellule{@code Cell c}
+     * contient un mur selon la direction du{@code Critter}.
+     * @param c {@code Cell}
+     * @return {@code boolean}
+     */
+    public boolean wall(final Cell c) {
         switch (this) {
             case NORTH:
                 return c.northWall();
