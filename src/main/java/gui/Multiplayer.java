@@ -38,30 +38,31 @@ public class Multiplayer extends Menu {
 
         StackPane rootPane = new StackPane();
 
-        Text gameSelection = Menu.createText("Game Selection", titleSize);
-        HBox title = Menu.createHBox(titleSpacing, Pos.CENTER, gameSelection);
+        Text gameSelection = createText("Game Selection", titleSize);
+        HBox title = createHBox(titleSpacing, Pos.CENTER, gameSelection);
 
-        Text select0 = Menu.createText(">", textSize);
-        Text versus = Menu.createText("Versus", textSize);
-        HBox option0 = Menu.createHBox(
+        Text select0 = createText(">", textSize);
+        Text versus = createText("Versus", textSize);
+        HBox option0 = createHBox(
             textSpacing, Pos.CENTER, select0, versus
         );
         versus.addEventHandler(
             MouseEvent.MOUSE_CLICKED, keyEvent -> startLevel(primaryStage)
         );
 
-        Text select1 = Menu.createText(">", textSize);
-        Text coop = Menu.createText("Coop", textSize);
-        HBox option1 = Menu.createHBox(textSpacing, Pos.CENTER, select1, coop);
+        Text select1 = createText(">", textSize);
+        Text coop = createText("Coop", textSize);
+        HBox option1 = createHBox(textSpacing, Pos.CENTER, select1, coop);
         coop.addEventHandler(
             MouseEvent.MOUSE_CLICKED, keyEvent -> startLevel(primaryStage)
         );
 
-        Text selectback = Menu.createText(">", textSize);
-        Text back = Menu.createText("Back", textSize);
-        HBox optionBack = Menu.createHBox(
+        Text selectback = createText(">", textSize);
+        Text back = createText("Back", textSize);
+        HBox optionBack = createHBox(
             textSpacing, Pos.CENTER, selectback, back
         );
+
         back.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
             Menu menu = new Menu();
             menu.start(primaryStage);
@@ -82,8 +83,12 @@ public class Multiplayer extends Menu {
 
         Scene gameScene = new Scene(rootPane, width, height);
         Text[] choices = {select0, select1, selectback};
-
-        Menu.selector(gameScene, choices);
+        Text[] options = {versus, coop, back};
+        int select = 0;
+        selector(gameScene, choices, primaryStage);
+        for (Text text : options) {
+            mouseSelector(text, choices, select++);
+        }
 
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {

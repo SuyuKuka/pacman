@@ -222,7 +222,12 @@ public final class InGameGui {
         ((Pane) gameScene.getRoot()).getChildren().add(endGamePane);
 
         Text[] choices = {select0, select1, select2};
-        Menu.selector(gameScene, choices);
+        Text[] options = {continuer, retry, quitter};
+        int select = 0;
+        Menu.selector(gameScene, choices, primaryStage);
+        for (Text text : options) {
+            Menu.mouseSelector(text, choices, select++);
+        }
 
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
