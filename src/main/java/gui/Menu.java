@@ -108,7 +108,12 @@ public class Menu extends Application {
         Scene gameScene = new Scene(rootPane, width, height);
 
         Text[] choices = {select0, select1, select2, select3};
-        selector(gameScene, choices);
+        Text[] options = {solo, multiplayer, settings, quit};
+        int select = 0;
+        selector(gameScene, choices, primaryStage);
+        for (Text text : options) {
+            mouseSelector(text, choices, select++);
+        }
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             final int soloCase = 0;
             final int multiplayerCase = 1;
@@ -213,8 +218,12 @@ public class Menu extends Application {
      * le ">" actuel est mis en invisible et le prochain est révélé.
      * @param scene La{@code Scene}actuelle
      * @param choices Tableau de{@code Text}(">")
+     * @param primaryStage Le{@code Stage}principal sur lequel les
+     * {@code Scene}sont set.
      */
-    public static void selector(final Scene scene, final Text[] choices) {
+    public static void selector(
+        final Scene scene, final Text[] choices, final Stage primaryStage
+        ) {
         selected = 0;
         int totalChoices = choices.length - 1;
 
@@ -240,6 +249,29 @@ public class Menu extends Application {
                 }
                 choices[selected].setVisible(true);
             }
+            if (keyEvent.getCode() == KeyCode.ESCAPE) {
+                Menu backMenu = new Menu();
+                backMenu.start(primaryStage);
+            }
+        });
+    }
+
+    /**
+     * Méthode qui affiche ">" lorsqu'on survole la souris sur
+     * une option.
+     * @param mouseText {@code Text}de l'option
+     * @param choices {@code Text[]} des ">"
+     * @param select Indice de l'option
+     */
+    public static void mouseSelector(
+        final Text mouseText, final Text[] choices, final int select
+        ) {
+        mouseText.setOnMouseEntered(event -> {
+            for (int i = 0; i < choices.length; i++) {
+                choices[i].setVisible(false);
+            }
+            selected = select;
+            choices[selected].setVisible(true);
         });
     }
 }
