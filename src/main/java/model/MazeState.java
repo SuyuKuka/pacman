@@ -7,7 +7,6 @@ import geometry.RealCoordinates;
 import gui.CritterGraphicsFactory;
 import utils.Music;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -45,8 +44,8 @@ public final class MazeState {
 
     /** {@link Mode} actuel. */
     private Mode mode;
-    /** Instant du début de la partie. */
-    private long start;
+    /** Chronomètre depuis le début de la partie. */
+    private long modeTimer;
 
     /** Liste des{@code Critter}. */
     private final List<Critter> critters;
@@ -101,7 +100,6 @@ public final class MazeState {
             PacMan.INSTANCE.updatePacMan(deltaTns, this);
             // Active les fantômes après la première input
             if (PacMan.INSTANCE.getPacManMoved() == 1) {
-                start = Instant.now().toEpochMilli();
                 mode = Mode.SCATTER;
                 Ghost.activateGhost();
                 updateMode();
@@ -112,6 +110,10 @@ public final class MazeState {
             }
             updateScore();
             updateCollision();
+            if (PacMan.INSTANCE.getPacManMoved() == -1) {
+                final double milli = Math.pow(10, 6);
+                modeTimer += deltaTns / milli;
+            }
         }
     }
 
@@ -135,24 +137,23 @@ public final class MazeState {
             final int scatter3 = 79;
             final int chase4 = 84;
             final int milli = 1000;
-            long now = Instant.now().toEpochMilli();
 
-            if (now < start + chase1 * milli
-                || now > start + scatter1 * milli
-                    && now <= start + chase2 * milli
-                || now > start + scatter2 * milli
-                    && now <= start + chase3 * milli
-                || now > start + scatter3 * milli
-                    && now <= start + chase4 * milli
+            if (modeTimer < chase1 * milli
+                || modeTimer > scatter1 * milli
+                    && modeTimer <= chase2 * milli
+                || modeTimer > scatter2 * milli
+                    && modeTimer <= chase3 * milli
+                || modeTimer > scatter3 * milli
+                    && modeTimer <= chase4 * milli
                 ) {
                 if (mode == Mode.CHASE) {
                     Ghost.reverseGhostsDirection(config, critters);
                 }
                 scatterMode();
-            } else if (now > start + chase1 * milli
-                || now > start + chase2 * milli
-                || now > start + chase3 * milli
-                || now > start + chase4 * milli
+            } else if (modeTimer > chase1 * milli
+                || modeTimer > chase2 * milli
+                || modeTimer > chase3 * milli
+                || modeTimer > chase4 * milli
                 ) {
                 if (mode == Mode.SCATTER) {
                     Ghost.reverseGhostsDirection(config, critters);

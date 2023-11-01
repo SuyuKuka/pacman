@@ -12,6 +12,19 @@ public class PacmanController {
      * @param event {@code KeyEvent}
      */
     public final void keyPressedHandler(final KeyEvent event) {
+        if (event.getCode() == KeyCode.ESCAPE) {
+            if (!InGameGui.INSTANCE.isPaused()) {
+                InGameGui.pause(true);
+                return;
+            } else {
+                InGameGui.pause(false);
+            }
+        }
+
+        if (InGameGui.INSTANCE.isPaused()) {
+            return;
+        }
+
         PacMan.INSTANCE.setBufferDirection(
                 switch (event.getCode()) {
                     case UP -> Direction.NORTH;

@@ -1,6 +1,7 @@
 package gui;
 
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -35,6 +36,14 @@ public class Menu extends Application {
         return selected;
     }
 
+    /** {@code StackPane}de l'arrière-plan. */
+    private static StackPane backgroundPane;
+
+    static {
+        backgroundPane = new StackPane();
+        backgroundPane.setBackground(getBackground());
+    }
+
     /**
      * Méthode appelée à la fin de l'intro ou lorsqu'on revient
      * au menu principal.
@@ -55,9 +64,6 @@ public class Menu extends Application {
 
         StackPane rootPane = new StackPane();
         rootPane.setBackground(getBackground());
-
-        StackPane backgroundPane = new StackPane();
-        backgroundPane.setBackground(getBackground());
 
         Text titre = createText("Mac-Pan-Pac-Man", titleSize);
         HBox title = createHBox(titleSpacing, Pos.CENTER, titre);
@@ -88,7 +94,7 @@ public class Menu extends Application {
         Text settings = createText("Settings", textSize);
         HBox option2 = createHBox(textSpacing, Pos.CENTER, select2, settings);
         settings.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-
+            // TODO : Settings
         });
 
         Text select3 = createText(">", textSize);
@@ -109,11 +115,18 @@ public class Menu extends Application {
 
         Text[] choices = {select0, select1, select2, select3};
         Text[] options = {solo, multiplayer, settings, quit};
+
+        KeySelector keySel = new KeySelector(
+            choices, primaryStage, false
+        );
+        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySel::handle);
+
         int select = 0;
-        selector(gameScene, choices, primaryStage);
         for (Text text : options) {
-            mouseSelector(text, choices, select++);
+            MouseSelector m = new MouseSelector(choices, select++);
+            text.setOnMouseEntered(m::handle);
         }
+
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             final int soloCase = 0;
             final int multiplayerCase = 1;
@@ -132,7 +145,7 @@ public class Menu extends Application {
                         break;
 
                     case settingsCase:
-                        // Settings
+                        // TODO : Settings
                         break;
 
                     case quitCase:
@@ -148,7 +161,6 @@ public class Menu extends Application {
         gameScene.setFill(Color.BLACK);
         primaryStage.setScene(gameScene);
         primaryStage.show();
-
         // Musique de fond jouée en boucle
         Music.playLoopingBgMusic("bgm");
     }
@@ -212,66 +224,92 @@ public class Menu extends Application {
         return box;
     }
 
-    /**
-     * La méthode prend en argument un tableau contenant les
-     * différents ">". Lorsque la flèche du haut ou bas est appuyée,
-     * le ">" actuel est mis en invisible et le prochain est révélé.
-     * @param scene La{@code Scene}actuelle
-     * @param choices Tableau de{@code Text}(">")
-     * @param primaryStage Le{@code Stage}principal sur lequel les
-     * {@code Scene}sont set.
-     */
-    public static void selector(
-        final Scene scene, final Text[] choices, final Stage primaryStage
-        ) {
-        selected = 0;
-        int totalChoices = choices.length - 1;
+    public class KeySelector implements EventHandler<KeyEvent> {
+        /** Les ">". */
+        private Text[] choices;
+        /** Le{@code Stage} principal.*/
+        private Stage primaryStage;
+        /** Plus grand indice de choix. */
+        private int maxChoice;
+        /**
+         * {@code true}si l'{@code EventHandler}est pour
+         * le menu pause.
+         */
+        private boolean isPauseMenu;
 
-        for (int i = 1; i < totalChoices + 1; i++) {
-            choices[i].setVisible(false);
+        KeySelector(
+            final Text[] newChoices,
+            final Stage newPrimaryStage,
+            final boolean pauseMenu
+            ) {
+            choices = newChoices;
+            primaryStage = newPrimaryStage;
+            isPauseMenu = pauseMenu;
+
+            selected = 0;
+            maxChoice = choices.length - 1;
+
+            for (int i = 1; i < maxChoice + 1; i++) {
+                choices[i].setVisible(false);
+            }
         }
 
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
+
+        /**
+         * Lorsque la flèche du haut ou bas est appuyée,
+         * le ">" actuel est mis en invisible et le prochain est révélé.
+         * Si on appuie sur échap, on revient au menu principal.
+         */
+        @Override
+        public void handle(final KeyEvent keyEvent) {
+            if (isPauseMenu && !InGameGui.INSTANCE.isPaused()) {
+                return;
+            }
+
             if (keyEvent.getCode() == KeyCode.UP) {
                 // Flèche vers le haut
                 choices[selected].setVisible(false);
                 selected--;
                 if (selected < 0) {
-                    selected = totalChoices;
+                    selected = maxChoice;
                 }
                 choices[selected].setVisible(true);
             } else if (keyEvent.getCode() == KeyCode.DOWN) {
                 // Flèche vers le bas
                 choices[selected].setVisible(false);
                 selected++;
-                if (selected > totalChoices) {
+                if (selected > maxChoice) {
                     selected = 0;
                 }
                 choices[selected].setVisible(true);
-            }
-            if (keyEvent.getCode() == KeyCode.ESCAPE) {
+            } else if (keyEvent.getCode() == KeyCode.ESCAPE && !isPauseMenu) {
                 Menu backMenu = new Menu();
                 backMenu.start(primaryStage);
             }
-        });
+        }
     }
 
-    /**
-     * Méthode qui affiche ">" lorsqu'on survole la souris sur
-     * une option.
-     * @param mouseText {@code Text}de l'option
-     * @param choices {@code Text[]} des ">"
-     * @param select Indice de l'option
-     */
-    public static void mouseSelector(
-        final Text mouseText, final Text[] choices, final int select
-        ) {
-        mouseText.setOnMouseEntered(event -> {
+    public class MouseSelector implements EventHandler<MouseEvent> {
+        /** Les ">". */
+        private Text[] choices;
+        /** L'indice du choix. */
+        private int select;
+
+        MouseSelector(final Text[] newChoices, final int newSelect) {
+            choices = newChoices;
+            select = newSelect;
+        }
+
+        /**
+         * Affiche ">" lorsqu'on survole la souris sur une option.
+         */
+        @Override
+        public void handle(final MouseEvent mouseEvent) {
             for (int i = 0; i < choices.length; i++) {
                 choices[i].setVisible(false);
             }
             selected = select;
             choices[selected].setVisible(true);
-        });
+        }
     }
 }
