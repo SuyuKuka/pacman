@@ -108,10 +108,14 @@ public final class Solo extends Menu {
         Text[] options = {
             classique, facile, moyen, difficile, impossible, backText
         };
+
+        KeySelector keySel = new KeySelector(choices, primaryStage, false);
+        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySel::handle);
+
         int select = 0;
-        selector(gameScene, choices, primaryStage);
         for (Text text : options) {
-            mouseSelector(text, choices, select++);
+            MouseSelector m = new MouseSelector(choices, select++);
+            text.setOnMouseEntered(m::handle);
         }
 
         final int back = 5;

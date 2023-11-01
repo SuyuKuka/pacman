@@ -22,6 +22,8 @@ public final class GameView {
     private List<GraphicsUpdater> graphicsUpdaters;
     /** Largeur additionnelle pour l'affichage des infos à droite. */
     private static final double RIGHT_WIDTH = 300;
+    /** Dernier tick avant pause. */
+    private long lastTick;
 
     private GameView() {
     }
@@ -79,7 +81,7 @@ public final class GameView {
             @Override
             public void handle(final long now) {
                 // Ignore le premier tick
-                if (last == 0) {
+                if (last == 0 || InGameGui.INSTANCE.isPaused()) {
                     last = now;
                     return;
                 }

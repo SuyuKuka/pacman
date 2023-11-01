@@ -84,10 +84,14 @@ public class Multiplayer extends Menu {
         Scene gameScene = new Scene(rootPane, width, height);
         Text[] choices = {select0, select1, selectback};
         Text[] options = {versus, coop, back};
+
+        KeySelector keySel = new KeySelector(choices, primaryStage, false);
+        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySel::handle);
+
         int select = 0;
-        selector(gameScene, choices, primaryStage);
         for (Text text : options) {
-            mouseSelector(text, choices, select++);
+            MouseSelector m = new MouseSelector(choices, select++);
+            text.setOnMouseEntered(m::handle);
         }
 
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
