@@ -1,5 +1,6 @@
 package gui;
 
+import javafx.animation.TranslateTransition;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
@@ -12,6 +13,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import config.MazeConfig;
 import model.MazeState;
@@ -20,6 +22,10 @@ import utils.Music;
 public final class Solo extends Menu {
     /** StackPane pour l'arrère-plan. */
     private StackPane background;
+    /** rootPane de Solo. */
+    private static StackPane rootPane;
+    /** mainBox de Solo.*/
+    private static VBox mainBox;
 
     /**
      * Constructeur prenant en paramètre l'arrière-plan du menu{@code Solo}.
@@ -31,7 +37,7 @@ public final class Solo extends Menu {
 
     @Override
     public void start(final Stage primaryStage) {
-        StackPane rootPane = new StackPane();
+        rootPane = new StackPane();
         final int titleSize = 68;
         final int selectSize = 38;
         final int textSpacing = 20;
@@ -85,6 +91,8 @@ public final class Solo extends Menu {
             textSpacing, Pos.CENTER, selectBack, backText
         );
         backText.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
+            setBacked(true);
+            setSoloChecking(true);
             Menu menu = new Menu();
             menu.start(primaryStage);
         });
@@ -95,11 +103,12 @@ public final class Solo extends Menu {
             option1, option2, option3, option4, option5
         );
         VBox subBox = createVBox(subBoxSpacing, Pos.CENTER, title, optionBox);
-        VBox mainBox = createVBox(
+        mainBox = createVBox(
             mainBoxSpacing, Pos.BOTTOM_LEFT, subBox, optionBack
         );
 
         rootPane.getChildren().addAll(background, mainBox);
+        transitionRightToLeft(primaryStage, mainBox);
 
         Scene gameScene = new Scene(rootPane, sceneWidth, sceneHeight);
         Text[] choices = {
@@ -122,8 +131,10 @@ public final class Solo extends Menu {
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
                 if (Menu.getSelected() == back) {
-                    Menu menuBack = new Menu();
-                    menuBack.start(primaryStage);
+                    setBacked(true);
+                    setSoloChecking(true);
+                    Menu menu = new Menu();
+                    menu.start(primaryStage);
                 } else {
                     startLevel(primaryStage);
                 }
@@ -145,8 +156,8 @@ public final class Solo extends Menu {
         final int scale = 30;
         Music.stopBgMusic();
 
-        Pane rootPane = new Pane();
-        Scene gameScene = new Scene(rootPane);
+        Pane pane = new Pane();
+        Scene gameScene = new Scene(pane);
         var pacmanController = new PacmanController();
         gameScene.setOnKeyPressed(pacmanController::keyPressedHandler);
         gameScene.setOnKeyReleased(pacmanController::keyReleasedHandler);
@@ -187,9 +198,52 @@ public final class Solo extends Menu {
         InGameGui.setInGameGui(primaryStage, gameScene);
 
         GameView.INSTANCE.stopAnimation();
-        GameView.INSTANCE.setGameView(maze, rootPane, scale);
+        GameView.INSTANCE.setGameView(maze, pane, scale);
         primaryStage.sizeToScene();
         primaryStage.show();
         GameView.INSTANCE.animate();
+    }
+
+    /**
+     * Methode qui fais la transition de gauche a droite.
+     * @param primaryStage
+     */
+    public static void transitionLeftToRight(final Stage primaryStage) {
+        final double transitionDuration = 0.8;
+        //Suppression de ce qui y'avais avant (au cas ou)
+        rootPane.getChildren().clear();
+
+        //On créer un StackPane qui contient toutes les box sauf le background
+        StackPane originalContent = new StackPane();
+        originalContent.getChildren().addAll(mainBox);
+
+        //On en créer un autre qui contient toutes les box de Menu
+        StackPane previewContent = new StackPane();
+        previewContent.getChildren().addAll(getMainBox());
+
+        //On l'ajoute dans le rootPane du Menu
+        getRootPane().getChildren().addAll(originalContent, previewContent);
+
+        //On fait la transition de la box actuel du milieu vers la droite
+        TranslateTransition deleteTransition = new TranslateTransition(
+            Duration.seconds(transitionDuration), originalContent
+        );
+        deleteTransition.setFromX(0);
+        deleteTransition.setToX(primaryStage.getWidth());
+        deleteTransition.setOnFinished(event -> {
+            //On la supprime apres que la transition ait fini
+            getRootPane().getChildren().remove(originalContent);
+        });
+        //On applique la transition
+        deleteTransition.play();
+
+        //On fait la transition de la box de Menu de la gauche au milieu
+        TranslateTransition originalTransition = new TranslateTransition(
+            Duration.seconds(transitionDuration), previewContent
+        );
+        originalTransition.setFromX(-primaryStage.getWidth());
+        originalTransition.setToX(0);
+        //On applique la transition
+        originalTransition.play();
     }
 }
