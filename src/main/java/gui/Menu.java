@@ -1,5 +1,6 @@
 package gui;
 
+import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
@@ -20,13 +21,23 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
+import javafx.util.Duration;
 import utils.Music;
 import utils.Resources;
 
 public class Menu extends Application {
     /** Entier indiquant l'option choisie dans les menus. */
     private static int selected = 0;
+    /** Créer un rootPane général pour le background. */
+    private static StackPane rootPane;
+    /** */
+    private static VBox mainBox;
+    /** Verifie si on a appuyer sur back ou non. */
+    private static boolean backed;
+    /** Verifie si on provient de solo ou non. */
+    private static boolean soloChecking;
+    /** Verifie si on provient de solo ou non. */
+    private static boolean multiplayerChecking;
 
     /**
      * Retourne l'indice de l'option choisie.
@@ -62,7 +73,7 @@ public class Menu extends Application {
         primaryStage.setTitle("Mac-Pan-Pac-Man");
         primaryStage.getIcons().add(Resources.getImage("pacman"));
 
-        StackPane rootPane = new StackPane();
+        rootPane = new StackPane();
         rootPane.setBackground(getBackground());
 
         Text titre = createText("Mac-Pan-Pac-Man", titleSize);
@@ -76,17 +87,16 @@ public class Menu extends Application {
         Text solo = createText("Solo", textSize);
         HBox option0 = createHBox(textSpacing, Pos.CENTER, select0, solo);
         solo.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-            Solo soloMenu = new Solo(backgroundPane);
+            Solo soloMenu = new Solo(rootPane);
             soloMenu.start(primaryStage);
         });
 
         Text select1 = createText(">", textSize);
         Text multiplayer = createText("Multiplayer", textSize);
         HBox option1 = createHBox(
-            textSpacing, Pos.CENTER, select1, multiplayer
-        );
+                textSpacing, Pos.CENTER, select1, multiplayer);
         multiplayer.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-            Multiplayer multiMenu = new Multiplayer(backgroundPane);
+            Multiplayer multiMenu = new Multiplayer(rootPane);
             multiMenu.start(primaryStage);
         });
 
@@ -106,13 +116,22 @@ public class Menu extends Application {
         });
 
         VBox optionBox = createVBox(
-            optionSpacing, Pos.CENTER, option0, option1, option2, option3
-        );
-        VBox mainBox = createVBox(mainBoxSpacing, Pos.CENTER, title, optionBox);
+                optionSpacing, Pos.CENTER, option0, option1, option2, option3);
+        mainBox = createVBox(mainBoxSpacing, Pos.CENTER, title, optionBox);
 
         rootPane.getChildren().addAll(mainBox);
-        Scene gameScene = new Scene(rootPane, width, height);
+        if (backed && soloChecking) {
+            Solo.transitionLeftToRight(primaryStage);
+            backed = false;
+            soloChecking = false;
+        }
+        if (backed && multiplayerChecking) {
+            Multiplayer.transitionLeftToRight(primaryStage);
+            backed = false;
+            multiplayerChecking = false;
+        }
 
+        Scene gameScene = new Scene(rootPane, width, height);
         Text[] choices = {select0, select1, select2, select3};
         Text[] options = {solo, multiplayer, settings, quit};
 
@@ -135,12 +154,12 @@ public class Menu extends Application {
             if (keyEvent.getCode() == KeyCode.ENTER) {
                 switch (selected) {
                     case soloCase:
-                        Solo soloMenu = new Solo(backgroundPane);
+                        Solo soloMenu = new Solo(rootPane);
                         soloMenu.start(primaryStage);
                         break;
 
                     case multiplayerCase:
-                        Multiplayer multiMenu = new Multiplayer(backgroundPane);
+                        Multiplayer multiMenu = new Multiplayer(rootPane);
                         multiMenu.start(primaryStage);
                         break;
 
@@ -168,18 +187,17 @@ public class Menu extends Application {
     private static Background getBackground() {
         Image image = Resources.getImage("background");
         BackgroundImage backgroundImage = new BackgroundImage(
-            image,
-            BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
-            BackgroundPosition.CENTER,
-            null
-        );
+                image,
+                BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
+                BackgroundPosition.CENTER,
+                null);
         return new Background(backgroundImage);
     }
 
     /**
      * Méthode qui retourne un{@code Text}initialisé avec les paramètres
      * {@code str}et{@code size}.
-     * @param str Le texte contenu dans le nouveau{@code Text}
+     * @param str  Le texte contenu dans le nouveau{@code Text}
      * @param size La taille du{@code Text}
      * @return {@code Text}
      */
@@ -193,14 +211,13 @@ public class Menu extends Application {
     /**
      * Méthode qui retourne un{@code VBox}initialisé avec les paramètres
      * {@code spacing},{@code position}et{@code nodes}.
-     * @param spacing L'espace entre les différents{@code Node}
+     * @param spacing  L'espace entre les différents{@code Node}
      * @param position L'alignement des{@code Node}
-     * @param nodes Les{@code Node}à mettre dans la{@code VBox}
+     * @param nodes    Les{@code Node}à mettre dans la{@code VBox}
      * @return {@code VBox}
      */
     public static VBox createVBox(
-        final int spacing, final Pos position, final Node... nodes
-        ) {
+            final int spacing, final Pos position, final Node... nodes) {
         VBox box = new VBox(spacing);
         box.getChildren().addAll(nodes);
         box.setAlignment(position);
@@ -210,18 +227,57 @@ public class Menu extends Application {
     /**
      * Méthode qui retourne un{@code HBox}initialisé avec les paramètres
      * {@code spacing},{@code position}et{@code nodes}.
-     * @param spacing L'espace entre les différents{@code Node}
+     * @param spacing  L'espace entre les différents{@code Node}
      * @param position L'alignement des{@code Node}
-     * @param nodes Les{@code Node}à mettre dans la{@code HBox}
+     * @param nodes    Les{@code Node}à mettre dans la{@code HBox}
      * @return {@code HBox}
      */
     public static HBox createHBox(
-        final int spacing, final Pos position, final Node... nodes
-        ) {
+            final int spacing, final Pos position, final Node... nodes) {
         HBox box = new HBox(spacing);
         box.getChildren().addAll(nodes);
         box.setAlignment(position);
         return box;
+    }
+
+    /**
+     * Méhode qui fais la transition de droite à gauche.
+     * @param primaryStage
+     * @param box
+     */
+    public static void transitionRightToLeft(final Stage primaryStage, final VBox box) {
+        final double transitionDuration = 0.8;
+        // On créer un StackPane qui contient toutes les box sauf le background
+        StackPane originalContent = new StackPane();
+        originalContent.getChildren().addAll(mainBox);
+
+        // On en créer un autre qui contient toutes
+        // les box de l'endroit ou on clique
+        StackPane newContent = new StackPane();
+        newContent.getChildren().addAll(box);
+
+        // On l'ajoute dans le rootPane du Menu
+        rootPane.getChildren().addAll(originalContent, newContent);
+
+        // On fait la transition de la box actuel du milieu vers la gauche
+        TranslateTransition deleteTransition = new TranslateTransition(
+            Duration.seconds(transitionDuration), originalContent
+        );
+        deleteTransition.setFromX(0);
+        deleteTransition.setToX(-primaryStage.getWidth());
+        // On supprime la box original
+        deleteTransition.setOnFinished(event -> {
+            rootPane.getChildren().remove(originalContent);
+        });
+        deleteTransition.play();
+
+        // On fait la transition de la box de Menu de la droite au milieu
+        TranslateTransition transition = new TranslateTransition(
+            Duration.seconds(transitionDuration), newContent
+        );
+        transition.setFromX(primaryStage.getWidth());
+        transition.setToX(0);
+        transition.play();
     }
 
     public class KeySelector implements EventHandler<KeyEvent> {
@@ -311,5 +367,45 @@ public class Menu extends Application {
             selected = select;
             choices[selected].setVisible(true);
         }
+    }
+
+    /**
+     * Renvoie le mainBox de Menu.
+     * @return mainBox
+     */
+    public static VBox getMainBox() {
+        return mainBox;
+    }
+
+    /**
+     * Renvoi le rootPane de Menu.
+     * @return rootPane
+     */
+    public static StackPane getRootPane() {
+        return rootPane;
+    }
+
+    /**
+     * Set le backed en true ou false.
+     * @param backed {@code boolean}de l'option
+     */
+    public static void setBacked(final boolean backed) {
+        Menu.backed = backed;
+    }
+
+    /**
+     * Set le soloChecking en true ou false.
+     * @param soloChecking
+     */
+    public static void setSoloChecking(final boolean soloChecking) {
+        Menu.soloChecking = soloChecking;
+    }
+
+    /**
+     * Set le multiplayerChecking en true ou false.
+     * @param multiplayerChecking
+     */
+    public static void setMultiplayerChecking(final boolean multiplayerChecking) {
+        Menu.multiplayerChecking = multiplayerChecking;
     }
 }
