@@ -125,7 +125,7 @@ public final class CritterGraphicsFactory {
                 default:
                     return lastPacImg;
             }
-        } else { // TODO : Changer l'image des fantômes
+        } else {
             if (((Ghost) critter).isEaten()) {
                 return "ghost_white_eaten";
             }
