@@ -126,6 +126,12 @@ public final class CritterGraphicsFactory {
                     return lastPacImg;
             }
         } else { // TODO : Changer l'image des fantômes
+            if (((Ghost) critter).isEaten()) {
+                return "ghost_white_eaten";
+            }
+            if (PacMan.INSTANCE.isEnergized()) {
+                return "ghost_white_2";
+            }
             switch ((Ghost) critter) {
                 case BLINKY:
                     return "ghost_blinky";
@@ -137,7 +143,7 @@ public final class CritterGraphicsFactory {
                     return "ghost_pinky";
                 default:
                     return "";
-            }
+                }
         }
     }
 }
