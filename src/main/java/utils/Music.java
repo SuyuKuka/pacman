@@ -1,8 +1,7 @@
 package utils;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
+import javax.sound.sampled.*;
+import java.io.IOException;
 
 import java.net.URL;
 
@@ -29,10 +28,16 @@ public final class Music {
             e.printStackTrace();
         }
     } 
-    
+    /**
+    * Joue un effet sonore une fois, puis exécute l'action spécifiée après sa fin.
+    * @param soundFileName Nom du fichier dans le répertoire "resources"
+    * @param onFinished Action à exécuter après la fin de l'effet sonore
+    */
     public static void playSound(String soundFileName, Runnable onFinished) {
         try {
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(Music.class.getResource("/" + soundFileName));
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
+                new URL(Resources.getFile(soundFileName))
+            );
             Clip clip = AudioSystem.getClip();
             clip.open(audioInputStream);
             clip.addLineListener(event -> {
@@ -66,15 +71,17 @@ public final class Music {
     }
     /** Arrête la musique/son actuel. */
     public static void stopBgMusic() {
-
         if (bgMusicClip != null && bgMusicClip.isRunning()) {
             bgMusicClip.stop();
         }
     }
 
 
-
-    //fini "introMusicFileName" puis fait en loop "loopBgMusicFileName"
+    /**
+    * Joue l'effet sonore une fois, puis répète indéfiniment la musique de fond.
+    * @param introMusicFileName Nom du fichier dans le répertoire "resources" pour la musique d'intro
+    * @param loopBgMusicFileName Nom du fichier dans le répertoire "resources" pour la musique de fond en boucle
+    */
     public static void playIntroMusicThenLoopBgMusic(String introMusicFileName, String loopBgMusicFileName) {
         playSound(introMusicFileName, () -> playLoopingBgMusic(loopBgMusicFileName)); 
     }
