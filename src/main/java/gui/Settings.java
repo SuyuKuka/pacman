@@ -1,5 +1,4 @@
 package gui;
+public class Settings extends Menu {
 
-public class Settings {
-    
 }

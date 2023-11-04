@@ -1,0 +1,140 @@
+{
+    "Line1"  : [
+        "OPEN,NOTHING"   , "OPEN,NOTHING"   , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING",
+        "OPEN,NOTHING"   , "OPEN,NOTHING"   , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING",
+        "OPEN,NOTHING"   , "OPEN,NOTHING"   , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING",
+        "OPEN,NOTHING"   , "OPEN,NOTHING"
+    ],
+    "Line2"  : [
+        "S,NOTHING"      , "S,NOTHING"      , "S,NOTHING"     , "S,NOTHING"     , "S,NOTHING",
+        "S,NOTHING"      , "S,NOTHING"      , "S,NOTHING"     , "S,NOTHING"     , "S,NOTHING",
+        "S,NOTHING"      , "S,NOTHING"      , "S,NOTHING"     , "S,NOTHING"     , "S,NOTHING",
+        "S,NOTHING"      , "S,NOTHING"
+    ],
+    "Line3"  : [
+        "NWCOR,DOT"      , "HPIPE,DOT"      , "HPIPE,DOT"     , "N,DOT"         , "HPIPE,DOT",
+        "HPIPE,DOT"      , "HPIPE,DOT"      , "NECOR,DOT"     , "CLOSED,NOTHING", "NWCOR,DOT",
+        "HPIPE,DOT"      , "HPIPE,DOT"      , "HPIPE,DOT"     , "N,DOT"         , "HPIPE,DOT",
+        "HPIPE,DOT"      , "NECOR,DOT"
+    ],
+    "Line4"  : [
+        "VPIPE,ENERGIZER", "CLOSED,NOTHING" , "CLOSED,NOTHING", "VPIPE,DOT"     , "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING", "VPIPE,DOT",
+        "CLOSED,NOTHING" , "CLOSED,NOTHING" , "CLOSED,NOTHING", "VPIPE,DOT"     , "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "VPIPE,ENERGIZER"
+    ],
+    "Line5"  : [
+        "W,DOT"          , "HPIPE,DOT"     , "HPIPE,DOT"      , "OPEN,DOT"      , "HPIPE,DOT",
+        "N,DOT"          , "HPIPE,DOT"     , "S,DOT"          , "HPIPE,DOT"     , "S,DOT",
+        "HPIPE,DOT"      , "N,DOT"         , "HPIPE,DOT"      , "OPEN,DOT"      , "HPIPE,DOT",
+        "HPIPE,DOT"      , "E,DOT"
+    ],
+    "Line6"  : [
+        "VPIPE,DOT"      , "CLOSED,NOTHING", "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING",
+        "VPIPE,DOT"      , "CLOSED,NOTHING", "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "VPIPE,DOT"
+    ],
+    "Line7"  : [
+        "SWCOR,DOT"      , "HPIPE,DOT"     , "HPIPE,DOT"      , "E,DOT"         , "CLOSED,NOTHING",
+        "SWCOR,DOT"      , "HPIPE,DOT"     , "NECOR,DOT"      , "CLOSED,NOTHING", "NWCOR,DOT",
+        "HPIPE,DOT"      , "SECOR,DOT"     ,"CLOSED,NOTHING"  , "W,DOT"         , "HPIPE,DOT",
+        "HPIPE,DOT"      , "SECOR,DOT"
+    ],
+    "Line8"  : [
+        "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "CLOSED,NOTHING", "VPIPE,NOTHING"  , "CLOSED,NOTHING", "VPIPE,NOTHING" ,
+        "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "CLOSED,NOTHING"
+    ],
+    "Line9"  : [
+        "HPIPE,NOTHING"  , "WU,NOTHING"    , "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING",
+        "NWCOR,NOTHING"  , "HPIPE,NOTHING" , "S,NOTHING"      , "N,NOTHING"     , "S,NOTHING"     ,
+        "HPIPE,NOTHING"  , "NECOR,NOTHING" , "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING",
+        "EU,NOTHING"     , "HPIPE,NOTHING"
+    ],
+    "Line10" : [
+        "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
+        "VPIPE,NOTHING"  , "CLOSED,NOTHING", "CLOSED,NOTHING", "VPIPE,NOTHING"  , "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "VPIPE,NOTHING" , "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "CLOSED,NOTHING"
+    ],
+    "Line11" : [
+        "HPIPE,NOTHING"  , "HPIPE,NOTHING" , "HPIPE,NOTHING" , "OPEN,DOT"       , "HPIPE,NOTHING",
+        "E,NOTHING"      , "CLOSED,NOTHING", "EU,NOTHING"    , "S,NOTHING"      , "WU,NOTHING",
+        "CLOSED,NOTHING" , "W,NOTHING"     , "HPIPE,NOTHING" , "OPEN,DOT"       , "HPIPE,NOTHING",
+        "HPIPE,NOTHING"  , "HPIPE,NOTHING"
+    ],
+    "Line12" : [
+        "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
+        "VPIPE,NOTHING"  , "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING" , "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "VPIPE,NOTHING" , "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "CLOSED,NOTHING"
+    ],
+    "Line13" : [
+        "HPIPE,NOTHING"  , "WU,NOTHING"    , "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
+        "W,NOTHING"      , "HPIPE,NOTHING" , "HPIPE,NOTHING" , "HPIPE,NOTHING"  , "HPIPE,NOTHING" ,
+        "HPIPE,NOTHING"  , "E,NOTHING"     , "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
+        "EU,NOTHING"     , "HPIPE,NOTHING"
+    ],
+    "Line14" : [
+        "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
+        "VPIPE,NOTHING"  , "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING" , "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "VPIPE,NOTHING" , "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "CLOSED,NOTHING"
+    ],
+    "Line15" : [
+        "NWCOR,DOT"      , "HPIPE,DOT"     , "HPIPE,DOT"     , "OPEN,DOT"       , "HPIPE,DOT",
+        "S,DOT"          , "HPIPE,DOT"     , "NECOR,DOT"     , "CLOSED,NOTHING" , "NWCOR,DOT",
+        "HPIPE,DOT"      , "S,DOT"         , "HPIPE,DOT"     , "OPEN,DOT"       , "HPIPE,DOT",
+        "HPIPE,DOT"      , "NECOR,DOT"
+    ],
+    "Line16" : [
+        "VPIPE,DOT"      , "CLOSED,NOTHING", "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "CLOSED,NOTHING", "VPIPE,DOT"     , "CLOSED,NOTHING" , "VPIPE,DOT",
+        "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "VPIPE,DOT"
+    ],
+    "Line17" : [
+        "SWCOR,ENERGIZER", "NECOR,DOT"     , "CLOSED,NOTHING", "W,DOT"         , "HPIPE,DOT",
+        "N,DOT"          , "HPIPE,DOT"     , "S,DOT"         , "HPIPE,NOTHING" , "S,DOT",
+        "HPIPE,DOT"      , "N,DOT"         , "HPIPE,DOT"     , "E,DOT"         , "CLOSED,NOTHING",
+        "NWCOR,DOT"      , "SECOR,ENERGIZER"
+    ],
+    "Line18" : [
+        "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING", "VPIPE,DOT"     , "CLOSED,NOTHING",
+        "VPIPE,DOT"      , "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING", "VPIPE,DOT"     , "CLOSED,NOTHING",
+        "VPIPE,DOT"      , "CLOSED,NOTHING"
+    ],
+    "Line19" : [
+        "NWCOR,DOT"      , "S,DOT"         , "HPIPE,DOT"     , "SECOR,DOT"     , "CLOSED,NOTHING",
+        "SWCOR,DOT"      , "HPIPE,DOT"     , "NECOR,DOT"     , "CLOSED,NOTHING", "NWCOR,DOT",
+        "HPIPE,DOT"      , "SECOR,DOT"     , "CLOSED,NOTHING", "SWCOR,DOT"     , "HPIPE,DOT",
+        "S,DOT"          , "NECOR,DOT"
+    ],
+    "Line20" : [
+        "VPIPE,DOT"      , "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "CLOSED,NOTHING", "VPIPE,DOT"     , "CLOSED,NOTHING", "VPIPE,DOT",
+        "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING",
+        "CLOSED,NOTHING" , "VPIPE,DOT"
+    ],
+    "Line21" : [
+        "SWCOR,DOT"      , "HPIPE,DOT"     , "HPIPE,DOT"     , "HPIPE,DOT"     , "HPIPE,DOT",
+        "HPIPE,DOT"      , "HPIPE,DOT"     , "S,DOT"         , "HPIPE,DOT"     , "S,DOT",
+        "HPIPE,DOT"      , "HPIPE,DOT"     , "HPIPE,DOT"     , "HPIPE,DOT"     , "HPIPE,DOT",
+        "HPIPE,DOT"      , "SECOR,DOT"
+    ],
+    "Line22" : [
+        "N,NOTHING"      , "N,NOTHING"     , "N,NOTHING"     , "N,NOTHING"     , "N,NOTHING",
+        "N,NOTHING"      , "N,NOTHING"     , "N,NOTHING"     , "N,NOTHING"     , "N,NOTHING",
+        "N,NOTHING"      , "N,NOTHING"     , "N,NOTHING"     , "N,NOTHING"     , "N,NOTHING",
+        "N,NOTHING"      , "N,NOTHING"
+    ],
+    "Line23" : [
+        "OPEN,NOTHING"   , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING",
+        "OPEN,NOTHING"   , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING",
+        "OPEN,NOTHING"   , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING",
+        "OPEN,NOTHING"   , "OPEN,NOTHING"
+    ]
+}

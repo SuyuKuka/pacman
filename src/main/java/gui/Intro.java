@@ -1,26 +1,30 @@
 package gui;
 
-import java.nio.file.Paths;
-
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import utils.Resources;
 
 public class Intro extends Application {
 
+    /**
+     * Méthode appelée au lancement du jeu. Elle joue l'introduction.
+     * La méthode {@link Menu#start} est appelée à la fin.
+     */
     @Override
-    public void start(Stage primaryStage) {
+    public void start(final Stage primaryStage) {
+        final int width = 690;
+        final int height = 510;
         primaryStage.setTitle("Mac-Pan-Pac-Man");
-        primaryStage.getIcons().add(new Image(Paths.get("src/main/resources/pacman.png").toUri().toString()));
+        primaryStage.getIcons().add(Resources.getImage("pacman"));
 
         // Chemin vers la vidéo
-        String videoPath = Paths.get("src/main/resources/mp4/tenders_org.mp4").toUri().toString();
+        String videoPath = Resources.getFile("tenders_org");
         Media media = new Media(videoPath);
         MediaPlayer mediaPlayer = new MediaPlayer(media);
         MediaView mediaView = new MediaView(mediaPlayer);
@@ -28,7 +32,7 @@ public class Intro extends Application {
         StackPane root = new StackPane();
         root.getChildren().add(mediaView);
 
-        Scene gameScene = new Scene(root, 690, 510);
+        Scene gameScene = new Scene(root, width, height);
         gameScene.setFill(Color.BLACK);
 
         primaryStage.setScene(gameScene);

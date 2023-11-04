@@ -1,7 +1,6 @@
 package gui;
 
-import config.MazeConfig;
-import javafx.application.Application;
+import javafx.animation.TranslateTransition;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
@@ -14,211 +13,237 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+
+import config.MazeConfig;
 import model.MazeState;
 import utils.Music;
 
-public class Solo extends Application {
+public final class Solo extends Menu {
+    /** StackPane pour l'arrère-plan. */
     private StackPane background;
+    /** rootPane de Solo. */
+    private static StackPane rootPane;
+    /** mainBox de Solo.*/
+    private static VBox mainBox;
 
-    public Solo(StackPane background) {
-        this.background = background;
+    /**
+     * Constructeur prenant en paramètre l'arrière-plan du menu{@code Solo}.
+     * @param bg {@code StackPane}de l'arrière-plan
+     */
+    public Solo(final StackPane bg) {
+        background = bg;
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        StackPane root = new StackPane();
-        Menu.selected = 1;
-        //Solo
-        Text levelSelector = Menu.createText("Level Selector", 68);
-        HBox option0 = Menu.createHBox(0, levelSelector);
+    public void start(final Stage primaryStage) {
+        rootPane = new StackPane();
+        final int titleSize = 68;
+        final int selectSize = 38;
+        final int textSpacing = 20;
+        final int optionSpacing = 15;
+        final int subBoxSpacing = 40;
+        final int mainBoxSpacing = 45;
+        final int sceneWidth = 690;
+        final int sceneHeight = 510;
 
-        Text classique = Menu.createText("Classique", 38);
-        Text select1 = Menu.createText(">", 38);
-        HBox option1 = Menu.createHBox(20, select1, classique);
-        classique.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> classique(primaryStage));
+        Text levelSelector = createText("Level Selector", titleSize);
+        HBox title = createHBox(0, Pos.CENTER, levelSelector);
 
-        Text facile = Menu.createText("Facile", 38);
-        Text select2 = Menu.createText(">", 38);
-        HBox option2 = Menu.createHBox(20, select2, facile);
-        facile.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> facile(primaryStage));
+        Text select1 = createText(">", selectSize);
+        Text classique = createText("Classique", selectSize);
+        HBox option1 = createHBox(textSpacing, Pos.CENTER, select1, classique);
+        classique.addEventHandler(
+            MouseEvent.MOUSE_CLICKED, keyEvent -> startLevel(primaryStage)
+        );
 
-        Text moyen = Menu.createText("Moyen", 38);
-        Text select3 = Menu.createText(">", 38);
-        HBox option3 = Menu.createHBox(20, select3, moyen);
-        moyen.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> moyen(primaryStage));
+        Text select2 = createText(">", selectSize);
+        Text facile = createText("Facile", selectSize);
+        HBox option2 = createHBox(textSpacing, Pos.CENTER, select2, facile);
+        facile.addEventHandler(
+            MouseEvent.MOUSE_CLICKED, keyEvent -> startLevel(primaryStage)
+        );
 
-        Text difficile = Menu.createText("Difficile", 38);
-        Text select4 = Menu.createText(">", 38);
-        HBox option4 = Menu.createHBox(20, select4, difficile);
-        difficile.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> difficile(primaryStage));
+        Text select3 = createText(">", selectSize);
+        Text moyen = createText("Moyen", selectSize);
+        HBox option3 = createHBox(textSpacing, Pos.CENTER, select3, moyen);
+        moyen.addEventHandler(
+            MouseEvent.MOUSE_CLICKED, keyEvent -> startLevel(primaryStage)
+        );
 
-        Text impossible = Menu.createText("Impossible", 38);
-        Text select5 = Menu.createText(">", 38);
-        HBox option5 = Menu.createHBox(20, select5, impossible);
-        impossible.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> impossible(primaryStage));
+        Text select4 = createText(">", selectSize);
+        Text difficile = createText("Difficile", selectSize);
+        HBox option4 = createHBox(textSpacing, Pos.CENTER, select4, difficile);
+        difficile.addEventHandler(
+            MouseEvent.MOUSE_CLICKED, keyEvent -> startLevel(primaryStage)
+        );
 
-        Text back = Menu.createText("Back", 38);
-        Text selectback = Menu.createText(">", 38);
-        HBox optionback = Menu.createHBox(20, selectback, back);
-        back.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
+        Text select5 = createText(">", selectSize);
+        Text impossible = createText("Impossible", selectSize);
+        HBox option5 = createHBox(textSpacing, Pos.CENTER, select5, impossible);
+        impossible.addEventHandler(
+            MouseEvent.MOUSE_CLICKED, keyEvent -> startLevel(primaryStage)
+        );
+
+        Text selectBack = createText(">", selectSize);
+        Text backText = createText("Back", selectSize);
+        HBox optionBack = createHBox(
+            textSpacing, Pos.CENTER, selectBack, backText
+        );
+        backText.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
+            setBacked(true);
+            setSoloChecking(true);
             Menu menu = new Menu();
             menu.start(primaryStage);
         });
-        optionback.setAlignment(Pos.BOTTOM_LEFT);
+        optionBack.setAlignment(Pos.BOTTOM_LEFT);
 
+        VBox optionBox = createVBox(
+            optionSpacing, Pos.CENTER,
+            option1, option2, option3, option4, option5
+        );
+        VBox subBox = createVBox(subBoxSpacing, Pos.CENTER, title, optionBox);
+        mainBox = createVBox(
+            mainBoxSpacing, Pos.BOTTOM_LEFT, subBox, optionBack
+        );
 
-        VBox titlePos = new VBox(40);
-        VBox textPos = new VBox(15);
-        VBox backPos = new VBox(45);
-            
-        textPos.getChildren().addAll(option1, option2, option3, option4, option5);
-        textPos.setAlignment(Pos.CENTER);
+        rootPane.getChildren().addAll(background, mainBox);
+        transitionRightToLeft(primaryStage, mainBox);
 
-        titlePos.getChildren().addAll(option0, textPos);
-        titlePos.setAlignment(Pos.CENTER);
+        Scene gameScene = new Scene(rootPane, sceneWidth, sceneHeight);
+        Text[] choices = {
+            select1, select2, select3, select4, select5, selectBack
+        };
+        Text[] options = {
+            classique, facile, moyen, difficile, impossible, backText
+        };
 
-        backPos.getChildren().addAll(titlePos ,optionback);
-        backPos.setAlignment(Pos.BOTTOM_LEFT);
+        KeySelector keySel = new KeySelector(choices, primaryStage, false);
+        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySel::handle);
 
-        root.getChildren().addAll(background, backPos);
+        int select = 0;
+        for (Text text : options) {
+            MouseSelector m = new MouseSelector(choices, select++);
+            text.setOnMouseEntered(m::handle);
+        }
 
-        Scene gameScene = new Scene(root, 690, 510);
-        Text[] allText = {select1, select2, select3, select4, select5, selectback};
-        
-        Menu.selector(gameScene, allText);
-
+        final int back = 5;
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
-                switch (Menu.selected) {
-                    case 1:
-                        classique(primaryStage);
-                        break;
-                
-                    case 2:
-                        facile(primaryStage);
-                        break;
-                    
-                    case 3:
-                        moyen(primaryStage);
-                        break;
-
-                    case 4:
-                        difficile(primaryStage);
-                        break;
-
-                    case 5:
-                        impossible(primaryStage);
-                        break;
-
-                    case 6:
-                        Menu menuBack = new Menu();
-                        menuBack.start(primaryStage);
-                        break;
-                
-                    default:
-                        break;
+                if (Menu.getSelected() == back) {
+                    setBacked(true);
+                    setSoloChecking(true);
+                    Menu menu = new Menu();
+                    menu.start(primaryStage);
+                } else {
+                    startLevel(primaryStage);
                 }
             }
         });
-        
+
         gameScene.setFill(Color.BLACK);
         primaryStage.setScene(gameScene);
         primaryStage.sizeToScene();
         primaryStage.show();
     }
 
-    //Une fonction par niveau
-    public static void classique(Stage primaryStage){
+    /**
+     * Méthode permettant de lancer un niveau, le niveau lancé dépend de
+     * la variable statique {@code selected} de la classe {@code Menu}.
+     * @param primaryStage
+     */
+    public static void startLevel(final Stage primaryStage) {
+        final int scale = 30;
         Music.stopBgMusic();
-        int level = Menu.selected; // Permet de  savoir on est sur quel niveau pour le retry ou continue
-        //Classique
-        Pane root = new Pane();
-        Scene gameScene = new Scene(root);
+
+        Pane pane = new Pane();
+        Scene gameScene = new Scene(pane);
         var pacmanController = new PacmanController();
         gameScene.setOnKeyPressed(pacmanController::keyPressedHandler);
         gameScene.setOnKeyReleased(pacmanController::keyReleasedHandler);
 
-        MazeState maze = new MazeState(MazeConfig.makeExample1());
-        
+        MazeState maze;
+        final int classique = 0;
+        final int facile = 1;
+        final int moyen = 2;
+        final int difficile = 3;
+        final int impossible = 4;
+        switch (getSelected()) {
+            case classique: // Classique
+                maze = new MazeState(MazeConfig.makeExample1());
+                break;
+
+            case facile: // TODO : Autres niveaux à faire
+                maze = new MazeState(MazeConfig.makeExample1());
+                break;
+
+            case moyen:
+                maze = new MazeState(MazeConfig.makeExample1());
+                break;
+
+            case difficile:
+                maze = new MazeState(MazeConfig.makeExample1());
+                break;
+
+            case impossible:
+                maze = new MazeState(MazeConfig.makeExample1());
+                break;
+
+            default:
+                maze = new MazeState(MazeConfig.makeExample1());
+                break;
+        }
+
         primaryStage.setScene(gameScene);
-        MenuGraphics graphics = new MenuGraphics(gameScene, primaryStage);
-        GameView gameView = new GameView(maze, root, 30.0, graphics);
-        
+        InGameGui.setInGameGui(primaryStage, gameScene);
+
+        GameView.INSTANCE.stopAnimation();
+        GameView.INSTANCE.setGameView(maze, pane, scale);
         primaryStage.sizeToScene();
         primaryStage.show();
-        gameView.animate();
+        GameView.INSTANCE.animate();
     }
 
-    public static void facile(Stage primaryStage){
-        Pane root = new Pane();
-        Scene gameScene = new Scene(root);
-        var pacmanController = new PacmanController();
-        gameScene.setOnKeyPressed(pacmanController::keyPressedHandler);
-        gameScene.setOnKeyReleased(pacmanController::keyReleasedHandler);
+    /**
+     * Methode qui fais la transition de gauche a droite.
+     * @param primaryStage
+     */
+    public static void transitionLeftToRight(final Stage primaryStage) {
+        final double transitionDuration = 0.8;
+        //Suppression de ce qui y'avais avant (au cas ou)
+        rootPane.getChildren().clear();
 
-        //MazeConfig pour niveau facile
-        MazeState maze = null;
+        //On créer un StackPane qui contient toutes les box sauf le background
+        StackPane originalContent = new StackPane();
+        originalContent.getChildren().addAll(mainBox);
 
-        MenuGraphics graphics = new MenuGraphics(gameScene, primaryStage);
-        var gameView = new GameView(maze, root, 30.0, graphics);
-        primaryStage.setScene(gameScene);
-        primaryStage.sizeToScene();
-        primaryStage.show();
-        gameView.animate();
+        //On en créer un autre qui contient toutes les box de Menu
+        StackPane previewContent = new StackPane();
+        previewContent.getChildren().addAll(getMainBox());
+
+        //On l'ajoute dans le rootPane du Menu
+        getRootPane().getChildren().addAll(originalContent, previewContent);
+
+        //On fait la transition de la box actuel du milieu vers la droite
+        TranslateTransition deleteTransition = new TranslateTransition(
+            Duration.seconds(transitionDuration), originalContent
+        );
+        deleteTransition.setFromX(0);
+        deleteTransition.setToX(primaryStage.getWidth());
+        deleteTransition.setOnFinished(event -> {
+            //On la supprime apres que la transition ait fini
+            getRootPane().getChildren().remove(originalContent);
+        });
+        //On applique la transition
+        deleteTransition.play();
+
+        //On fait la transition de la box de Menu de la gauche au milieu
+        TranslateTransition originalTransition = new TranslateTransition(
+            Duration.seconds(transitionDuration), previewContent
+        );
+        originalTransition.setFromX(-primaryStage.getWidth());
+        originalTransition.setToX(0);
+        //On applique la transition
+        originalTransition.play();
     }
-
-    public static void moyen(Stage primaryStage){
-        Pane root = new Pane();
-        Scene gameScene = new Scene(root);
-        var pacmanController = new PacmanController();
-        gameScene.setOnKeyPressed(pacmanController::keyPressedHandler);
-        gameScene.setOnKeyReleased(pacmanController::keyReleasedHandler);
-
-        //MazeConfig pour niveau moyen
-        MazeState maze = null;
-
-        MenuGraphics graphics = new MenuGraphics(gameScene, primaryStage);
-        var gameView = new GameView(maze, root, 30.0, graphics);
-        primaryStage.setScene(gameScene);
-        primaryStage.sizeToScene();
-        primaryStage.show();
-        gameView.animate();
-    }
-
-    public static void difficile(Stage primaryStage){
-        Pane root = new Pane();
-        Scene gameScene = new Scene(root);
-        var pacmanController = new PacmanController();
-        gameScene.setOnKeyPressed(pacmanController::keyPressedHandler);
-        gameScene.setOnKeyReleased(pacmanController::keyReleasedHandler);
-
-        //MazeConfig pour niveau difficile
-        MazeState maze = null;
-
-        MenuGraphics graphics = new MenuGraphics(gameScene, primaryStage);
-        var gameView = new GameView(maze, root, 30.0, graphics);
-        primaryStage.setScene(gameScene);
-        primaryStage.sizeToScene();
-        primaryStage.show();
-        gameView.animate();
-    }
-
-    public static void impossible(Stage primaryStage){
-        Pane root = new Pane();
-        Scene gameScene = new Scene(root);
-        var pacmanController = new PacmanController();
-        gameScene.setOnKeyPressed(pacmanController::keyPressedHandler);
-        gameScene.setOnKeyReleased(pacmanController::keyReleasedHandler);
-
-        //MazeConfig pour niveau impossible
-        MazeState maze = null;
-
-        MenuGraphics graphics = new MenuGraphics(gameScene, primaryStage);
-        var gameView = new GameView(maze, root, 30.0, graphics);
-        primaryStage.setScene(gameScene);
-        primaryStage.sizeToScene();
-        primaryStage.show();
-        gameView.animate();
-    }
-    
 }

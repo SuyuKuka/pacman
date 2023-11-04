@@ -1,249 +1,127 @@
 package model;
 
 import config.Cell;
-import javafx.scene.Scene;
 import config.MazeConfig;
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
+import gui.CritterGraphicsFactory;
 import utils.Music;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import static config.Cell.Content.*;
-
-import static model.Ghost.*;
-import static model.Direction.*;
+import static model.Ghost.BLINKY;
+import static model.Ghost.PINKY;
+import static model.Ghost.INKY;
+import static model.Ghost.CLYDE;
 
 public final class MazeState {
+    /** MazeState actuel pour les tests unitaires. */
+    private static MazeState currentMaze;
+
+    /** {@link MazeConfig#config} actuel. */
     private final MazeConfig config;
+    /** Hauteur de la map. */
     private final int height;
+    /** Largeur de la map. */
     private final int width;
 
+    /**
+     * Tableau contenant des booleans indiquant
+     * l'état des pac-gommes sur la carte.
+     */
     private final boolean[][] gridState;
 
-    private enum Mode {
-        CHASE, SCATTER, FRIGHTENED
+    /** Liste des modes. */
+    public enum Mode {
+        /** Chasse Pac-Man. */
+        CHASE,
+        /** Chacun dans un coin. */
+        SCATTER,
+        /** Effrayé. */
+        FRIGHTENED
     }
 
+    /** {@link Mode} actuel. */
     private Mode mode;
-    private long start;
+    /** Chronomètre depuis le début de la partie. */
+    private long modeTimer;
 
+    /** Liste des{@code Critter}. */
     private final List<Critter> critters;
+    /** Score actuel. */
     private int score;
 
+    /** Position initial de chaque{@code Critter}. */
     private final Map<Critter, RealCoordinates> initialPos;
-    private final int totalLives;
+    /** Vies totales. */
+    private final int totalLives = 3;
+    /** Vies actuelles. */
     private int lives;
-    private boolean win;
-    private int maxScore;
-    private int pacgomme;
+    /** True si gagné. */
+    private boolean win = false;
+    /** Score maximum. */
+    private int maxScore = 0;
+    /** Nombre de pac-gommes mangés. */
+    private int pacgomme = 0;
 
-    private Scene gameScene;
     private boolean isMusicPlaying = true;
-
-    public MazeState(MazeConfig config) {
-        this.config = config;
-        // Ajouter difficulté dans config et faire un switch (difficulté) pour le nb de total live
-        totalLives = 3;
+    /**
+     * Constructeur qui initialise les infos de la partie.
+     * @param newConfig {@link MazeConfig#config} Configuration utilisée
+     */
+    public MazeState(final MazeConfig newConfig) {
+        config = newConfig;
+        /* TODO : Ajouter difficulté dans config
+         * et faire un switch (difficulté) pour le
+         */
+        PacMan.INSTANCE.resetPacMan();
         lives = totalLives;
-        PacMan.INSTANCE.setPacManMoved(0);
-        PacMan.INSTANCE.setEnergized(false);
-        PacMan.INSTANCE.setBufferDirection(NONE);
-        win = false;
-        maxScore = 0;
-        pacgomme = 0;
         height = config.getHeight();
         width = config.getWidth();
         critters = List.of(PacMan.INSTANCE, CLYDE, BLINKY, INKY, PINKY);
         gridState = new boolean[height][width];
         setGrid(config.getGrid());
         initialPos = Map.of(
-            PacMan.INSTANCE, config.getPacManPos().toRealCoordinates(1.0),
-            BLINKY, config.getBlinkyPos().toRealCoordinates(1.0),
-            INKY, config.getInkyPos().toRealCoordinates(1.0),
-            CLYDE, config.getClydePos().toRealCoordinates(1.0),
-            PINKY, config.getPinkyPos().toRealCoordinates(1.0)
-        );
+                PacMan.INSTANCE, config.getPacManPos().toRealCoordinates(1.0),
+                BLINKY, config.getBlinkyPos().toRealCoordinates(1.0),
+                INKY, config.getInkyPos().toRealCoordinates(1.0),
+                CLYDE, config.getClydePos().toRealCoordinates(1.0),
+                PINKY, config.getPinkyPos().toRealCoordinates(1.0));
         resetCritters();
+        currentMaze = this;
     }
 
-    public List<Critter> getCritters() {
-        return critters;
-    }
-
-    public double getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void update(long deltaTns) {
+    /**
+     * Méthode appelée à chaque tick pour mettre à jour l'état de la carte.
+     * @param deltaTns Durée d'un tick.
+     */
+    public void update(final long deltaTns) {
         if (lives > 0 && !win) {
-            updatePacMan(deltaTns);
+            PacMan.INSTANCE.updatePacMan(deltaTns, this);
             // Active les fantômes après la première input
             if (PacMan.INSTANCE.getPacManMoved() == 1) {
-                activateGhost();
+                mode = Mode.SCATTER;
+                Ghost.activateGhost();
                 updateMode();
                 PacMan.INSTANCE.setPacManMoved(-1);
             } else if (PacMan.INSTANCE.getPacManMoved() != 0) {
                 updateMode();
-                updateGhost(deltaTns);
+                Ghost.updateGhost(deltaTns, this);
             }
             updateScore();
             updateCollision();
+            if (PacMan.INSTANCE.getPacManMoved() == -1) {
+                final double milli = Math.pow(10, 6);
+                modeTimer += deltaTns / milli;
+            }
         }
     }
 
     /**
-     * La méthode arrête Pac-Man lorsqu'il rencontre un mur. Elle met aussi à jour
-     * sa position lorsqu'il traverse une case pour faciliter les
-     * virages.
-     * 
-     * @param deltaTns La variation du temps entre deux instants.
-     */
-    private void updatePacMan(long deltaTns) {
-        var curPos = PacMan.INSTANCE.getPos();
-        var nextPos = PacMan.INSTANCE.nextPos(deltaTns);
-
-        // Nécessaire pour éviter les problèmes de détermination du target selon la direction de Pac-Man
-        if (PacMan.INSTANCE.getDirection() != NONE)
-            PacMan.INSTANCE.setLastDirection(PacMan.INSTANCE.getDirection());
-
-        // Modifie ou non la direction de PacMan en fonction du terrain du buffer
-        if (canPacManTurn(PacMan.INSTANCE.getBufferDirection(), deltaTns)) {
-            nextPos = PacMan.INSTANCE.nextPos(deltaTns, PacMan.INSTANCE.getBufferDirection());
-            PacMan.INSTANCE.setDirection(PacMan.INSTANCE.getBufferDirection());
-            PacMan.INSTANCE.setBufferDirection(Direction.NONE);
-        }
-        nextPos = calibratePacManPos(curPos, nextPos);
-        PacMan.INSTANCE.calibratePos(deltaTns, curPos, nextPos, height, width);
-        PacMan.INSTANCE.updateBufferDurationTime(deltaTns);
-
-        // Si Pac-Man mange un ENERGIZER
-        var pacPos = PacMan.INSTANCE.getPos().round();
-        if (!gridState[pacPos.y()][pacPos.x()]) {
-            PacMan.INSTANCE.containsEnergizer(config);
-            PacMan.INSTANCE.resetTimerSiRepasseEnergizer(config);
-        }
-        PacMan.INSTANCE.increaseEnergizedTimer(deltaTns);
-    }
-
-     /**
-     * Méthode qui calcul la position à la frame suivante de PacMan en fonction de {@code Direction}. <br><br>
-     * Si cette position est valable, change la {@code Direction} de PacMan sinon, garde l'ancienne {@code Direction}.
-     * 
-     * @param Maze MazeConfig utilisée.
-     * @param direction Calcul par rapport à cette direction.
-     * @param deltaTns Temps écoulée.
-     * @return Retourne vraie si un changement de direction est possible, faux sinon.
-     */
-    public boolean canPacManTurn(Direction direction, long deltaTns) {
-        if (PacMan.INSTANCE.getDirection() == direction) {
-            return false;
-        }
-        var nextNeighbours = PacMan.INSTANCE.nextPos(deltaTns).intNeighbours();
-        if (nextNeighbours.size() >= 4) {
-            return false;
-        }
-        if (nextNeighbours.size() == 2) {
-            if ((direction == Direction.NORTH || direction == Direction.SOUTH) && (int) PacMan.INSTANCE.getPos().x() != PacMan.INSTANCE.getPos().x()) {
-                return false;
-            }
-            if ((direction == Direction.EAST || direction == Direction.WEST) && (int) PacMan.INSTANCE.getPos().y() != PacMan.INSTANCE.getPos().y()) {
-                return false;
-            }
-            var curNeighbours = PacMan.INSTANCE.getPos().intNeighbours();
-            for (var n: curNeighbours) {
-                if (direction.wall(config.getCell(n))) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Méthode qui arrête la course de PacMan et retire sa direction si il rencontre un mur de face.
-     * @param curPos  {@code RealCoordinates} actuelle de {@code Pac-Man}.
-     * @param nextPos {@code RealCoordinates} supposée (= s'il ne traverse pas de mur) de {@code Pac-Man}.
-     * @return Retourne {@code nextPos} modifié ou non.
-     */
-
-    public RealCoordinates calibratePacManPos(RealCoordinates curPos, RealCoordinates nextPos) {
-        if (!curPos.intNeighbours().containsAll(nextPos.intNeighbours())) {
-            for (var n: curPos.intNeighbours()) {
-                if (PacMan.INSTANCE.getDirection().wall(config.getCell(n))) {
-                    RealCoordinates newPos = PacMan.INSTANCE.getPos().adjustCoordinates(PacMan.INSTANCE.getDirection());
-                    PacMan.INSTANCE.setDirection(Direction.NONE);
-                    return newPos;
-                }
-            }
-        }
-        return nextPos;
-    }
-
-    /**
-     * La méthode initialise la variable {@code start} qui garde l'heure UNIX au
-     * lancement de la partie (lorsque Pac-Man bouge pour la première fois),
-     * initialise le premier mode en {@code SCATTER} et
-     * initialise les directions de {@code BLINKY} et de {@code PINKY}.
-     */
-    public void activateGhost() {
-        start = Instant.now().toEpochMilli();
-        mode = Mode.SCATTER;
-        BLINKY.setActivated(true);
-        PINKY.setActivated(true);
-        INKY.setActivated(false);
-        CLYDE.setActivated(false);
-        BLINKY.setDirection(EAST);
-        PINKY.setDirection(NORTH);
-    }
-
-    /**
-     * La méthode met à jour les targets de chaque fantôme selon le mode courant.
-     * Elle met aussi à jour la direction de chaque fantôme
-     * lorsqu'il entre dans une intersection. {@code INKY} et {@code CLYDE} ne
-     * peuvent bouger seulement lorsqu'un score a été atteint.
-     * 
-     * @param deltaTns La variation du temps entre deux instants.
-     */
-    private void updateGhost(long deltaTns) {
-        for (Critter critter : critters) {
-            if (critter instanceof Ghost) critter.calibratePos(deltaTns, critter.getPos(), critter.nextPos(deltaTns), height, width);
-            RealCoordinates pos = critter.getPos();
-
-            // Lorsque le fantôme mangé retourne au spawn
-            if (critter instanceof Ghost && ((Ghost) critter).isEaten() && pos.equals(new IntCoordinates(8, 10).toRealCoordinates(1.0))) {
-                ((Ghost) critter).setEaten(false);
-            }
-
-            // Activation d'Inky à partir de 30 points
-            if (critter == INKY && !INKY.isActivated() && pacgomme >= 30) {
-                INKY.setActivated(true);
-                critter.setDirection(EAST);
-                // Activation de Clyde lorsqu'un tier des points totaux a été obtenu
-            } else if (critter == CLYDE && !CLYDE.isActivated() && pacgomme >= 146 / 3) {
-                CLYDE.setActivated(true);
-                critter.setDirection(WEST);
-                // Set direction aléatoire en FRIGHTENED mode
-            } else if (critter instanceof Ghost && !((Ghost) critter).isEaten() && mode == Mode.FRIGHTENED && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
-                frightenedMode((Ghost) critter);
-                // Set direction la plus proche du target
-            } else if (critter instanceof Ghost && ((Ghost) critter).isActivated() && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
-                critter.setDirection(((Ghost) critter).directionClosestToTarget(config));
-            }
-        }
-    }
-
-
-    /**
-     * La méthode met à jour le mode selon le temps de jeu. A chaque changement de
-     * mode sauf pour la fin du mode {@code FRIGHTENED}, les fantômes
-     * se retournent.
+     * La méthode met à jour le mode selon le temps de jeu.
+     * A chaque changement de mode sauf pour la fin
+     * du {@link Mode#FRIGHTENED}, les fantômes se retournent.
      */
     private void updateMode() {
         // Pac-Man est ENERGIZED, changement du mode en FRIGHTENED
@@ -252,31 +130,43 @@ public final class MazeState {
                 isMusicPlaying = false;
             }
             Music.stopBgMusic();
-            Music.playIntroMusicThenLoopBgMusic("energie.wav", "power_dot.wav");
-            reverseGhostsDirection(config);
+            Music.playIntroMusicThenLoopBgMusic("energie", "power_dot");
+            Ghost.reverseGhostsDirection(config, critters);
             mode = Mode.FRIGHTENED;
             // Changement du mode selon le temps de jeu
         } else if (!PacMan.INSTANCE.isEnergized()) {
-            long now = Instant.now().toEpochMilli();
             if (!isMusicPlaying) {
-                Music.playLoopingBgMusic("Pacmanman.wav");
+                Music.playLoopingBgMusic("Pacmanman");
                 isMusicPlaying = true;
             }
-            if (now < start + 7 * 1000 ||
-                now > start + (7 + 20) * 1000 && now <= start + (7 + 20 + 7) * 1000 ||
-                now > start + (7 + 20 + 7 + 20) * 1000 && now <= start + (7 + 20 + 7 + 20 + 5) * 1000 ||
-                now > start + (7 + 20 + 7 + 20 + 5 + 20) * 1000
-                && now <= start + (7 + 20 + 7 + 20 + 5 + 20 + 5) * 1000) {
+            final int chase1 = 7;
+            final int scatter1 = 27;
+            final int chase2 = 34;
+            final int scatter2 = 54;
+            final int chase3 = 59;
+            final int scatter3 = 79;
+            final int chase4 = 84;
+            final int milli = 1000;
+
+            if (modeTimer < chase1 * milli
+                || modeTimer > scatter1 * milli
+                    && modeTimer <= chase2 * milli
+                || modeTimer > scatter2 * milli
+                    && modeTimer <= chase3 * milli
+                || modeTimer > scatter3 * milli
+                    && modeTimer <= chase4 * milli
+                ) {
                 if (mode == Mode.CHASE) {
-                    Ghost.reverseGhostsDirection(config);
+                    Ghost.reverseGhostsDirection(config, critters);
                 }
                 scatterMode();
-            } else if (now > start + 7 * 1000 ||
-                now > start + (7 + 20 + 7) * 1000 ||
-                now > start + (7 + 20 + 7 + 20 + 5) * 1000 ||
-                now > start + (7 + 20 + 7 + 20 + 5 + 20 + 5) * 1000) {
+            } else if (modeTimer > chase1 * milli
+                || modeTimer > chase2 * milli
+                || modeTimer > chase3 * milli
+                || modeTimer > chase4 * milli
+                ) {
                 if (mode == Mode.SCATTER) {
-                    Ghost.reverseGhostsDirection(config);
+                    Ghost.reverseGhostsDirection(config, critters);
                 }
                 chaseMode();
             }
@@ -284,60 +174,47 @@ public final class MazeState {
     }
 
     /**
-     * La méthode met à jour les targets de chaque fantôme dans un coin de la map
-     * qui leur est dédié durant le {@code SCATTER} mode.
+     * La méthode met à jour les targets de chaque fantôme
+     * dans un coin de la map qui leur est dédié durant le {@link Mode#SCATTER}.
      */
     private void scatterMode() {
         mode = Mode.SCATTER;
-        BLINKY.setTarget(new IntCoordinates(16, 0).toRealCoordinates(1.0));
-        INKY.setTarget(new IntCoordinates(16, 21).toRealCoordinates(1.0));
-        PINKY.setTarget(new IntCoordinates(0, 0).toRealCoordinates(1.0));
-        CLYDE.setTarget(new IntCoordinates(0, 21).toRealCoordinates(1.0));
+        Ghost.setScatterTarget();
     }
 
     /**
-     * La méthode met à jour les targets de chaque fantôme par rapport à Pac-Man en
-     * {@code CHASE} mode.
+     * La méthode met à jour les targets de chaque fantôme
+     * par rapport à Pac-Man en {@link Mode#CHASE}.
      */
     private void chaseMode() {
         mode = Mode.CHASE;
-        updateBlinky();
-        updateInky();
-        updatePinky();
-        updateClyde();
+        Ghost.updateBlinky();
+        Ghost.updateInky();
+        Ghost.updatePinky();
+        Ghost.updateClyde();
     }
 
     /**
      * La méthode met à jour les directions de chaque fantôme "aléatoirement" en
-     * {@code FRIGHTENED} mode.
+     * {@link Mode#FRIGHTENED} mode.
+     * @param ghost Fantôme
      */
-    private void frightenedMode(Ghost ghost) {
-        if (ghost.isActivated()) {
+    public void frightenedMode(final Ghost ghost) {
+        if (ghost.isActivated() && !ghost.isEaten()) {
             ghost.setRandomDirection(config);
         }
     }
 
-    // FIXME Pac-Man rules should somehow be in Pacman class (mettre updateScore et updateCollision dans PacMan ?)
-
     /**
-     * La méthode incrémente le score de 1 après que Pac-Man mange un pac-gomme.
+     * La méthode met à jour l'état du gridState.
+     * @param maze {@link MazeConfig#grid}
      */
-    private void updateScore() {
-        var pacPos = PacMan.INSTANCE.getPos().round();
-        if (!gridState[pacPos.y()][pacPos.x()]) {
-            Music.playSound("eat.wav");//Music pour eat
-            addScore(1);
-            gridState[pacPos.y()][pacPos.x()] = true;
-        }
-    }
-
-    /**
-     * La méthode met à jour l'état du gridState
-     */
-    private void setGrid(Cell[][] maze) {
-        for (int i = 0; i < getHeight(); i++) {
-            for (int j = 0; j < getWidth(); j++) {
-                if (maze[i][j].initialContent() == Cell.Content.DOT || maze[i][j].initialContent() == ENERGIZER) {
+    private void setGrid(final Cell[][] maze) {
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                if (maze[i][j].initialContent() == Cell.Content.DOT
+                    || maze[i][j].initialContent() == Cell.Content.ENERGIZER
+                    ) {
                     maxScore++;
                 }
                 if (maze[i][j].initialContent() == Cell.Content.NOTHING) {
@@ -347,26 +224,48 @@ public final class MazeState {
         }
     }
 
+    // FIXME Pac-Man rules should somehow be in Pacman class
+    // (mettre updateScore et updateCollision dans PacMan ?)
+
     /**
-     * La méthode appelle la méthode {@code playerList} lorsque Pac-Man est au
-     * contact d'un fantôme. Si Pac-Man est {@code ENERGIZED}, le score
+     * La méthode incrémente le score de 1 après que Pac-Man mange un pac-gomme.
+     */
+    private void updateScore() {
+        var pacPos = PacMan.INSTANCE.getPos().round();
+        if (!gridState[pacPos.y()][pacPos.x()]) {
+            Music.playSound("eat");
+            addScore(1);
+            gridState[pacPos.y()][pacPos.x()] = true;
+        }
+    }
+
+    /**
+     * La méthode appelle la méthode {@link #playerLost} lorsque Pac-Man est au
+     * contact d'un fantôme. Si Pac-Man est {@link PacMan#energized}, le score
      * augmente de 10 et le fantôme revient à sa position initiale.
      */
     private void updateCollision() {
-        var pacPos = PacMan.INSTANCE.getPos().round();
+        double pacPosX = PacMan.INSTANCE.getPos().x();
+        double pacPosY = PacMan.INSTANCE.getPos().y();
+        final double range = 0.4;
+        final int eatScore = 10;
         for (var critter : critters) {
-            if (critter instanceof Ghost && critter.getPos().round().equals(pacPos)) {
-                if (PacMan.INSTANCE.isEnergized() && !((Ghost) critter).isEaten()) {
-                    addScore(10);
+            if (critter instanceof Ghost
+                    && Math.abs(pacPosX - critter.getPos().x()) <= range
+                    && Math.abs(pacPosY - critter.getPos().y()) <= range) {
+                if (PacMan.INSTANCE.isEnergized()
+                    && !((Ghost) critter).isEaten()
+                    ) {
+                    addScore(eatScore);
                     ((Ghost) critter).setEaten(true);
                     if ((Ghost) critter == BLINKY) {
-                        updateBlinky();
+                        Ghost.updateBlinky();
                     } else if ((Ghost) critter == PINKY) {
-                        updatePinky();
+                        Ghost.updatePinky();
                     } else if ((Ghost) critter == INKY) {
-                        updateInky();
+                        Ghost.updateInky();
                     } else {
-                        updateClyde();
+                        Ghost.updateClyde();
                     }
                 } else if (!((Ghost) critter).isEaten()) {
                     playerLost();
@@ -376,76 +275,154 @@ public final class MazeState {
         }
     }
 
-    private void addScore(int increment) {
+    private void addScore(final int increment) {
         score += increment;
-        if (increment == 1) pacgomme++;
+        if (increment == 1) {
+            pacgomme++;
+        }
     }
 
-    private void playerLost() { 
+    private void playerLost() {
+    
         lives--;
         if(lives == 0){//ajouter le son à la mort
             Music.stopBgMusic();
-            Music.playSound("gameOver.wav");
+            Music.playSound("gameOver");
             
         }else{
-            Music.playSound("fail.wav");
+            Music.playSound("fail");
             isMusicPlaying = false;
         }
         resetCritters();
     }
 
+    /**
+     * Méthode appelée lorsque le joueur a gagné.
+     * Réinitialise la position des critters.
+     */
     public void playerWin() {
         win = true;
         resetCritters();
     }
 
-    private void resetCritter(Critter critter) {
-        if (critter == BLINKY || critter == INKY && pacgomme >= 30)
-            critter.setDirection(EAST);
-        else if (critter == PINKY)
-            critter.setDirection(NORTH);
-        else if (critter == CLYDE && pacgomme >= 146 / 3)
-            critter.setDirection(WEST);
-        else
-            critter.setDirection(NONE);
-        critter.setPos(initialPos.get(critter));
-    }
-
     private void resetCritters() {
-        for (var critter : critters)
+        for (var critter : critters) {
             resetCritter(critter);
+        }
     }
-    
 
+    private void resetCritter(final Critter critter) {
+        if (critter instanceof Ghost) {
+            ((Ghost) critter).resetGhostPos(this);
+        } else {
+            PacMan.INSTANCE.resetPacManPos(this);
+            CritterGraphicsFactory.setResetPacImg(true);
+        }
+    }
+
+    /**
+     * Retourne la{@code MazeConfig} actuelle.
+     * @return {@code MazeConfig}
+     */
     public MazeConfig getConfig() {
         return config;
     }
 
-    public boolean getGridState(IntCoordinates pos) {
+    /**
+     * Retourne true si la cellule n'a plus de pac-gomme.
+     * @param pos Position de la cellule
+     * @return {@code boolean}
+     */
+    public boolean getGridState(final IntCoordinates pos) {
         return gridState[pos.y()][pos.x()];
     }
 
+    /**
+     * Retourne le nombre actuel de vies.
+     * @return {@code int}
+     */
     public int getLives() {
         return lives;
     }
 
+    /**
+     * Retourne le score actuel.
+     * @return {@code int}
+     */
     public int getScore() {
         return score;
     }
 
-    public Scene getGameScene() {
-        return gameScene;
-    }
-
+    /**
+     * Retourne le nombre de vies initial.
+     * @return {@code int}
+     */
     public int getTotalLive() {
         return totalLives;
     }
 
+    /**
+     * Retourne le nombre maximal de pac-gommes.
+     * @return {@code int}
+     */
     public int getMaxScore() {
         return maxScore;
     }
 
+    /**
+     * Retourne le nombre de pac-gommes mangés.
+     * @return {@code int}
+     */
     public int getPacgomme() {
         return pacgomme;
+    }
+
+    /**
+     * Retourne la{@code Map<Critter, RealCoordinates>}contenant
+     * les positions initiales des {@Code Critter}.
+     * @return {@code Map<Critter, RealCoordinates>}
+     */
+    public Map<Critter, RealCoordinates> getInitialPos() {
+        return initialPos;
+    }
+
+    /**
+     * Retourne la liste des{@code Critter}.
+     * @return {@code List<Critter>}
+     */
+    public List<Critter> getCritters() {
+        return critters;
+    }
+
+    /**
+     * Retourne la largeur de la map.
+     * @return {@code int}
+     */
+    public int getWidth() {
+        return width;
+    }
+
+    /**
+     * Retourne la hauteur de la map.
+     * @return {@code int}
+     */
+    public int getHeight() {
+        return height;
+    }
+
+    /**
+     * Retourne le {@link Mode} actuel.
+     * @return {@link Mode}
+     */
+    public Mode getMode() {
+        return mode;
+    }
+
+    /**
+     * Retourne le{@code MazeState}actuel pour les tests unitaires.
+     * @return {@code MazeState}
+     */
+    public static MazeState getCurrentMaze() {
+        return currentMaze;
     }
 }
