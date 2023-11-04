@@ -38,6 +38,8 @@ public class Menu extends Application {
     private static boolean soloChecking;
     /** Verifie si on provient de solo ou non. */
     private static boolean multiplayerChecking;
+    /** Variable pour suivre si la musique a déjà été démarrée */
+    private static boolean musicStarted = false;
 
     /**
      * Retourne l'indice de l'option choisie.
@@ -45,6 +47,9 @@ public class Menu extends Application {
      */
     public static int getSelected() {
         return selected;
+    }
+    public static void setMusicStarted(boolean musicStarted) {
+        Menu.musicStarted = musicStarted;
     }
 
     /** {@code StackPane}de l'arrière-plan. */
@@ -180,8 +185,11 @@ public class Menu extends Application {
         gameScene.setFill(Color.BLACK);
         primaryStage.setScene(gameScene);
         primaryStage.show();
-        // Musique de fond jouée en boucle
-        Music.playLoopingBgMusic("bgm");
+
+        if (!musicStarted) {// Musique de fond jouée en boucle
+            Music.playLoopingBgMusic("bgm");
+            musicStarted = true;
+        }
     }
 
     private static Background getBackground() {

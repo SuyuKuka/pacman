@@ -22,6 +22,7 @@ import model.Direction;
 import model.MazeState;
 import model.PacMan;
 import utils.Resources;
+import utils.Music;
 
 public final class InGameGui {
     /** Le stage. */
@@ -222,6 +223,10 @@ public final class InGameGui {
         final int mainBoxSpacing = 50;
 
         String title = won ? "You Win !" : "GameOver";
+        if (won) {
+            Music.stopBgMusic();
+            Music.playSound("gameWin");
+        }
         Text gameover = Menu.createText(title, titleSize);
         Text score = Menu.createText("Score : " + state.getScore(), scoreSize);
 

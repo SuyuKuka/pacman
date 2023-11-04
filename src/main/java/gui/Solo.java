@@ -155,6 +155,7 @@ public final class Solo extends Menu {
     public static void startLevel(final Stage primaryStage) {
         final int scale = 30;
         Music.stopBgMusic();
+        Menu.setMusicStarted(false);
 
         Pane pane = new Pane();
         Scene gameScene = new Scene(pane);

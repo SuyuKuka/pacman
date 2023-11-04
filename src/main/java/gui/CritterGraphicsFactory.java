@@ -6,6 +6,7 @@ import model.Critter;
 import model.Ghost;
 import model.PacMan;
 import utils.Resources;
+import utils.Music;
 
 
 public final class CritterGraphicsFactory {
@@ -53,6 +54,7 @@ public final class CritterGraphicsFactory {
      * @return {@link GraphicsUpdater}
      */
     public GraphicsUpdater makeGraphics(final Critter critter) {
+        Music.playLoopingBgMusic ("Pacmanman");
         var image = new ImageView();
         image.setFitWidth(scale * SIZE);
         image.setFitHeight(scale * SIZE);
