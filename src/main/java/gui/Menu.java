@@ -22,6 +22,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.scene.control.Button;
+import javafx.scene.control.Slider;
 import utils.Music;
 import utils.Resources;
 
@@ -109,7 +111,8 @@ public class Menu extends Application {
         Text settings = createText("Settings", textSize);
         HBox option2 = createHBox(textSpacing, Pos.CENTER, select2, settings);
         settings.addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-            // TODO : Settings
+            Settings SetMenu = new Settings(rootPane);
+            SetMenu.start(primaryStage);
         });
 
         Text select3 = createText(">", textSize);
@@ -376,6 +379,7 @@ public class Menu extends Application {
             choices[selected].setVisible(true);
         }
     }
+    
 
     /**
      * Renvoie le mainBox de Menu.
