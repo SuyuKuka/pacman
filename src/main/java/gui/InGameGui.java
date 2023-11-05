@@ -79,6 +79,8 @@ public final class InGameGui {
 
     /** Réinitialise les menus in game. */
     public void reset() {
+        Music.stopBgMusic();
+        Music.playLoopingBgMusic ("Pacmanman");
         end = false;
         paused = false;
         scorePane.getChildren().clear();

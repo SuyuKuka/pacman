@@ -54,7 +54,7 @@ public final class CritterGraphicsFactory {
      * @return {@link GraphicsUpdater}
      */
     public GraphicsUpdater makeGraphics(final Critter critter) {
-        Music.playLoopingBgMusic ("Pacmanman");
+        
         var image = new ImageView();
         image.setFitWidth(scale * SIZE);
         image.setFitHeight(scale * SIZE);
