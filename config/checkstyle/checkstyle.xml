@@ -73,6 +73,7 @@
   <module name="FileLength"/>
   <module name="LineLength">
     <property name="fileExtensions" value="java"/>
+    <property name="max" value="100"/>
   </module>
 
   <!-- Checks for whitespace                               -->
@@ -102,9 +103,10 @@
     <module name="InvalidJavadocPosition"/>
     <module name="JavadocMethod"/>
     <module name="JavadocType"/>
-    <module name="JavadocVariable"/>
     <module name="JavadocStyle"/>
-    <module name="MissingJavadocMethod"/>
+    <module name="MissingJavadocMethod">
+      <property name="allowMissingPropertyJavadoc" value="true"/>
+    </module>
 
     <!-- Checks for Naming Conventions.                  -->
     <!-- See https://checkstyle.org/checks/naming/index.html -->
@@ -162,7 +164,10 @@
     <!-- See https://checkstyle.org/checks/coding/index.html -->
     <module name="EmptyStatement"/>
     <module name="EqualsHashCode"/>
-    <module name="HiddenField"/>
+    <module name="HiddenField">
+      <property name="ignoreSetter" value="true"/>
+      <property name="ignoreConstructorParameter" value="true"/>
+    </module>
     <module name="IllegalInstantiation"/>
     <module name="InnerAssignment"/>
     <module name="MagicNumber"/>
@@ -189,10 +194,9 @@
     <!-- https://checkstyle.org/filters/suppressionxpathfilter.html -->
     <module name="SuppressionXpathFilter">
       <property name="file" value="${org.checkstyle.sun.suppressionxpathfilter.config}"
-                default="checkstyle-xpath-suppressions.xml" />
+        default="checkstyle-xpath-suppressions.xml"/>
       <property name="optional" value="true"/>
     </module>
-
+    <module name="SuppressionCommentFilter"/>
   </module>
-
 </module>

@@ -1,10 +1,6 @@
 package model;
 
-// import javafx.scene.input.KeyCode;
-// import javafx.stage.Stage;
-
-import gui.Menu;
-// import gui.Solo;
+import gui.menu.Menu;
 
 // import org.junit.jupiter.api.Test;
 // import org.junit.jupiter.api.extension.ExtendWith;
