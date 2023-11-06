@@ -1,6 +1,7 @@
 package gui.menu;
 
 import javafx.beans.value.ChangeListener;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
@@ -8,6 +9,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -62,14 +64,13 @@ public final class Solo extends Menu {
         Music.stopAllSounds();
 
         Pane pane = new Pane();
-        primaryStage.setMinWidth(primaryStage.getWidth() + missWidth);
-        primaryStage.setMinHeight(primaryStage.getHeight() + missHeight);
 
         Scene gameScene = new Scene(
             pane,
-            primaryStage.getMinWidth(),
-            primaryStage.getMinHeight()
+            primaryStage.getMinWidth() + missWidth,
+            primaryStage.getMinHeight() + missHeight
         );
+
         var pacmanController = new PacmanController();
         gameScene.setOnKeyPressed(pacmanController::keyPressedHandler);
         gameScene.setOnKeyReleased(pacmanController::keyReleasedHandler);
@@ -192,10 +193,20 @@ public final class Solo extends Menu {
             subBoxAutoSpacing, Pos.CENTER, title, optionBox
         );
         VBox mainBox = createVBox(
-            getMainBoxAutoSpacing(), Pos.BOTTOM_LEFT, subBox, optionBack
+            0, Pos.CENTER, subBox, optionBack
         );
 
         rootPane.getChildren().add(mainBox);
+
+        VBox.setVgrow(subBox, Priority.ALWAYS);
+
+        final int marginSub = 50;
+        final int marginBack = 10;
+
+        HBox.setMargin(subBox, new Insets(0, 0, marginSub, 0));
+
+        HBox.setMargin(subBox, new Insets(0, 0, 0, marginBack));
+
 
         Text[] choices = {
             select1, select2, select3, select4, select5, selectBack

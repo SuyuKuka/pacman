@@ -1,6 +1,7 @@
 package gui.menu;
 
 import javafx.beans.value.ChangeListener;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Slider;
@@ -8,6 +9,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -60,10 +62,8 @@ public final class Settings extends Menu {
     protected void addMainBox(final Stage primaryStage, final Scene gameScene) {
         final int textAutoSpacing = 20;
         final int optionSpacing = 20;
-        final int titleHeightVar = 4;
 
         Text title = createText("Settings", getTitleAutoSize());
-        HBox titleBox = createHBox(0, Pos.TOP_CENTER, title);
 
         // Volume control
         Text volumeText = createText("Volume", getTextAutoSize());
@@ -76,6 +76,7 @@ public final class Settings extends Menu {
             final float f = 100.0f;
             Music.setVolume(volume / f);
         });
+
         //CHECKSTYLE:OFF
         volumeSlider.setShowTickLabels(true);
         volumeSlider.setShowTickMarks(true);
@@ -92,13 +93,23 @@ public final class Settings extends Menu {
             textAutoSpacing, Pos.BOTTOM_LEFT, selectback, back
         );
 
+        VBox subBox = createVBox(
+            getTextAutoSize(), Pos.CENTER, title, volumeBox
+        );
         VBox mainBox = createVBox(
-            (int) primaryStage.getHeight() / titleHeightVar,
-            Pos.CENTER,
-            titleBox, volumeBox, optionBack
+            0, Pos.CENTER, subBox, optionBack
         );
 
         rootPane.getChildren().add(mainBox);
+
+        VBox.setVgrow(subBox, Priority.ALWAYS);
+
+        final int marginSub = 50;
+        final int marginBack = 10;
+
+        HBox.setMargin(subBox, new Insets(0, 0, marginSub, 0));
+
+        HBox.setMargin(subBox, new Insets(0, 0, 0, marginBack));
 
         Text[] choices = {selectback};
         Text[] options = {back};

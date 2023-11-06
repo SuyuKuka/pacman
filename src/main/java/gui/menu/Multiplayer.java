@@ -116,12 +116,7 @@ public final class Multiplayer extends Menu {
 
         VBox.setVgrow(subBox, Priority.ALWAYS);
         HBox.setMargin(subBox, new Insets(0, 0, marginSub, 0));
-        HBox.setMargin(
-            optionBack,
-            new Insets(
-                0, marginBack, marginBack, marginBack
-            )
-        );
+        HBox.setMargin(optionBack, new Insets(0, marginBack, marginBack, marginBack));
 
         rootPane.getChildren().add(mainBox);
 

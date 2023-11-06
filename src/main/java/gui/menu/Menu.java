@@ -241,9 +241,8 @@ public class Menu extends Application {
             * VARIATION
         );
         mainBoxAutoSpacing = (int) (
-            primaryStage.getHeight() / mainBoxSpacing != 0 ? mainBoxSpacing : VARIATION_TEXT_HEIGHT
-            * VARIATION_TITLE_SPACING
-        );
+            (primaryStage.getHeight() / VARIATION_TEXT_HEIGHT)
+            * VARIATION_TITLE_SPACING);
     }
 
     /**
