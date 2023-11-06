@@ -1,5 +1,6 @@
 package gui;
 
+import gui.menu.Menu;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -20,6 +21,9 @@ public class Intro extends Application {
     public void start(final Stage primaryStage) {
         final int width = 690;
         final int height = 510;
+        primaryStage.setMinWidth(width);
+        primaryStage.setMinHeight(height);
+
         primaryStage.setTitle("Mac-Pan-Pac-Man");
         primaryStage.getIcons().add(Resources.getImage("pacman"));
 

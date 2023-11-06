@@ -1,7 +1,10 @@
 package gui;
 
-import gui.Menu.KeySelector;
-import gui.Menu.MouseSelector;
+import gui.menu.Menu;
+import gui.menu.Solo;
+import gui.menu.Menu.KeySelector;
+import gui.menu.Menu.MouseSelector;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -52,6 +55,8 @@ public final class InGameGui {
     /** Les choix du menu pause. */
     private static Text[] pauseOptions = new Text[NB_CHOICE];
 
+    /** Indice du niveau choisi. */
+    private int currentLevel;
     /** Le{@code Text}contenant le score. */
     private Text scoreText;
     /** Un tableau contenant les images des vies de Pac-Man. */
@@ -271,28 +276,34 @@ public final class InGameGui {
     }
 
     private void addEndHandlers() {
-        endgameOptions[0].addEventHandler(
-            MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-
-        });
-        endgameOptions[1].addEventHandler(
-            MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-            Solo.startLevel(primaryStage);
-        });
-        endgameOptions[2].addEventHandler(
-            MouseEvent.MOUSE_CLICKED, mouseEvent -> {
+        EventHandler<MouseEvent> next = new EventHandler<>() {
+            @Override
+            public void handle(final MouseEvent mouseEvent) {
+                //TODO
+            }
+        };
+        EventHandler<MouseEvent> retry = new EventHandler<>() {
+            @Override
+            public void handle(final MouseEvent mouseEvent) {
+                endgameOptions[1].removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
+                Solo.startLevel(primaryStage, currentLevel);
+            }
+        };
+        endgameOptions[0].addEventHandler(MouseEvent.MOUSE_CLICKED, next);
+        endgameOptions[1].addEventHandler(MouseEvent.MOUSE_CLICKED, retry);
+        endgameOptions[2].addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
             Menu quit = new Menu();
             quit.start(primaryStage);
         });
 
-        KeySelector keySel = new Menu().new KeySelector(
+        KeySelector keySel = new KeySelector(
             endGameSelects, primaryStage, false
         );
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySel::handle);
 
         int select = 0;
         for (Text text : endgameOptions) {
-            MouseSelector m = new Menu().new MouseSelector(
+            MouseSelector m = new MouseSelector(
                 endGameSelects, select++
             );
             text.setOnMouseEntered(m::handle);
@@ -307,7 +318,7 @@ public final class InGameGui {
                         break;
 
                     case 1:
-                        Solo.startLevel(primaryStage);
+                        Solo.startLevel(primaryStage, currentLevel);
                         break;
 
                     case 2:
@@ -395,28 +406,31 @@ public final class InGameGui {
     }
 
     private void addPauseHandlers() {
-        pauseOptions[0].addEventHandler(
-            MouseEvent.MOUSE_CLICKED, mouseEvent -> {
+        EventHandler<MouseEvent> retry = new EventHandler<>() {
+            @Override
+            public void handle(final MouseEvent mouseEvent) {
+                pauseOptions[1].removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
+                Solo.startLevel(primaryStage, currentLevel);
+            }
+        };
+
+        pauseOptions[0].addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
             pause(false);
         });
-        pauseOptions[1].addEventHandler(
-            MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-            Solo.startLevel(primaryStage);
-        });
-        pauseOptions[2].addEventHandler(
-            MouseEvent.MOUSE_CLICKED, mouseEvent -> {
+        pauseOptions[1].addEventHandler(MouseEvent.MOUSE_CLICKED, retry);
+        pauseOptions[2].addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
             Menu quit = new Menu();
             quit.start(primaryStage);
         });
 
-        KeySelector keySel = new Menu().new KeySelector(
+        KeySelector keySel = new KeySelector(
             pauseSelects, primaryStage, true
         );
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySel::handle);
 
         int select = 0;
         for (Text text : pauseOptions) {
-            MouseSelector m = new Menu().new MouseSelector(
+            MouseSelector m = new MouseSelector(
                 pauseSelects, select++
             );
             text.setOnMouseEntered(m::handle);
@@ -428,8 +442,9 @@ public final class InGameGui {
                     case 0:
                         pause(false);
                         break;
+
                     case 1:
-                        Solo.startLevel(primaryStage);
+                        Solo.startLevel(primaryStage, currentLevel);
                         break;
 
                     case 2:
@@ -450,5 +465,9 @@ public final class InGameGui {
      */
     public boolean isPaused() {
         return paused;
+    }
+
+    public void setCurrentLevel(final int currentLevel) {
+        this.currentLevel = currentLevel;
     }
 }
