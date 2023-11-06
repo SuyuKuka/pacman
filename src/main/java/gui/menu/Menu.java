@@ -6,6 +6,8 @@ import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -37,7 +39,9 @@ public class Menu extends Application {
     /** Set auto la taille du texte. */
     private static int textAutoSize;
     /** Set auto l'espacement du texte. */
-    private static int mainBoxAutoSpacing;
+    private static int mainBoxAutoSpacing;    /** Variable pour suivre si la musique a déjà été démarrée. */
+    private static boolean musicStarted = false;
+
 
     // Constantes
     protected static final double VARIATION = 0.2;

@@ -7,10 +7,9 @@ import model.Ghost;
 import model.PacMan;
 import utils.Resources;
 
-
 public final class CritterGraphicsFactory {
     /** (Nombre d'update par seconde) / 60. */
-    private static final double UPDATE_FREQUENCY = (double) 1 / 3;
+    private static final double UPDATE_FREQUENCY = (double) 1 / 4;
     /** Scale pour la taille des critters. */
     private static final double SIZE = 0.7;
     /** Boolean indiquant s'il faut remettre l'image par défaut de Pac-Man. */
