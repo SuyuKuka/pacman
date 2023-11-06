@@ -59,7 +59,7 @@ public final class Solo extends Menu {
         final int scale = 30;
         final int missWidth = 125;
         final int missHeight = 145;
-        Music.stopBgMusic();
+        Music.stopAllSounds();
 
         Pane pane = new Pane();
         primaryStage.setMinWidth(primaryStage.getWidth() + missWidth);

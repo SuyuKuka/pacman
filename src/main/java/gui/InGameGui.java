@@ -80,7 +80,7 @@ public final class InGameGui {
         InGameGui.primaryStage = stage;
         INSTANCE.gameScene = scene;
         INSTANCE.reset();
-        Music.playSound("start");
+        Music.playSound("start", () -> Music.playLoopingBgMusic("siren_1"));
     }
 
     /** Réinitialise les menus in game. */
@@ -230,7 +230,7 @@ public final class InGameGui {
 
         String title = won ? "You Win !" : "GameOver";
         if (won) {
-            Music.stopBgMusic();
+            Music.stopAllSounds();
             Music.playSound("gameWin");
         }
         Text gameover = Menu.createText(title, titleSize);

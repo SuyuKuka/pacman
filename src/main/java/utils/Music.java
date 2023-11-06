@@ -4,12 +4,16 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+
+import java.io.IOException;
 import java.net.URL;
 
 public final class Music {
     /** {@code Clip}de musique/son. */
     private static Clip bgMusicClip = null;
-    private static Clip sound = null;
     private static float currentVolume = 1.0f;
 
     private Music() {
@@ -55,7 +59,7 @@ public final class Music {
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
                 new URL(Resources.getFile(soundFileName))
             );
-            sound = AudioSystem.getClip();
+            Clip sound = AudioSystem.getClip();
             sound.open(audioInputStream);
 
             setClipVolume(sound);
@@ -67,11 +71,38 @@ public final class Music {
     }
 
     /**
+    * Joue un effet sonore une fois, puis exécute l'action spécifiée après sa fin.
+    * @param soundFileName Nom du fichier dans le répertoire "resources"
+    * @param onFinished Action à exécuter après la fin de l'effet sonore
+    */
+    public static void playSound(final String soundFileName, final Runnable onFinished) {
+        try {
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
+                new URL(Resources.getFile(soundFileName))
+            );
+            Clip sound = AudioSystem.getClip();
+            sound.open(audioInputStream);
+
+            setClipVolume(sound);
+
+            sound.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) {
+                    sound.close();
+                    onFinished.run();
+                }
+            });
+            sound.start();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Joue la musique de fond en boucle.
      * @param soundFileName Nom du fichier dans le répertoire "resources"
      */
     public static void playLoopingBgMusic(final String soundFileName) {
-        stopBgMusic();
+        stopAllSounds();
         try {
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
                 new URL(Resources.getFile(soundFileName))
@@ -87,15 +118,11 @@ public final class Music {
         }
     }
 
-    /** Arrête la musique/son actuel. */
-    public static void stopBgMusic() {
+    /** Arrête les musiques et sons actuels. */
+    public static void stopAllSounds() {
         if (bgMusicClip != null && bgMusicClip.isRunning()) {
             bgMusicClip.stop();
             bgMusicClip.close();
-        }
-        if (sound != null && sound.isRunning()) {
-            sound.stop();
-            sound.close();
         }
     }
 }

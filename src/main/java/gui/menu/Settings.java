@@ -64,7 +64,6 @@ public final class Settings extends Menu {
 
         Text title = createText("Settings", getTitleAutoSize());
         HBox titleBox = createHBox(0, Pos.TOP_CENTER, title);
-        titleBox.setTranslateY(primaryStage.getHeight() / titleHeightVar);
 
         // Volume control
         Text volumeText = createText("Volume", getTextAutoSize());
@@ -93,7 +92,13 @@ public final class Settings extends Menu {
             textAutoSpacing, Pos.BOTTOM_LEFT, selectback, back
         );
 
-        rootPane.getChildren().addAll(titleBox, volumeBox, optionBack);
+        VBox mainBox = createVBox(
+            (int) primaryStage.getHeight() / titleHeightVar,
+            Pos.CENTER,
+            titleBox, volumeBox, optionBack
+        );
+
+        rootPane.getChildren().add(mainBox);
 
         Text[] choices = {selectback};
         Text[] options = {back};
