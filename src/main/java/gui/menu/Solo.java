@@ -25,8 +25,6 @@ import utils.Music;
 public final class Solo extends Menu {
     /** Initialise un rootPane pour Solo. */
     private StackPane rootPane = new StackPane();
-    /** mainBox de Solo.*/
-    private VBox mainBox;
 
     @Override
     public void start(final Stage primaryStage) {
@@ -193,7 +191,7 @@ public final class Solo extends Menu {
         VBox subBox = createVBox(
             subBoxAutoSpacing, Pos.CENTER, title, optionBox
         );
-        mainBox = createVBox(
+        VBox mainBox = createVBox(
             getMainBoxAutoSpacing(), Pos.BOTTOM_LEFT, subBox, optionBack
         );
 

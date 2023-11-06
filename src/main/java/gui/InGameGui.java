@@ -299,6 +299,7 @@ public final class InGameGui {
         endgameOptions[1].addEventHandler(MouseEvent.MOUSE_CLICKED, retry);
         endgameOptions[2].addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
             Menu quit = new Menu();
+            Menu.setMusicStarted(false);
             quit.start(primaryStage);
         });
 
@@ -329,6 +330,7 @@ public final class InGameGui {
 
                     case 2:
                         Menu quit = new Menu();
+                        Menu.setMusicStarted(false);
                         quit.start(primaryStage);
                         break;
 
@@ -426,6 +428,7 @@ public final class InGameGui {
         pauseOptions[1].addEventHandler(MouseEvent.MOUSE_CLICKED, retry);
         pauseOptions[2].addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
             Menu quit = new Menu();
+            Menu.setMusicStarted(false);
             quit.start(primaryStage);
         });
 
@@ -455,6 +458,7 @@ public final class InGameGui {
 
                     case 2:
                         Menu quitGame = new Menu();
+                        Menu.setMusicStarted(false);
                         quitGame.start(primaryStage);
                         break;
 

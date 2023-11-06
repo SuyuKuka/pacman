@@ -6,8 +6,6 @@ import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -39,9 +37,9 @@ public class Menu extends Application {
     /** Set auto la taille du texte. */
     private static int textAutoSize;
     /** Set auto l'espacement du texte. */
-    private static int mainBoxAutoSpacing;    /** Variable pour suivre si la musique a déjà été démarrée. */
+    private static int mainBoxAutoSpacing;
+    /** Variable pour suivre si la musique a déjà été démarrée. */
     private static boolean musicStarted = false;
-
 
     // Constantes
     protected static final double VARIATION = 0.2;
@@ -73,6 +71,10 @@ public class Menu extends Application {
 
     protected static void setTextAutoSize(final int textAutoSize) {
         Menu.textAutoSize = textAutoSize;
+    }
+
+    public static void setMusicStarted(final boolean musicStarted) {
+        Menu.musicStarted = musicStarted;
     }
 
     protected static int getTitleAutoSize() {
@@ -120,7 +122,10 @@ public class Menu extends Application {
         primaryStage.show();
 
         // Musique de fond jouée en boucle
-        Music.playLoopingBgMusic("bgm");
+        if (!musicStarted) {
+            Music.playLoopingBgMusic("bgm");
+            setMusicStarted(true);
+        }
     }
 
     /**
@@ -161,17 +166,17 @@ public class Menu extends Application {
         Image image = Resources.getImage("background");
 
         BackgroundImage backgroundImage = new BackgroundImage(
-                image,
-                BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
-                BackgroundPosition.CENTER,
-                new BackgroundSize(
-                        primaryStage.getWidth(),
-                        primaryStage.getHeight(),
-                        false,
-                        false,
-                        true,
-                        false)
-        );
+            image,
+            BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
+            BackgroundPosition.CENTER,
+            new BackgroundSize(
+                primaryStage.getWidth(),
+                primaryStage.getHeight(),
+                false,
+                false,
+                true,
+                false
+            ));
         return new Background(backgroundImage);
     }
 
@@ -303,6 +308,7 @@ public class Menu extends Application {
         ) {
         Solo soloMenu = new Solo();
         Multiplayer multiMenu = new Multiplayer();
+        Settings settMenu = new Settings();
 
         //CHECKSTYLE:OFF
         options[0].addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
@@ -312,7 +318,7 @@ public class Menu extends Application {
             multiMenu.start(primaryStage);
         });
         options[2].addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-            // TODO : Settings
+            settMenu.start(primaryStage);
         });
         options[3].addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
             primaryStage.close();
@@ -347,7 +353,7 @@ public class Menu extends Application {
                         break;
 
                     case settingsCase:
-                        // TODO : Settings
+                        settMenu.start(primaryStage);
                         break;
 
                     case quitCase:

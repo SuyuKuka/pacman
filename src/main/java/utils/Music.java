@@ -9,6 +9,7 @@ import java.net.URL;
 public final class Music {
     /** {@code Clip}de musique/son. */
     private static Clip bgMusicClip = null;
+    private static Clip sound = null;
     private static float currentVolume = 1.0f;
 
     private Music() {
@@ -18,6 +19,10 @@ public final class Music {
         return currentVolume;
     }
 
+    /**
+     * Set le volume.
+     * @param volume {@code float}
+     */
     public static void setVolume(final float volume) {
         if (volume < 0f || volume > 1f) {
             throw new IllegalArgumentException("Volume value has to be between 0 and 1");
@@ -50,12 +55,12 @@ public final class Music {
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
                 new URL(Resources.getFile(soundFileName))
             );
-            Clip clip = AudioSystem.getClip();
-            clip.open(audioInputStream);
+            sound = AudioSystem.getClip();
+            sound.open(audioInputStream);
 
-            setClipVolume(clip);
+            setClipVolume(sound);
 
-            clip.start();
+            sound.start();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -87,6 +92,10 @@ public final class Music {
         if (bgMusicClip != null && bgMusicClip.isRunning()) {
             bgMusicClip.stop();
             bgMusicClip.close();
+        }
+        if (sound != null && sound.isRunning()) {
+            sound.stop();
+            sound.close();
         }
     }
 }

@@ -72,9 +72,6 @@ public final class MazeState {
      */
     public MazeState(final MazeConfig newConfig) {
         config = newConfig;
-        /* TODO : Ajouter difficulté dans config
-         * et faire un switch (difficulté) pour le
-         */
         PacMan.INSTANCE.resetPacMan();
         lives = totalLives;
         height = config.getHeight();
@@ -89,7 +86,7 @@ public final class MazeState {
                 CLYDE, config.getClydePos().toRealCoordinates(1.0),
                 PINKY, config.getPinkyPos().toRealCoordinates(1.0));
         resetCritters();
-        currentMaze = this;
+        // currentMaze = this;
     }
 
     /**
@@ -129,6 +126,7 @@ public final class MazeState {
             Music.playSound("energizer");
             Music.playLoopingBgMusic("energized");
             isMusicPlaying = true;
+
             Ghost.reverseGhostsDirection(config, critters);
             mode = Mode.FRIGHTENED;
             // Changement du mode selon le temps de jeu
@@ -137,6 +135,7 @@ public final class MazeState {
                 Music.stopBgMusic();
                 isMusicPlaying = false;
             }
+
             final int chase1 = 7;
             final int scatter1 = 27;
             final int chase2 = 34;

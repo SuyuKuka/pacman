@@ -19,8 +19,6 @@ import javafx.stage.Stage;
 public final class Multiplayer extends Menu {
     /** Initialise un rootPane pour Multiplayer. */
     private StackPane rootPane = new StackPane();
-    /** La box principale de Multiplayer. */
-    private VBox mainBox;
 
 
     @Override
@@ -109,7 +107,7 @@ public final class Multiplayer extends Menu {
         VBox subBox = createVBox(
             subBoxAutoSpacing, Pos.CENTER, title, optionBox
         );
-        mainBox = createVBox(getMainBoxAutoSpacing(), Pos.BOTTOM_LEFT);
+        VBox mainBox = createVBox(getMainBoxAutoSpacing(), Pos.BOTTOM_LEFT);
 
         mainBox.getChildren().addAll(subBox, optionBack);
 
