@@ -1,15 +1,8 @@
-
-
 package gui;
 
-
-import javafx.animation.TranslateTransition;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Slider;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -20,8 +13,8 @@ import utils.Music;
 
 public class Settings extends Menu {
     private StackPane background;
-    private static StackPane rootPane;
-    private static VBox mainBox;
+    private StackPane rootPane;
+    private VBox mainBox;
     private Slider volumeSlider;
 
     public Settings(final StackPane newBackground) {
@@ -37,7 +30,6 @@ public class Settings extends Menu {
         final int textSize = 38;
         final int textSpacing = 20;
         final int optionSpacing = textSpacing;
-        final int subBoxSpacing = 80;
         final int mainBoxSpacing = 150;
         final int width = 690;
         final int height = 510;
@@ -47,13 +39,14 @@ public class Settings extends Menu {
 
         // Volume control
         Text volumeText = createText("Volume", textSize);
-        volumeSlider = new Slider(0, 100, Music.getVolume() * 100); // Range [0, 100] with default value 50
+        // Range [0, 100] with default value 50
+        final int minVol = 0;
+        final int maxVol = 100;
+        volumeSlider = new Slider(minVol, maxVol, Music.getVolume() * maxVol);
         volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             int volume = newValue.intValue();
-            // Assuming you want to display the volume somewhere, 
-            // for example in a label named currentVolumeLabel
-            // currentVolumeLabel.setText(volume + "%");
-            Music.setVolume(volume / 100.0f);
+            final float f = 100.0f;
+            Music.setVolume(volume / f);
         });
         volumeSlider.setShowTickLabels(true);
         volumeSlider.setShowTickMarks(true);
@@ -62,7 +55,7 @@ public class Settings extends Menu {
         volumeSlider.setBlockIncrement(10);
 
         HBox volumeBox = createHBox(optionSpacing, Pos.CENTER, volumeText, volumeSlider);
-    
+
         Text back = createText("Back", textSize);
         back.setOnMouseClicked(event -> {
             Menu menu = new Menu();
@@ -81,6 +74,4 @@ public class Settings extends Menu {
         primaryStage.setScene(settingsScene);
         primaryStage.show();
     }
-    
-    // Remaining methods, including transitionRightToLeft, are unchanged...
 }

@@ -40,7 +40,7 @@ public class Menu extends Application {
     private static boolean soloChecking;
     /** Verifie si on provient de solo ou non. */
     private static boolean multiplayerChecking;
-    /** Variable pour suivre si la musique a déjà été démarrée */
+    /** Variable pour suivre si la musique a déjà été démarrée. */
     private static boolean musicStarted = false;
 
     /**
@@ -50,7 +50,8 @@ public class Menu extends Application {
     public static int getSelected() {
         return selected;
     }
-    public static void setMusicStarted(boolean musicStarted) {
+
+    public static void setMusicStarted(final boolean musicStarted) {
         Menu.musicStarted = musicStarted;
     }
 
@@ -189,9 +190,10 @@ public class Menu extends Application {
         primaryStage.setScene(gameScene);
         primaryStage.show();
 
-        if (!musicStarted) {// Musique de fond jouée en boucle
+        // Musique de fond jouée en boucle
+        if (!musicStarted) {
             Music.playLoopingBgMusic("bgm");
-            musicStarted = true;
+            setMusicStarted(true);
         }
     }
 

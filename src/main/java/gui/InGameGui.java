@@ -75,12 +75,11 @@ public final class InGameGui {
         InGameGui.primaryStage = stage;
         INSTANCE.gameScene = scene;
         INSTANCE.reset();
+        Music.playSound("start");
     }
 
     /** Réinitialise les menus in game. */
     public void reset() {
-        Music.stopBgMusic();
-        Music.playLoopingBgMusic ("Pacmanman");
         end = false;
         paused = false;
         scorePane.getChildren().clear();

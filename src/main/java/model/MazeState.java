@@ -65,7 +65,7 @@ public final class MazeState {
     /** Nombre de pac-gommes mangés. */
     private int pacgomme = 0;
 
-    private boolean isMusicPlaying = true;
+    private boolean isMusicPlaying = false;
     /**
      * Constructeur qui initialise les infos de la partie.
      * @param newConfig {@link MazeConfig#config} Configuration utilisée
@@ -126,18 +126,16 @@ public final class MazeState {
     private void updateMode() {
         // Pac-Man est ENERGIZED, changement du mode en FRIGHTENED
         if (PacMan.INSTANCE.isEnergized() && mode != Mode.FRIGHTENED) {
-            if (isMusicPlaying) {
-                isMusicPlaying = false;
-            }
-            Music.stopBgMusic();
-            Music.playIntroMusicThenLoopBgMusic("energie", "power_dot");
+            Music.playSound("energizer");
+            Music.playLoopingBgMusic("energized");
+            isMusicPlaying = true;
             Ghost.reverseGhostsDirection(config, critters);
             mode = Mode.FRIGHTENED;
             // Changement du mode selon le temps de jeu
         } else if (!PacMan.INSTANCE.isEnergized()) {
-            if (!isMusicPlaying) {
-                Music.playLoopingBgMusic("Pacmanman");
-                isMusicPlaying = true;
+            if (isMusicPlaying) {
+                Music.stopBgMusic();
+                isMusicPlaying = false;
             }
             final int chase1 = 7;
             final int scatter1 = 27;
@@ -283,13 +281,11 @@ public final class MazeState {
     }
 
     private void playerLost() {
-    
         lives--;
-        if(lives == 0){//ajouter le son à la mort
+        if (lives == 0) {
             Music.stopBgMusic();
             Music.playSound("gameOver");
-            
-        }else{
+        } else {
             Music.playSound("fail");
             isMusicPlaying = false;
         }
