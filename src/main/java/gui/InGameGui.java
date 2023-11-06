@@ -44,7 +44,7 @@ public final class InGameGui {
     /** Menu de fin de jeu. */
     private VBox endGameMenu;
     /** Menu pause. */
-    private VBox pauseMenu = pauseMenu();
+    private VBox pauseMenu;
     /** Nombre de choix. */
     private static final int NB_CHOICE = 3;
     /** Les ">" du menu de fin de jeu. */
@@ -91,7 +91,28 @@ public final class InGameGui {
         endGamePane.getChildren().clear();
         pausePane.getChildren().clear();
         ((Pane) gameScene.getRoot()).getChildren().clear();
+        setPauseSelects(new Text[NB_CHOICE]);
+        setPauseOptions(new Text[NB_CHOICE]);
+        setEndGameSelects(new Text[NB_CHOICE]);
+        setEndgameOptions(new Text[NB_CHOICE]);
+        pauseMenu = pauseMenu();
         addPauseHandlers();
+    }
+
+    public static void setPauseSelects(final Text[] pauseSelects) {
+        InGameGui.pauseSelects = pauseSelects;
+    }
+
+    public static void setPauseOptions(final Text[] pauseOptions) {
+        InGameGui.pauseOptions = pauseOptions;
+    }
+
+    public static void setEndGameSelects(final Text[] endGameSelects) {
+        InGameGui.endGameSelects = endGameSelects;
+    }
+
+    public static void setEndgameOptions(final Text[] endgameOptions) {
+        InGameGui.endgameOptions = endgameOptions;
     }
 
     /**
