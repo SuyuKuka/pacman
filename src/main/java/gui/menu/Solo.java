@@ -64,14 +64,13 @@ public final class Solo extends Menu {
         Music.stopAllSounds();
 
         Pane pane = new Pane();
-        primaryStage.setMinWidth(primaryStage.getWidth() + missWidth);
-        primaryStage.setMinHeight(primaryStage.getHeight() + missHeight);
 
         Scene gameScene = new Scene(
             pane,
-            primaryStage.getMinWidth(),
-            primaryStage.getMinHeight()
+            primaryStage.getMinWidth() + missWidth,
+            primaryStage.getMinHeight() + missHeight
         );
+
         var pacmanController = new PacmanController();
         gameScene.setOnKeyPressed(pacmanController::keyPressedHandler);
         gameScene.setOnKeyReleased(pacmanController::keyReleasedHandler);
