@@ -86,7 +86,7 @@
     
     "Line15" : [
         "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
-        "OPEN" , "OPEN" , "OPEN" , "OPEN", "OPEN",  "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" ,
+        "OPEN" , "RESTRICTED" , "RESTRICTED" , "RESTRICTED", "RESTRICTED",  "RESTRICTED" , "RESTRICTED" , "OPEN" , "OPEN" , "CLOSED" ,
         "CLOSED" , "DOT" , "CLOSED" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
     ],
 
@@ -158,7 +158,7 @@
 
     "Line27" : [
         "CLOSED" , "ENERGIZER" , "DOT" , "DOT" , "CLOSED" , "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" ,
-        "DOT" , "DOT" , "DOT" , "OPEN", "OPEN" ,  "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "RESTRICTED" , "RESTRICTED" , "RESTRICTED", "RESTRICTED" ,  "RESTRICTED" , "RESTRICTED" , "DOT" , "DOT" , "DOT" ,
         "DOT" , "DOT" , "CLOSED" , "CLOSED" , "DOT" , "DOT" , "ENERGIZER" , "CLOSED"
     ],
 

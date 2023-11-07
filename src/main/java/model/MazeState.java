@@ -198,7 +198,7 @@ public final class MazeState {
      */
     public void frightenedMode(final Ghost ghost) {
         if (ghost.isActivated() && !ghost.isEaten()) {
-            ghost.setRandomDirection(config);
+            ghost.setRandomDirection(this);
         }
     }
 

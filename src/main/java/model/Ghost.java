@@ -11,6 +11,7 @@ import static model.Direction.SOUTH;
 import static model.Direction.WEST;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import config.Cell;
@@ -262,92 +263,53 @@ public enum Ghost implements Critter {
     /**
      * La méthode retourne une liste contenant les directions possibles qu'un
      * fantôme peut emprunter à une intersection.
-     * @param config {@link MazeConfig#config} Configuration actuelle de la map
+     * @param state {@link MazeState}
      * @return Une {@code List<Direction>} contenant les directions possibles.
-     *         Triées dans le sens horaire.
      */
-    public List<Direction> possibleDirections(final MazeConfig config) {
-        List<Cell> adjacentCells = config.getAdjacentCells(getPos(), direction);
+    public List<Direction> possibleDirections(final MazeState state) {
+        List<Direction> directions = new ArrayList<>(Arrays.asList(NORTH, WEST, SOUTH, EAST));
+        directions.remove(getDirection().getOpposite());
+        if (isInTunnel(state.getConfig())) {
+            return Arrays.asList(getDirection());
+        }
+        if (getPos().x() != Math.floor(getPos().x())) {
+            directions.remove(NORTH);
+            directions.remove(SOUTH);
+        }
+        if (getPos().y() != Math.floor(getPos().y())) {
+            directions.remove(EAST);
+            directions.remove(WEST);
+        }
+        // Cas où le fantôme se trouve sur les cellules dites "murs invisibles".
+        if (state.getConfig().getCell(getPos().round()).initialContent() == Content.RESTRICTED) {
+            directions.remove(NORTH);
+        }
+        if (!eaten && state.getConfig().getCell(getPos().round()).initialContent() == Content.SPAWN) {
+            if (pos.x() <= 13) {
+                directions.remove(WEST);
+            }
+            if (pos.x() >= 14) {
+                directions.remove(EAST);
+            }
+            directions.remove(SOUTH);
+        }
+
+        if (directions.size() == 1) {
+            return directions;
+        }
+
         List<Direction> possibleDirections = new ArrayList<>();
-        switch (direction) {
-            case NORTH -> {
-                if (!adjacentCells.get(0).southWall()) {
-                    possibleDirections.add(NORTH);
+        for (Direction direction : directions) {
+            RealCoordinates pos = RealCoordinates.directionToUnit(direction).plus(this.getPos());
+            if (pos.x() >= 0 && pos.x() < state.getConfig().getGrid()[0].length) {
+                final int posY = (int) Math.round(pos.y());
+                final int posX = (int) Math.round(pos.x());
+                Cell targetCell = state.getConfig().getGrid()[posY][posX];
+                if (!targetCell.hasWall()) {
+                    possibleDirections.add(direction);
                 }
-                if (!adjacentCells.get(1).westWall()) {
-                    possibleDirections.add(EAST);
-                }
-                if (!adjacentCells.get(2).eastWall()) {
-                    possibleDirections.add(WEST);
-                }
-                break;
-            }
-            case EAST -> {
-                if (!adjacentCells.get(0).southWall()) {
-                    possibleDirections.add(NORTH);
-                }
-                if (!adjacentCells.get(1).westWall()) {
-                    possibleDirections.add(EAST);
-                }
-                if (isInTunnel(config)) {
-                    possibleDirections.add(EAST);
-                }
-                if (!adjacentCells.get(2).northWall()
-                    && (!atSpawnEntry() || (eaten && atSpawnEntry()))
-                    ) {
-                    possibleDirections.add(SOUTH);
-                }
-                break;
-            }
-            case SOUTH -> {
-                if (!adjacentCells.get(0).westWall()) {
-                    possibleDirections.add(EAST);
-                }
-                if (!adjacentCells.get(1).northWall()) {
-                    possibleDirections.add(SOUTH);
-                }
-                if (!adjacentCells.get(2).eastWall()) {
-                    possibleDirections.add(WEST);
-                }
-                break;
-            }
-            case WEST -> {
-                if (!adjacentCells.get(0).southWall()) {
-                    possibleDirections.add(NORTH);
-                }
-                if (!adjacentCells.get(1).northWall()
-                    && (!atSpawnEntry() || (eaten && atSpawnEntry()))
-                    ) {
-                    possibleDirections.add(SOUTH);
-                }
-                if (!adjacentCells.get(2).eastWall()) {
-                    possibleDirections.add(WEST);
-                }
-                if (isInTunnel(config)) {
-                    possibleDirections.add(WEST);
-                }
-                break;
-            }
-            default -> {
-                break;
             }
         }
-
-        // Si le fantôme se trouve au spot des murs invisibles
-        final int[] invisX = {7, 9};
-        final int[] invisY = {8, 16};
-        if (pos.equals(
-                new IntCoordinates(invisX[0], invisY[0]).toRealCoordinates(1.0))
-            || pos.equals(
-                new IntCoordinates(invisX[1], invisY[0]).toRealCoordinates(1.0))
-            || pos.equals(
-                new IntCoordinates(invisX[0], invisY[1]).toRealCoordinates(1.0))
-            || pos.equals(
-                new IntCoordinates(invisX[1], invisY[1]).toRealCoordinates(1.0))
-            ) {
-            possibleDirections.remove(NORTH);
-        }
-
         return possibleDirections;
     }
 
@@ -362,12 +324,12 @@ public enum Ghost implements Critter {
      * @param config {@link MazeConfig#config} Configuration actuelle de la map
      * @return La {@code Direction} la plus proche du target.
      */
-    public Direction directionClosestToTarget(final MazeConfig config) {
-        List<Direction> possibleDirections = possibleDirections(config);
+    public Direction directionClosestToTarget(final MazeState state) {
+        List<Direction> possibleDirections = possibleDirections(state);
 
         // Si le fantôme se trouve dans un cul-de-sac, il se retourne
         if (possibleDirections.isEmpty()) {
-            reverseDirection(config);
+            reverseDirection(state.getConfig());
             return direction;
         }
 
@@ -450,8 +412,8 @@ public enum Ghost implements Critter {
      * 28.5% Sud, 29.9% Ouest.
      * @param config {@link MazeConfig#config} Configuration actuelle de la map
      */
-    public void setRandomDirection(final MazeConfig config) {
-        List<Direction> possibles = possibleDirections(config);
+    public void setRandomDirection(final MazeState state) {
+        List<Direction> possibles = possibleDirections(state);
         final double rand = Math.random() * 100;
         final double probaNorth = 16.3;
         final double probaEast = probaNorth + 25.2;
@@ -460,7 +422,7 @@ public enum Ghost implements Critter {
             if (!possibles.isEmpty()) {
                 direction = possibles.get(0);
             } else {
-                reverseDirection(config);
+                reverseDirection(state.getConfig());
             }
         }
         if (rand >= probaNorth && rand < probaEast) {
@@ -473,7 +435,7 @@ public enum Ghost implements Critter {
             } else if (possibles.contains(NORTH)) {
                 direction = NORTH;
             } else {
-                reverseDirection(config);
+                reverseDirection(state.getConfig());
             }
         }
         if (rand >= probaEast && rand < probaSouth) {
@@ -484,7 +446,7 @@ public enum Ghost implements Critter {
             } else if (!possibles.isEmpty()) {
                 direction = possibles.get(0);
             } else {
-                reverseDirection(config);
+                reverseDirection(state.getConfig());
             }
         }
         if (rand >= probaSouth) {
@@ -493,7 +455,7 @@ public enum Ghost implements Critter {
             } else if (!possibles.isEmpty()) {
                 direction = possibles.get(0);
             } else {
-                reverseDirection(config);
+                reverseDirection(state.getConfig());
             }
         }
     }
@@ -653,7 +615,7 @@ public enum Ghost implements Critter {
             } else if (critter.activated
                     && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
                 critter.direction =
-                    critter.directionClosestToTarget(state.getConfig());
+                    critter.directionClosestToTarget(state);
             }
         }
     }

@@ -27,4 +27,24 @@ public enum Direction {
         }
         return true;
     }
+
+    /**
+     * Renvoie la direction opposé.
+     * @return {@link Direction}
+     */
+    public Direction getOpposite() {
+        switch (this) {
+            case NORTH:
+                return SOUTH;
+            case EAST:
+                return WEST;
+            case SOUTH:
+                return NORTH;
+            case WEST:
+                return EAST;
+            default:
+                break;
+        }
+        return NONE;
+    }
 }

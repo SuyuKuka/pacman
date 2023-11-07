@@ -193,6 +193,28 @@ public record RealCoordinates(double x, double y) {
     }
 
     /**
+     * Renvoie une unité de {@link RealCoordinates}
+     * en fonction de la {@link Direction}.
+     * @param d {@link Direction}
+     * @return {@code RealCoordinates}
+     */
+    public static RealCoordinates directionToUnit(final Direction d) {
+        switch (d) {
+            case NORTH:
+                return NORTH_UNIT;
+            case EAST:
+                return EAST_UNIT;
+            case SOUTH:
+                return SOUTH_UNIT;
+            case WEST:
+                return WEST_UNIT;
+            default:
+                break;
+        }
+        return ZERO;
+    }
+
+    /**
      * Arrondie le {@link RealCoordinates} et renvoie un {@link IntCoordinates}.
      * @return {@link IntCoordinates}
      */

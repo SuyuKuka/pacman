@@ -42,7 +42,8 @@ public final class MapVerification {
     public static boolean isAValidWall(final Cell c) {
         if (c.initialContent() == Content.DOT
             || c.initialContent() == Content.ENERGIZER
-            || c.initialContent() == Content.TUNNEL) {
+            || c.initialContent() == Content.TUNNEL
+            || c.initialContent() == Content.RESTRICTED) {
             return true;
         }
         if (!c.northWall() && !c.eastWall() && !c.southWall()
