@@ -3,6 +3,7 @@ package config;
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
 import model.Direction;
+import utils.MapVerification;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,6 +55,8 @@ public class MazeConfig {
                 System.arraycopy(newGrid[i], 0, grid[i], 0, getWidth());
             }
         }
+        MapVerification.tunnelFinder(grid);
+        MapVerification.removeUnnecessaryWall(grid);
         pacManPos = newPacManPos;
         blinkyPos = newBlinkyPos;
         inkyPos = newInkyPos;
@@ -207,14 +210,14 @@ public class MazeConfig {
      * @return {@link MazeConfig}
      */
     public static MazeConfig makeExample1() {
-        final int pacX = 8;
-        final int pacY = 16;
+        final int pacX = 13;
+        final int pacY = 26;
         final int blinkyX = pacX;
-        final int blinkyY = 8;
+        final int blinkyY = 14;
         final int pinkyX = pacX;
-        final int inkyX = 7;
-        final int clydeX = 9;
-        final int otherGhostY = 10;
+        final int inkyX = 11;
+        final int clydeX = 15;
+        final int otherGhostY = 17;
         return new MazeConfig(
                 getJsonMaze("src/main/java/config/Level1.json"),
                 new IntCoordinates(pacX, pacY), // Pacman

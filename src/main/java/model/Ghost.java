@@ -15,6 +15,7 @@ import java.util.List;
 
 import config.Cell;
 import config.MazeConfig;
+import config.Cell.Content;
 
 public enum Ghost implements Critter {
     /** Différents fantômes. */
@@ -55,9 +56,6 @@ public enum Ghost implements Critter {
     public double getSpeed() {
         final int tunnelSpeed = 3;
         final int normalSpeed = 4;
-        if (isInTunnel()) {
-            return tunnelSpeed;
-        }
         return normalSpeed;
     }
 
@@ -97,8 +95,8 @@ public enum Ghost implements Critter {
      * Set le target du fantôme lorsqu'il a été mangé.
      */
     private void setEatenTarget() {
-        final int targetX = 8;
-        final int targetY = 10;
+        final int targetX = 13;
+        final int targetY = 17;
         target = new IntCoordinates(
             targetX, targetY).toRealCoordinates(1.0
         );
@@ -109,15 +107,8 @@ public enum Ghost implements Critter {
      * téléportation horizontal de 3 de longueur à la position y = 10.
      * @return {@code true} si dans un tunnel
      */
-    public boolean isInTunnel() {
-        final int leftXLeft = 0;
-        final int leftXRight = 3;
-        final int rightXRight = 16;
-        final int rightXLeft = 13;
-        final int y = 10;
-        return ((int) pos.x() >= leftXLeft && (int) pos.x() < leftXRight
-            || (int) pos.x() > rightXLeft && (int) pos.x() <= rightXRight)
-            && (int) pos.y() == y;
+    public boolean isInTunnel(final MazeConfig config) {
+        return config.getCell(pos.round()).initialContent() == Content.TUNNEL;
     }
 
     /**
@@ -253,13 +244,13 @@ public enum Ghost implements Critter {
         // Ici, ce rayon de 8 cases sera remplacé par 4 car le fonctionnement
         // des cellules est différent (ici, les cellules sont plus grandes que
         // celles du jeu original)
-        final int radiusRange = 4;
+        final int radiusRange = 8;
         if (Math.sqrt(
                 Math.pow(CLYDE.getPos().x() - PacMan.INSTANCE.getPos().x(), 2)
                 + Math.pow(CLYDE.getPos().y() - PacMan.INSTANCE.getPos().y(), 2)
             ) < radiusRange) {
             final int targetX = 0;
-            final int targetY = 21;
+            final int targetY = 34;
             CLYDE.target = new IntCoordinates(
                 targetX, targetY).toRealCoordinates(1.0
             );
@@ -298,7 +289,7 @@ public enum Ghost implements Critter {
                 if (!adjacentCells.get(1).westWall()) {
                     possibleDirections.add(EAST);
                 }
-                if (isInTunnel()) {
+                if (isInTunnel(config)) {
                     possibleDirections.add(EAST);
                 }
                 if (!adjacentCells.get(2).northWall()
@@ -332,7 +323,7 @@ public enum Ghost implements Critter {
                 if (!adjacentCells.get(2).eastWall()) {
                     possibleDirections.add(WEST);
                 }
-                if (isInTunnel()) {
+                if (isInTunnel(config)) {
                     possibleDirections.add(WEST);
                 }
                 break;
@@ -628,8 +619,8 @@ public enum Ghost implements Critter {
             RealCoordinates pos = critter.getPos();
 
             // Lorsque le fantôme mangé retourne au spawn
-            final int spawnX = 8;
-            final int spawnY = 10;
+            final int spawnX = 13;
+            final int spawnY = 17;
             if (critter.eaten
                 && pos.equals(
                     new IntCoordinates(spawnX, spawnY).toRealCoordinates(1.0)
@@ -669,8 +660,8 @@ public enum Ghost implements Critter {
 
     /** Set le target de chaque fantôme en{@code Scatter}mode. */
     public static void setScatterTarget() {
-        final int[] scatterX = {0, 16};
-        final int[] scatterY = {0, 21};
+        final int[] scatterX = {0, 27};
+        final int[] scatterY = {2, 34};
         BLINKY.target = new IntCoordinates(
             scatterX[1], scatterY[0]).toRealCoordinates(1.0
         );

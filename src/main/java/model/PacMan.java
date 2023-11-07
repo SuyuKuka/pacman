@@ -1,6 +1,10 @@
 package model;
 
 import config.Cell.Content;
+
+import java.util.Set;
+
+import config.Cell;
 import config.MazeConfig;
 
 import geometry.IntCoordinates;
@@ -206,103 +210,88 @@ public final class PacMan implements Critter {
     }
 
     /**
-     * La méthode arrête Pac-Man lorsqu'il rencontre un mur.
-     * Elle met aussi à jour sa position lorsqu'il traverse
-     * une case pour faciliter les virages.
+     * Cette méthode actualise la position({@link RealCoordinates})
+     * et la {@link Direction} de {@link PacMan} <br><br> en fonction du terrain
+     * ({@link MazeConfig}) à l'instant suivant {@code deltaTns}.
      * @param deltaTns La variation du temps entre deux instants.
-     * @param state {@code MazeState} Etat actuel de la map
+     * @param config {@code MazeConfig} Map.
      */
-    public void updatePacMan(final long deltaTns, final MazeState state) {
-        var curPos = pos;
-        var nextPos = nextPos(deltaTns);
-
-        // Nécessaire pour éviter les problèmes de détermination
-        // du target selon la direction de Pac-Man
-        if (direction != Direction.NONE) {
-            lastDirection = direction;
-        }
+    public void updatePacMan(final long deltaTns, final MazeConfig config) {
+        final RealCoordinates curPos = getPos();
+        RealCoordinates nextPos = nextPos(deltaTns);
 
         // Modifie ou non la direction de PacMan en fonction
-        // du terrain du buffer
-        if (canPacManTurn(bufferDirection, deltaTns, state.getConfig())) {
+        // de la direction du buffer et du terrain
+        if (bufferDirection != Direction.NONE && isBufferDirectionValid(deltaTns, config)) {
             nextPos = nextPos(deltaTns, bufferDirection);
-            direction = bufferDirection;
+            setDirection(bufferDirection);
             bufferDirection = Direction.NONE;
         }
-        nextPos = calibratePacManPos(curPos, nextPos, state.getConfig());
-        calibratePos(
-            deltaTns, curPos, nextPos, state.getHeight(), state.getWidth()
-        );
+        if (!curPos.intNeighbours().containsAll(nextPos.intNeighbours())) {
+            nextPos = calibratePacManPos(nextPos, config);
+        }
+        calibratePos(deltaTns, curPos, nextPos, config.getHeight(), config.getWidth());
         updateBufferDurationTime(deltaTns);
 
+        if (getDirection() != Direction.NONE) {
+            lastDirection = getDirection();
+        }
         // Si Pac-Man mange un ENERGIZER
-        var pacPos = PacMan.INSTANCE.getPos().round();
-        if (!state.getGridState(new IntCoordinates(pacPos.x(), pacPos.y()))) {
-            containsEnergizer(state.getConfig());
+        IntCoordinates pacPos = getPos().round();
+        if (config.getGrid()[pacPos.y()][pacPos.x()].initialContent() == Cell.Content.ENERGIZER) {
+            config.getGrid()[pacPos.y()][pacPos.x()] =
+                new Cell(false, false, false, false, Content.NOTHING);
+            energized = true;
         }
         increaseEnergizedTimer(deltaTns);
     }
 
-    /**
+
+     /**
      * Méthode qui calcul la position à la frame suivante
      * de PacMan en fonction de {@code Direction}. <br><br>
      * Si cette position est valable, change la {@code Direction} de PacMan
      * sinon, garde l'ancienne {@code Direction}.
-     * @param dir Calcul par rapport à cette direction.
      * @param deltaTns  Temps écoulée.
      * @param config {@link MazeConfig#config}
      * @return Retourne vraie si un changement de direction est possible,
      * faux sinon.
      */
-    public boolean canPacManTurn(
-        final Direction dir, final long deltaTns, final MazeConfig config) {
-        if (this.direction == dir || atSpawnEntry()) {
+    public boolean isBufferDirectionValid(
+        final long deltaTns, final MazeConfig config) {
+        final Direction dir = getDirection();
+        if (dir == bufferDirection) {
             return false;
         }
-        var nextNeighbours = nextPos(deltaTns).intNeighbours();
+        final Set<IntCoordinates> nextNeighbours =
+            nextPos(deltaTns, bufferDirection).intNeighbours();
         final int maxNeighbours = 4;
         if (nextNeighbours.size() >= maxNeighbours) {
             return false;
         }
-        if (nextNeighbours.size() == 2) {
-            if ((dir == Direction.NORTH || dir == Direction.SOUTH)
-            && (int) pos.x() != pos.x()) {
+        for (IntCoordinates c: nextNeighbours) {
+            if (config.getCell(c).hasWall()) {
                 return false;
-            }
-            if ((dir == Direction.EAST || dir == Direction.WEST)
-            && (int) pos.y() != pos.y()) {
-                return false;
-            }
-            var curNeighbours = pos.intNeighbours();
-            for (var n : curNeighbours) {
-                if (dir.wall(config.getCell(n))) {
-                    return false;
-                }
             }
         }
-        return true;
+       return true;
     }
 
     /**
      * Méthode qui arrête la course de PacMan et retire sa direction
      * si il rencontre un mur de face.
-     * @param curPos  {@code RealCoordinates} actuelle de {@code Pac-Man}.
      * @param nextPos {@code RealCoordinates} supposée
      * @param config {@link MazeConfig#config}
      * (= s'il ne traverse pas de mur) de {@code Pac-Man}.
      * @return Retourne {@code nextPos} modifié ou non.
      */
     public RealCoordinates calibratePacManPos(
-        final RealCoordinates curPos,
-        final RealCoordinates nextPos,
-        final MazeConfig config) {
-        if (!curPos.intNeighbours().containsAll(nextPos.intNeighbours())) {
-            for (var n : curPos.intNeighbours()) {
-                if (direction.wall(config.getCell(n))) {
-                    RealCoordinates newPos = pos.adjustCoordinates(direction);
-                    direction = Direction.NONE;
-                    return newPos;
-                }
+        final RealCoordinates nextPos, final MazeConfig config) {
+        for (var n : nextPos.intNeighbours()) {
+            if (config.getCell(n).hasWall()) {
+                RealCoordinates newPos = getPos().adjustCoordinates(getDirection());
+                setDirection(Direction.NONE);
+                return newPos;
             }
         }
         return nextPos;

@@ -95,7 +95,7 @@ public final class MazeState {
      */
     public void update(final long deltaTns) {
         if (lives > 0 && !win) {
-            PacMan.INSTANCE.updatePacMan(deltaTns, this);
+            PacMan.INSTANCE.updatePacMan(deltaTns, this.getConfig());
             // Active les fantômes après la première input
             if (PacMan.INSTANCE.getPacManMoved() == 1) {
                 mode = Mode.SCATTER;
