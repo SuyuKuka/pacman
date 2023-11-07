@@ -106,6 +106,7 @@ public enum Ghost implements Critter {
     /**
      * La méthode renvoie {@code true} si le fantôme est dans un tunnel de
      * téléportation horizontal de 3 de longueur à la position y = 10.
+     * @param config
      * @return {@code true} si dans un tunnel
      */
     public boolean isInTunnel(final MazeConfig config) {
@@ -284,13 +285,16 @@ public enum Ghost implements Critter {
         if (state.getConfig().getCell(getPos().round()).initialContent() == Content.RESTRICTED) {
             directions.remove(NORTH);
         }
-        if (!eaten && state.getConfig().getCell(getPos().round()).initialContent() == Content.SPAWN) {
+        if (!eaten && state.getConfig().getCell(getPos().round()).initialContent()
+            == Content.SPAWN) {
+            //CHECKSTYLE:OFF
             if (pos.x() <= 13) {
                 directions.remove(WEST);
             }
             if (pos.x() >= 14) {
                 directions.remove(EAST);
             }
+            //CHECKSTYLE:ON
             directions.remove(SOUTH);
         }
 
@@ -299,14 +303,14 @@ public enum Ghost implements Critter {
         }
 
         List<Direction> possibleDirections = new ArrayList<>();
-        for (Direction direction : directions) {
-            RealCoordinates pos = RealCoordinates.directionToUnit(direction).plus(this.getPos());
-            if (pos.x() >= 0 && pos.x() < state.getConfig().getGrid()[0].length) {
-                final int posY = (int) Math.round(pos.y());
-                final int posX = (int) Math.round(pos.x());
+        for (Direction dir : directions) {
+            RealCoordinates tmpPos = RealCoordinates.directionToUnit(dir).plus(this.getPos());
+            if (tmpPos.x() >= 0 && tmpPos.x() < state.getConfig().getGrid()[0].length) {
+                final int posY = (int) Math.round(tmpPos.y());
+                final int posX = (int) Math.round(tmpPos.x());
                 Cell targetCell = state.getConfig().getGrid()[posY][posX];
                 if (!targetCell.hasWall()) {
-                    possibleDirections.add(direction);
+                    possibleDirections.add(dir);
                 }
             }
         }
@@ -321,7 +325,7 @@ public enum Ghost implements Critter {
      * direction contraire à la direction actuelle.<br>
      * </br>
      * Si le fantôme est au centre du spawn, la méthode retourne {@code NORTH}.
-     * @param config {@link MazeConfig#config} Configuration actuelle de la map
+     * @param state
      * @return La {@code Direction} la plus proche du target.
      */
     public Direction directionClosestToTarget(final MazeState state) {
@@ -410,7 +414,7 @@ public enum Ghost implements Critter {
      * fantôme et des probabilités de chaque direction.
      * Les probabilités sont basées sur le jeu original : 16.3% Nord, 25.2% Est,
      * 28.5% Sud, 29.9% Ouest.
-     * @param config {@link MazeConfig#config} Configuration actuelle de la map
+     * @param state
      */
     public void setRandomDirection(final MazeState state) {
         List<Direction> possibles = possibleDirections(state);
