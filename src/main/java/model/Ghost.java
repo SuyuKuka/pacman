@@ -55,8 +55,7 @@ public enum Ghost implements Critter {
 
     @Override
     public double getSpeed() {
-        final int tunnelSpeed = 3;
-        final int normalSpeed = 4;
+        final int normalSpeed = 6;
         return normalSpeed;
     }
 

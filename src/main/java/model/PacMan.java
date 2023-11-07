@@ -47,7 +47,7 @@ public final class PacMan implements Critter {
     /** Durée depuis que Pac-Man est energisé. */
     private double energizedTimer = 0;
     /** Durée maximale de l'état energisé. */
-    private static final double MAX_ENERGIZED_TIME = 3;
+    private static final double MAX_ENERGIZED_TIME = 6;
 
     private PacMan() {
     }
@@ -62,8 +62,8 @@ public final class PacMan implements Critter {
 
     @Override
     public double getSpeed() {
-        final int energizedSpeed = 7;
-        final int normalSpeed = 5;
+        final int energizedSpeed = 9;
+        final int normalSpeed = 7;
         return isEnergized() ? energizedSpeed : normalSpeed;
     }
 
