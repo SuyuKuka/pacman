@@ -138,7 +138,7 @@ public final class InGameGui {
         // Création d'un texte
         scoreText = new Text();
         // Position du score
-        final int translateX = 30 / 2;
+        final int translateX = 30 / 3;
         final int translateY1 = 30 / 6;
         final int translateY2 = 50;
         scoreText.setTranslateX(
@@ -201,13 +201,18 @@ public final class InGameGui {
      */
     public void displayLives(final MazeState state) {
         final double spacing = 1.9;
-        final int translateX = 30 / 2;
+        final int translateX = 30 / 3;
+        final int translateY = 30 / 5;
         lives = new ImageView[state.getLives()];
         for (int i = 0; i < lives.length; i++) {
             ImageView life = setLife(state);
             life.setX(
                 ((state.getWidth() + state.getHeight() + i * spacing)
                 * translateX)
+            );
+            life.setY(
+                (double) (state.getHeight() + state.getWidth())
+                * translateY
             );
             lives[i] = life;
             if (!((Pane) gameScene.getRoot()).getChildren()

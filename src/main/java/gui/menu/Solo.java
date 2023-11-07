@@ -58,7 +58,7 @@ public final class Solo extends Menu {
     public static void startLevel(final Stage primaryStage, final int level) {
         InGameGui.INSTANCE.setCurrentLevel(level);
 
-        final int scale = 30;
+        final int scale = 17;
         final int missWidth = 125;
         final int missHeight = 145;
         Music.stopAllSounds();
