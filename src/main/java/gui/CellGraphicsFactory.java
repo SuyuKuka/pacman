@@ -48,6 +48,9 @@ public class CellGraphicsFactory {
             case DOT -> scale / dotScale;
             case ENERGIZER -> scale / energizerScale;
             case NOTHING -> 0;
+            case SPAWN -> 0;
+            case TUNNEL -> 0;
+            case RESTRICTED -> 0;
         });
         dot.setCenterX(scale / 2);
         dot.setCenterY(scale / 2);

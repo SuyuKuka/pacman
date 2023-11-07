@@ -137,38 +137,6 @@ public class MazeConfig {
     }
 
     /**
-     * Convertie les données d'un fichier .txt en {@code Cell[][]}
-     * utilisé pour la configuration de la carte. <br></br>
-     * Le fichier doit contenir des données nécessaires pour
-     * une carte rectangulaire.
-     * @param path Le chemin du fichier à importer.
-     * @return {@code Cell[][] maze}
-     */
-    public static Cell[][] getMaze(final String path) {
-        try (Scanner sc = new Scanner(new File(path));) {
-            ArrayList<String[]> set = new ArrayList<>();
-            while (sc.hasNextLine()) {
-                set.add(sc.nextLine().split(" "));
-            }
-            Cell[][] maze = new Cell[set.size()][set.get(0).length];
-            int i = 0;
-            for (String[] line : set) {
-                for (int j = 0; j < set.get(i).length; j++) {
-                    String[] couple = line[j].split(",");
-                    Type t = Type.valueOf(couple[0]);
-                    Content c = Content.valueOf(couple[1]);
-                    maze[i][j] = cell(t, c);
-                }
-                i++;
-            }
-            return maze;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new Cell[0][];
-    }
-
-    /**
      * Convertie les données d'un fichier .json en {@code Cell[][]}
      * utilisé pour la configuration de la carte. <br></br>
      * Le fichier doit contenir des données nécessaires pour
@@ -187,10 +155,12 @@ public class MazeConfig {
             for (int i = 0; i < jObject.length(); i++) {
                 jArray = new JSONArray(jObject.getJSONArray("Line" + (i + 1)));
                 for (int k = 0; k < jArray.length(); k++) {
-                    String[] couple = jArray.getString(k).split(",");
-                    Type t = Type.valueOf(couple[0]);
-                    Content c = Content.valueOf(couple[1]);
-                    maze[i][k] = cell(t, c);
+                    String output = jArray.getString(k);
+                    if (output.equals("CLOSED") || output.equals("OPEN")) {
+                        maze[i][k] = cell(Type.valueOf(output));
+                        continue;
+                    }
+                    maze[i][k] = cell(Content.valueOf(output));
                 }
             }
             return maze;

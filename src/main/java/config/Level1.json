@@ -1,140 +1,218 @@
 {
-    "Line1"  : [
-        "OPEN,NOTHING"   , "OPEN,NOTHING"   , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING",
-        "OPEN,NOTHING"   , "OPEN,NOTHING"   , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING",
-        "OPEN,NOTHING"   , "OPEN,NOTHING"   , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING",
-        "OPEN,NOTHING"   , "OPEN,NOTHING"
+    "Line1" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" ,
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN",
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
     ],
-    "Line2"  : [
-        "S,NOTHING"      , "S,NOTHING"      , "S,NOTHING"     , "S,NOTHING"     , "S,NOTHING",
-        "S,NOTHING"      , "S,NOTHING"      , "S,NOTHING"     , "S,NOTHING"     , "S,NOTHING",
-        "S,NOTHING"      , "S,NOTHING"      , "S,NOTHING"     , "S,NOTHING"     , "S,NOTHING",
-        "S,NOTHING"      , "S,NOTHING"
+
+    "Line2" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" ,
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN",
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
     ],
-    "Line3"  : [
-        "NWCOR,DOT"      , "HPIPE,DOT"      , "HPIPE,DOT"     , "N,DOT"         , "HPIPE,DOT",
-        "HPIPE,DOT"      , "HPIPE,DOT"      , "NECOR,DOT"     , "CLOSED,NOTHING", "NWCOR,DOT",
-        "HPIPE,DOT"      , "HPIPE,DOT"      , "HPIPE,DOT"     , "N,DOT"         , "HPIPE,DOT",
-        "HPIPE,DOT"      , "NECOR,DOT"
+
+    "Line3" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" ,
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN",
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
     ],
-    "Line4"  : [
-        "VPIPE,ENERGIZER", "CLOSED,NOTHING" , "CLOSED,NOTHING", "VPIPE,DOT"     , "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING", "VPIPE,DOT",
-        "CLOSED,NOTHING" , "CLOSED,NOTHING" , "CLOSED,NOTHING", "VPIPE,DOT"     , "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "VPIPE,ENERGIZER"
+
+    "Line4" : [
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED", "CLOSED",  "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED"
     ],
-    "Line5"  : [
-        "W,DOT"          , "HPIPE,DOT"     , "HPIPE,DOT"      , "OPEN,DOT"      , "HPIPE,DOT",
-        "N,DOT"          , "HPIPE,DOT"     , "S,DOT"          , "HPIPE,DOT"     , "S,DOT",
-        "HPIPE,DOT"      , "N,DOT"         , "HPIPE,DOT"      , "OPEN,DOT"      , "HPIPE,DOT",
-        "HPIPE,DOT"      , "E,DOT"
+
+    "Line5" : [
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED"
     ],
-    "Line6"  : [
-        "VPIPE,DOT"      , "CLOSED,NOTHING", "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING",
-        "VPIPE,DOT"      , "CLOSED,NOTHING", "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "VPIPE,DOT"
+
+    "Line6" : [
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
     ],
-    "Line7"  : [
-        "SWCOR,DOT"      , "HPIPE,DOT"     , "HPIPE,DOT"      , "E,DOT"         , "CLOSED,NOTHING",
-        "SWCOR,DOT"      , "HPIPE,DOT"     , "NECOR,DOT"      , "CLOSED,NOTHING", "NWCOR,DOT",
-        "HPIPE,DOT"      , "SECOR,DOT"     ,"CLOSED,NOTHING"  , "W,DOT"         , "HPIPE,DOT",
-        "HPIPE,DOT"      , "SECOR,DOT"
+
+    "Line7" : [
+        "CLOSED" , "ENERGIZER" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "ENERGIZER" , "CLOSED"
     ],
-    "Line8"  : [
-        "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "CLOSED,NOTHING", "VPIPE,NOTHING"  , "CLOSED,NOTHING", "VPIPE,NOTHING" ,
-        "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "CLOSED,NOTHING"
+
+    "Line8" : [
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
     ],
-    "Line9"  : [
-        "HPIPE,NOTHING"  , "WU,NOTHING"    , "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING",
-        "NWCOR,NOTHING"  , "HPIPE,NOTHING" , "S,NOTHING"      , "N,NOTHING"     , "S,NOTHING"     ,
-        "HPIPE,NOTHING"  , "NECOR,NOTHING" , "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING",
-        "EU,NOTHING"     , "HPIPE,NOTHING"
+
+    
+    "Line9" : [
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "DOT", "DOT",  "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED"
     ],
+
     "Line10" : [
-        "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
-        "VPIPE,NOTHING"  , "CLOSED,NOTHING", "CLOSED,NOTHING", "VPIPE,NOTHING"  , "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "VPIPE,NOTHING" , "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "CLOSED,NOTHING"
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED", "CLOSED",  "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
     ],
+
     "Line11" : [
-        "HPIPE,NOTHING"  , "HPIPE,NOTHING" , "HPIPE,NOTHING" , "OPEN,DOT"       , "HPIPE,NOTHING",
-        "E,NOTHING"      , "CLOSED,NOTHING", "EU,NOTHING"    , "S,NOTHING"      , "WU,NOTHING",
-        "CLOSED,NOTHING" , "W,NOTHING"     , "HPIPE,NOTHING" , "OPEN,DOT"       , "HPIPE,NOTHING",
-        "HPIPE,NOTHING"  , "HPIPE,NOTHING"
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED", "CLOSED",  "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
     ],
+
     "Line12" : [
-        "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
-        "VPIPE,NOTHING"  , "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING" , "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "VPIPE,NOTHING" , "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "CLOSED,NOTHING"
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED" ,
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED"
     ],
+
     "Line13" : [
-        "HPIPE,NOTHING"  , "WU,NOTHING"    , "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
-        "W,NOTHING"      , "HPIPE,NOTHING" , "HPIPE,NOTHING" , "HPIPE,NOTHING"  , "HPIPE,NOTHING" ,
-        "HPIPE,NOTHING"  , "E,NOTHING"     , "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
-        "EU,NOTHING"     , "HPIPE,NOTHING"
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "OPEN" , "CLOSED", "CLOSED",  "OPEN" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED"
     ],
+
     "Line14" : [
-        "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
-        "VPIPE,NOTHING"  , "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING" , "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "VPIPE,NOTHING" , "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "CLOSED,NOTHING"
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "OPEN" , "CLOSED", "CLOSED",  "OPEN" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
     ],
+    
     "Line15" : [
-        "NWCOR,DOT"      , "HPIPE,DOT"     , "HPIPE,DOT"     , "OPEN,DOT"       , "HPIPE,DOT",
-        "S,DOT"          , "HPIPE,DOT"     , "NECOR,DOT"     , "CLOSED,NOTHING" , "NWCOR,DOT",
-        "HPIPE,DOT"      , "S,DOT"         , "HPIPE,DOT"     , "OPEN,DOT"       , "HPIPE,DOT",
-        "HPIPE,DOT"      , "NECOR,DOT"
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "OPEN" , "OPEN" , "OPEN" , "OPEN", "OPEN",  "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
     ],
+
     "Line16" : [
-        "VPIPE,DOT"      , "CLOSED,NOTHING", "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "CLOSED,NOTHING", "VPIPE,DOT"     , "CLOSED,NOTHING" , "VPIPE,DOT",
-        "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING", "VPIPE,DOT"      , "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "VPIPE,DOT"
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "SPAWN", "SPAWN",  "CLOSED" , "CLOSED" , "CLOSED" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
     ],
+
     "Line17" : [
-        "SWCOR,ENERGIZER", "NECOR,DOT"     , "CLOSED,NOTHING", "W,DOT"         , "HPIPE,DOT",
-        "N,DOT"          , "HPIPE,DOT"     , "S,DOT"         , "HPIPE,NOTHING" , "S,DOT",
-        "HPIPE,DOT"      , "N,DOT"         , "HPIPE,DOT"     , "E,DOT"         , "CLOSED,NOTHING",
-        "NWCOR,DOT"      , "SECOR,ENERGIZER"
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "CLOSED" , "SPAWN" , "SPAWN" , "SPAWN", "SPAWN",  "SPAWN" , "SPAWN" , "CLOSED" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED"
     ],
+
     "Line18" : [
-        "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING", "VPIPE,DOT"     , "CLOSED,NOTHING",
-        "VPIPE,DOT"      , "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "VPIPE,DOT"     , "CLOSED,NOTHING", "VPIPE,DOT"     , "CLOSED,NOTHING",
-        "VPIPE,DOT"      , "CLOSED,NOTHING"
+        "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "OPEN" , "OPEN" , "OPEN" ,
+        "CLOSED" , "SPAWN" , "SPAWN" , "SPAWN", "SPAWN",  "SPAWN" , "SPAWN" , "CLOSED" , "OPEN" , "OPEN" ,
+        "OPEN" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT"
     ],
+
     "Line19" : [
-        "NWCOR,DOT"      , "S,DOT"         , "HPIPE,DOT"     , "SECOR,DOT"     , "CLOSED,NOTHING",
-        "SWCOR,DOT"      , "HPIPE,DOT"     , "NECOR,DOT"     , "CLOSED,NOTHING", "NWCOR,DOT",
-        "HPIPE,DOT"      , "SECOR,DOT"     , "CLOSED,NOTHING", "SWCOR,DOT"     , "HPIPE,DOT",
-        "S,DOT"          , "NECOR,DOT"
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "CLOSED" , "SPAWN" , "SPAWN" , "SPAWN", "SPAWN",  "SPAWN" , "SPAWN" , "CLOSED" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED"
     ],
+
     "Line20" : [
-        "VPIPE,DOT"      , "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "CLOSED,NOTHING", "VPIPE,DOT"     , "CLOSED,NOTHING", "VPIPE,DOT",
-        "CLOSED,NOTHING" , "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING", "CLOSED,NOTHING",
-        "CLOSED,NOTHING" , "VPIPE,DOT"
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED", "CLOSED",  "CLOSED" , "CLOSED" , "CLOSED" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
     ],
+
     "Line21" : [
-        "SWCOR,DOT"      , "HPIPE,DOT"     , "HPIPE,DOT"     , "HPIPE,DOT"     , "HPIPE,DOT",
-        "HPIPE,DOT"      , "HPIPE,DOT"     , "S,DOT"         , "HPIPE,DOT"     , "S,DOT",
-        "HPIPE,DOT"      , "HPIPE,DOT"     , "HPIPE,DOT"     , "HPIPE,DOT"     , "HPIPE,DOT",
-        "HPIPE,DOT"      , "SECOR,DOT"
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "OPEN" , "OPEN" , "OPEN" , "OPEN", "OPEN",  "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
     ],
+
     "Line22" : [
-        "N,NOTHING"      , "N,NOTHING"     , "N,NOTHING"     , "N,NOTHING"     , "N,NOTHING",
-        "N,NOTHING"      , "N,NOTHING"     , "N,NOTHING"     , "N,NOTHING"     , "N,NOTHING",
-        "N,NOTHING"      , "N,NOTHING"     , "N,NOTHING"     , "N,NOTHING"     , "N,NOTHING",
-        "N,NOTHING"      , "N,NOTHING"
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED", "CLOSED",  "CLOSED" , "CLOSED" , "CLOSED" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
     ],
+
     "Line23" : [
-        "OPEN,NOTHING"   , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING",
-        "OPEN,NOTHING"   , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING",
-        "OPEN,NOTHING"   , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING"  , "OPEN,NOTHING",
-        "OPEN,NOTHING"   , "OPEN,NOTHING"
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED", "CLOSED",  "CLOSED" , "CLOSED" , "CLOSED" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED"
+    ],
+
+    "Line24" : [
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED"
+    ],
+
+    "Line25" : [
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
+    ],
+
+    "Line26" : [
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
+    ],
+
+    "Line27" : [
+        "CLOSED" , "ENERGIZER" , "DOT" , "DOT" , "CLOSED" , "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "OPEN", "OPEN" ,  "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "CLOSED" , "CLOSED" , "DOT" , "DOT" , "ENERGIZER" , "CLOSED"
+    ],
+
+    "Line28" : [
+        "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,
+        "CLOSED" , "CLOSED" ,  "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED"
+    ],
+
+    "Line29" : [
+        "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,
+        "CLOSED" , "CLOSED" ,  "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED"
+    ],
+
+    "Line30" : [
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED" ,
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED"
+    ],
+
+    "Line31" : [
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,  "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
+    ],
+
+    "Line32" : [
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,  "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
+    ],
+
+    "Line33" : [
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "DOT", "DOT",  "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED"
+    ],
+
+    "Line34" : [
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED", "CLOSED",  "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED"
+    ],
+
+    "Line35" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" ,
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN",
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
+    ],
+
+    "Line36" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" ,
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN",
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
     ]
 }
