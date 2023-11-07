@@ -1,0 +1,218 @@
+{
+    "Line1" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" ,
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN",
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
+    ],
+
+    "Line2" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" ,
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN",
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
+    ],
+
+    "Line3" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" ,
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN",
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
+    ],
+
+    "Line4" : [
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED", "CLOSED",  "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED"
+    ],
+
+    "Line5" : [
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED"
+    ],
+
+    "Line6" : [
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
+    ],
+
+    "Line7" : [
+        "CLOSED" , "ENERGIZER" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "ENERGIZER" , "CLOSED"
+    ],
+
+    "Line8" : [
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
+    ],
+
+    
+    "Line9" : [
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "DOT", "DOT",  "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED"
+    ],
+
+    "Line10" : [
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED", "CLOSED",  "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
+    ],
+
+    "Line11" : [
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED", "CLOSED",  "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
+    ],
+
+    "Line12" : [
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED" ,
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED"
+    ],
+
+    "Line13" : [
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "OPEN" , "CLOSED", "CLOSED",  "OPEN" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED"
+    ],
+
+    "Line14" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "OPEN" , "CLOSED", "CLOSED",  "OPEN" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
+    ],
+    
+    "Line15" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "OPEN" , "RESTRICTED" , "RESTRICTED" , "RESTRICTED", "RESTRICTED",  "RESTRICTED" , "RESTRICTED" , "OPEN" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
+    ],
+
+    "Line16" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "SPAWN", "SPAWN",  "CLOSED" , "CLOSED" , "CLOSED" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
+    ],
+
+    "Line17" : [
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "CLOSED" , "SPAWN" , "SPAWN" , "SPAWN", "SPAWN",  "SPAWN" , "SPAWN" , "CLOSED" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED"
+    ],
+
+    "Line18" : [
+        "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "OPEN" , "OPEN" , "OPEN" ,
+        "CLOSED" , "SPAWN" , "SPAWN" , "SPAWN", "SPAWN",  "SPAWN" , "SPAWN" , "CLOSED" , "OPEN" , "OPEN" ,
+        "OPEN" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT"
+    ],
+
+    "Line19" : [
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "CLOSED" , "SPAWN" , "SPAWN" , "SPAWN", "SPAWN",  "SPAWN" , "SPAWN" , "CLOSED" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED"
+    ],
+
+    "Line20" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED", "CLOSED",  "CLOSED" , "CLOSED" , "CLOSED" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
+    ],
+
+    "Line21" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "OPEN" , "OPEN" , "OPEN" , "OPEN", "OPEN",  "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
+    ],
+
+    "Line22" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED", "CLOSED",  "CLOSED" , "CLOSED" , "CLOSED" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
+    ],
+
+    "Line23" : [
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "OPEN" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED", "CLOSED",  "CLOSED" , "CLOSED" , "CLOSED" , "OPEN" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED"
+    ],
+
+    "Line24" : [
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED"
+    ],
+
+    "Line25" : [
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
+    ],
+
+    "Line26" : [
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
+    ],
+
+    "Line27" : [
+        "CLOSED" , "ENERGIZER" , "DOT" , "DOT" , "CLOSED" , "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "RESTRICTED" , "RESTRICTED" , "RESTRICTED", "RESTRICTED" ,  "RESTRICTED" , "RESTRICTED" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "CLOSED" , "CLOSED" , "DOT" , "DOT" , "ENERGIZER" , "CLOSED"
+    ],
+
+    "Line28" : [
+        "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,
+        "CLOSED" , "CLOSED" ,  "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED"
+    ],
+
+    "Line29" : [
+        "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,
+        "CLOSED" , "CLOSED" ,  "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" ,
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED"
+    ],
+
+    "Line30" : [
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "CLOSED", "CLOSED",  "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED" ,
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED"
+    ],
+
+    "Line31" : [
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,  "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
+    ],
+
+    "Line32" : [
+        "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "DOT" , "CLOSED" , "CLOSED" , "DOT" ,  "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "DOT" , "CLOSED"
+    ],
+
+    "Line33" : [
+        "CLOSED" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "DOT", "DOT",  "DOT" , "DOT" , "DOT" , "DOT" , "DOT" ,
+        "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "DOT" , "CLOSED"
+    ],
+
+    "Line34" : [
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED", "CLOSED",  "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" ,
+        "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED" , "CLOSED"
+    ],
+
+    "Line35" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" ,
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN",
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
+    ],
+
+    "Line36" : [
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" ,
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN",
+        "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN" , "OPEN"
+    ]
+}

@@ -1,48 +1,43 @@
 package config;
 
-public record Cell(boolean northWall, boolean eastWall, boolean southWall, boolean westWall, Cell.Content initialContent) {
-    public enum Content {NOTHING, DOT, ENERGIZER}
-    public enum Type {OPEN, CLOSED, HPIPE, VPIPE, NWCOR, NECOR, SWCOR, SECOR, NU, EU, SU, WU, N, E, S, W}
+public record Cell(
+    boolean northWall, boolean eastWall, boolean southWall, boolean westWall,
+    Content initialContent) {
+    /** Contenus dans chaque cellule. */
+    public enum Content { NOTHING, DOT, ENERGIZER, SPAWN, TUNNEL, RESTRICTED }
+    /** Types de cellule selon les murs qu'elle possède. */
+    public enum Type { CLOSED, OPEN }
 
-    public static Cell cell(Type t, Content c) {
-        switch(t) {
+    /**
+     * Retourne une nouvelle cellule{@code Cell}de{@code Type}t.
+     * @param t {@code Type}
+     * @return Nouvelle cellule {@link #Cell}
+     */
+    public static Cell cell(final Type t) {
+        switch (t) {
             case OPEN:
-                return new Cell(false, false, false, false, c);
+                return new Cell(false, false, false, false, Content.NOTHING);
             case CLOSED:
-                return new Cell(true, true, true, true, c);
-            // Straight pipes
-            case HPIPE: // Horizontal
-                return new Cell(true, false, true, false, c);
-            case VPIPE: // Vertical
-                return new Cell(false, true, false, true, c);
-            // Corner pipes
-            case NWCOR:
-                return new Cell(true, false, false, true, c);
-            case NECOR:
-                return new Cell(true, true, false, false, c);
-            case SWCOR:
-                return new Cell(false, false, true, true, c);
-            case SECOR:
-                return new Cell(false, true, true, false, c);
-            // U-shaped pipes
-            case NU:
-                return new Cell(false, true, true, true, c);
-            case EU:
-                return new Cell(true, false, true, true, c);
-            case SU:
-                return new Cell(true, true, false, true, c);
-            case WU:
-                return new Cell(true, true, true, false, c);
-            // Single wall
-            case N:
-                return new Cell(true, false, false, false, c);
-            case E:
-                return new Cell(false, true, false, false, c);
-            case S:
-                return new Cell(false, false, true, false, c);
-            case W:
-                return new Cell(false, false, false, true, c);
+                return new Cell(true, true, true, true, Content.NOTHING);
+            default:
+                return null;
         }
-        return null;
+    }
+
+    /**
+     * Retourne une nouvelle cellule{@code Cell}contenant{@code c}.
+     * @param c Contenu de la cellule
+     * @return {@code Cell}
+     */
+    public static Cell cell(final Content c) {
+        return new Cell(false, false, false, false, c);
+    }
+
+    /**
+     * Retourne true si la cellule contient au moins un mur.
+     * @return {@code boolean}
+     */
+    public boolean hasWall() {
+        return northWall || eastWall || westWall || southWall;
     }
 }
