@@ -627,17 +627,21 @@ public enum Ghost implements Critter {
     public static void setScatterTarget() {
         final int[] scatterX = {0, 27};
         final int[] scatterY = {2, 34};
-        BLINKY.target = new IntCoordinates(
+        if (!BLINKY.isEaten()) {
+            BLINKY.target = new IntCoordinates(
             scatterX[1], scatterY[0]).toRealCoordinates(1.0
-        );
-        INKY.target = new IntCoordinates(
+        );}
+        if (!INKY.isEaten()) {
+            INKY.target = new IntCoordinates(
             scatterX[1], scatterY[1]).toRealCoordinates(1.0
-        );
-        PINKY.target = new IntCoordinates(
+        );}
+        if (!PINKY.isEaten()) {
+            PINKY.target = new IntCoordinates(
             scatterX[0], scatterY[0]).toRealCoordinates(1.0
-        );
-        CLYDE.target = new IntCoordinates(
+        );}
+        if (!CLYDE.isEaten()) {
+            CLYDE.target = new IntCoordinates(
             scatterX[0], scatterY[1]).toRealCoordinates(1.0
-        );
+        );}
     }
 }
