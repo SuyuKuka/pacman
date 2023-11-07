@@ -214,7 +214,8 @@ public final class MazeState {
                     ) {
                     maxScore++;
                 }
-                if (maze[i][j].initialContent() == Cell.Content.NOTHING) {
+                if (maze[i][j].initialContent() == Cell.Content.NOTHING
+                    || maze[i][j].initialContent() == Cell.Content.RESTRICTED) {
                     gridState[i][j] = true;
                 }
             }
