@@ -102,7 +102,7 @@ public final class Music {
      * @param soundFileName Nom du fichier dans le répertoire "resources"
      */
     public static void playLoopingBgMusic(final String soundFileName) {
-        stopAllSounds();
+        stopBackgroundMusic();
         try {
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
                 new URL(Resources.getFile(soundFileName))
@@ -118,8 +118,8 @@ public final class Music {
         }
     }
 
-    /** Arrête les musiques et sons actuels. */
-    public static void stopAllSounds() {
+    /** Arrête la musique de fond actuelle. */
+    public static void stopBackgroundMusic() {
         if (bgMusicClip != null && bgMusicClip.isRunning()) {
             bgMusicClip.stop();
             bgMusicClip.close();

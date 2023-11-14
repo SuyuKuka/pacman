@@ -1,5 +1,7 @@
 package gui;
 
+import java.util.ArrayList;
+
 import gui.menu.Menu;
 import gui.menu.Solo;
 import gui.menu.Menu.KeySelector;
@@ -29,7 +31,7 @@ import utils.Music;
 
 public final class InGameGui {
     /** Le stage. */
-    private static Stage primaryStage;
+    private Stage primaryStage;
     /** La{@code Scene}actuelle. */
     private Scene gameScene;
     /** Le{@code StackPane}racine de tous les{@code Pane}. */
@@ -40,91 +42,53 @@ public final class InGameGui {
     private StackPane pausePane = new StackPane();
 
     /** Arrière-plan assombri. */
-    private static Rectangle dimBackground;
+    private Rectangle dimBackground;
     /** Menu de fin de jeu. */
     private VBox endGameMenu;
-    /** Menu pause. */
-    private VBox pauseMenu;
-    /** Nombre de choix. */
-    private static final int NB_CHOICE = 3;
     /** Les ">" du menu de fin de jeu. */
-    private static Text[] endGameSelects = new Text[NB_CHOICE];
+    private ArrayList<Text> endGameSelects = new ArrayList<>();
     /** Les choix du menu de fin de jeu. */
-    private static Text[] endgameOptions = new Text[NB_CHOICE];
+    private ArrayList<Text> endgameOptions = new ArrayList<>();
     /** Les ">" du menu pause. */
-    private static Text[] pauseSelects = new Text[NB_CHOICE];
+    private ArrayList<Text> pauseSelects = new ArrayList<>();
     /** Les choix du menu pause. */
-    private static Text[] pauseOptions = new Text[NB_CHOICE];
+    private ArrayList<Text> pauseOptions = new ArrayList<>();
+    /** Menu pause. */
+    private VBox pauseMenu = pauseMenu();
 
     /** Indice du niveau choisi. */
-    private int currentLevel;
+    private static int currentLevel;
     /** Le{@code Text}contenant le score. */
     private Text scoreText;
     /** Un tableau contenant les images des vies de Pac-Man. */
     private ImageView[] lives;
     /** Boolean indiquant si la partie est finie. */
-    private boolean end;
+    private boolean end = false;
     /** Boolean indiquant si la partie est mise en pause. */
-    private boolean paused;
-
-    /** Implémentation du singleton. */
-    public static final InGameGui INSTANCE = new InGameGui();
+    private static boolean paused = false;
 
     /**
-     * Méthode qui change le {@link #primaryStage} et la scene du jeu
-     * {@link #gameScene}, et réinitialise {@link #end} en{@code false}.
-     * @param stage Le nouveau{@code Stage}
-     * @param scene La nouvelle{@code Scene}
+     * Constructeur{@code InGameGui}.
+     * @param stage
+     * @param scene
      */
-    public static void setInGameGui(final Stage stage, final Scene scene) {
-        InGameGui.primaryStage = stage;
-        INSTANCE.gameScene = scene;
-        INSTANCE.reset();
-        Music.playSound("start", () -> Music.playLoopingBgMusic("siren_1"));
-    }
-
-    /** Réinitialise les menus in game. */
-    public void reset() {
-        end = false;
-        paused = false;
-        scorePane.getChildren().clear();
-        endGamePane.getChildren().clear();
-        pausePane.getChildren().clear();
-        ((Pane) gameScene.getRoot()).getChildren().clear();
-        setPauseSelects(new Text[NB_CHOICE]);
-        setPauseOptions(new Text[NB_CHOICE]);
-        setEndGameSelects(new Text[NB_CHOICE]);
-        setEndgameOptions(new Text[NB_CHOICE]);
-        pauseMenu = pauseMenu();
+    public InGameGui(final Stage stage, final Scene scene) {
+        primaryStage = stage;
+        gameScene = scene;
         addPauseHandlers();
-    }
-
-    public static void setPauseSelects(final Text[] pauseSelects) {
-        InGameGui.pauseSelects = pauseSelects;
-    }
-
-    public static void setPauseOptions(final Text[] pauseOptions) {
-        InGameGui.pauseOptions = pauseOptions;
-    }
-
-    public static void setEndGameSelects(final Text[] endGameSelects) {
-        InGameGui.endGameSelects = endGameSelects;
-    }
-
-    public static void setEndgameOptions(final Text[] endgameOptions) {
-        InGameGui.endgameOptions = endgameOptions;
+        Music.playSound("start", () -> Music.playLoopingBgMusic("siren_1"));
     }
 
     /**
      * Set le fond assombri par rapport aux dimensions
      * du {@link #primaryStage}.
      */
-    public static void setDimBackground() {
+    public void setDimBackground() {
         final int heightDiff = 40;
         final double opacity = 0.6;
         dimBackground = new Rectangle(
-            0, 0, InGameGui.primaryStage.getWidth(),
-            InGameGui.primaryStage.getHeight() - heightDiff
+            0, 0, primaryStage.getWidth(),
+            primaryStage.getHeight() - heightDiff
         );
         dimBackground.setFill(Color.GRAY);
         dimBackground.setOpacity(opacity);
@@ -241,7 +205,7 @@ public final class InGameGui {
      * @param state Le {@link MazeState} actuel
      * @return {@code VBox}de la fenêtre de fin de jeu
      */
-    public static VBox endGameMenu(final boolean won, final MazeState state) {
+    public VBox endGameMenu(final boolean won, final MazeState state) {
         final int titleSize = 104;
         final int scoreSize = 64;
         final int textSize = 38;
@@ -251,7 +215,7 @@ public final class InGameGui {
 
         String title = won ? "You Win !" : "GameOver";
         if (won) {
-            Music.stopAllSounds();
+            Music.stopBackgroundMusic();
             Music.playSound("gameWin");
         }
         Text gameover = Menu.createText(title, titleSize);
@@ -273,13 +237,13 @@ public final class InGameGui {
             textSpacing, Pos.CENTER, select2, quitter
         );
 
-        endGameSelects[0] = select0;
-        endGameSelects[1] = select1;
-        endGameSelects[2] = select2;
+        endGameSelects.add(0, select0);
+        endGameSelects.add(1, select1);
+        endGameSelects.add(2, select2);
 
-        endgameOptions[0] = continuer;
-        endgameOptions[1] = retry;
-        endgameOptions[2] = quitter;
+        endgameOptions.add(0, continuer);
+        endgameOptions.add(1, retry);
+        endgameOptions.add(2, quitter);
 
         VBox titleBox = Menu.createVBox(0, Pos.CENTER, gameover, score);
         VBox optionBox = Menu.createVBox(
@@ -312,13 +276,13 @@ public final class InGameGui {
         EventHandler<MouseEvent> retry = new EventHandler<>() {
             @Override
             public void handle(final MouseEvent mouseEvent) {
-                endgameOptions[1].removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
+                endgameOptions.get(1).removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
                 Solo.startLevel(primaryStage, currentLevel);
             }
         };
-        endgameOptions[0].addEventHandler(MouseEvent.MOUSE_CLICKED, next);
-        endgameOptions[1].addEventHandler(MouseEvent.MOUSE_CLICKED, retry);
-        endgameOptions[2].addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
+        endgameOptions.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, next);
+        endgameOptions.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, retry);
+        endgameOptions.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
             Menu quit = new Menu();
             Menu.setMusicStarted(false);
             quit.start(primaryStage);
@@ -339,7 +303,6 @@ public final class InGameGui {
 
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
-                INSTANCE.endGamePane.getChildren().clear();
                 switch (Menu.getSelected()) {
                     case 0:
                         // Continue sur le prochain niveau
@@ -367,19 +330,18 @@ public final class InGameGui {
      * est{@code true}.
      * @param pause {@code boolean}
      */
-    public static void pause(final boolean pause) {
+    public void pause(final boolean pause) {
         if (pause) {
-            INSTANCE.paused = true;
-            INSTANCE.showPauseMenu();
+            setPaused(true);
+            showPauseMenu();
         } else {
-            INSTANCE.paused = false;
-            INSTANCE.pausePane.getChildren().clear();
-            ((Pane) INSTANCE.gameScene.getRoot())
-                .getChildren().remove(INSTANCE.pausePane);
+            setPaused(false);
+            pausePane.getChildren().clear();
+            ((Pane) gameScene.getRoot()).getChildren().remove(pausePane);
         }
     }
 
-    private static VBox pauseMenu() {
+    private VBox pauseMenu() {
         PacMan.INSTANCE.setPacManMoved(0);
         PacMan.INSTANCE.setDirection(Direction.NONE);
 
@@ -413,13 +375,13 @@ public final class InGameGui {
             optionSpacing, Pos.CENTER, option0, option1, option2
         );
 
-        pauseSelects[0] = select0;
-        pauseSelects[1] = select1;
-        pauseSelects[2] = select2;
+        pauseSelects.add(0, select0);
+        pauseSelects.add(1, select1);
+        pauseSelects.add(2, select2);
 
-        pauseOptions[0] = continuer;
-        pauseOptions[1] = retry;
-        pauseOptions[2] = quitter;
+        pauseOptions.add(0, continuer);
+        pauseOptions.add(1, retry);
+        pauseOptions.add(2, quitter);
 
         return Menu.createVBox(
             mainBoxSpacing, Pos.CENTER, titleBox, optionBox
@@ -438,16 +400,17 @@ public final class InGameGui {
         EventHandler<MouseEvent> retry = new EventHandler<>() {
             @Override
             public void handle(final MouseEvent mouseEvent) {
-                pauseOptions[1].removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
+                pauseOptions.get(1).removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
+                setPaused(false);
                 Solo.startLevel(primaryStage, currentLevel);
             }
         };
 
-        pauseOptions[0].addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-            pause(false);
-        });
-        pauseOptions[1].addEventHandler(MouseEvent.MOUSE_CLICKED, retry);
-        pauseOptions[2].addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
+        pauseOptions.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent ->
+            pause(false)
+        );
+        pauseOptions.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, retry);
+        pauseOptions.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
             Menu quit = new Menu();
             Menu.setMusicStarted(false);
             quit.start(primaryStage);
@@ -474,6 +437,7 @@ public final class InGameGui {
                         break;
 
                     case 1:
+                        setPaused(false);
                         Solo.startLevel(primaryStage, currentLevel);
                         break;
 
@@ -494,11 +458,15 @@ public final class InGameGui {
      * Retourne true si la partie est en pause.
      * @return {@code boolean}
      */
-    public boolean isPaused() {
+    public static boolean isPaused() {
         return paused;
     }
 
-    public void setCurrentLevel(final int currentLevel) {
-        this.currentLevel = currentLevel;
+    public static void setPaused(final boolean paused) {
+        InGameGui.paused = paused;
+    }
+
+    public static void setCurrentLevel(final int currentLevel) {
+        InGameGui.currentLevel = currentLevel;
     }
 }

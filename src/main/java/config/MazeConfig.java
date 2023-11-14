@@ -6,9 +6,7 @@ import model.Direction;
 import utils.MapVerification;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.Scanner;
 import java.util.ArrayList;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.io.FileUtils;

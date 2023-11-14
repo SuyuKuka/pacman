@@ -123,7 +123,7 @@ public final class MazeState {
     private void updateMode() {
         // Pac-Man est ENERGIZED, changement du mode en FRIGHTENED
         if (PacMan.INSTANCE.isEnergized() && mode != Mode.FRIGHTENED) {
-            Music.stopAllSounds();
+            Music.stopBackgroundMusic();
             Music.playSound("energizer", () -> Music.playLoopingBgMusic("energized"));
             isEnergizedPlaying = true;
 
@@ -282,7 +282,7 @@ public final class MazeState {
     private void playerLost() {
         lives--;
         if (lives == 0) {
-            Music.stopAllSounds();
+            Music.stopBackgroundMusic();
             Music.playSound("gameOver");
         } else {
             Music.playSound("fail");

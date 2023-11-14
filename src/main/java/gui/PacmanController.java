@@ -6,6 +6,12 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
 public class PacmanController {
+    private static InGameGui inGameGui;
+
+    public static void setInGameGui(final InGameGui inGameGui) {
+        PacmanController.inGameGui = inGameGui;
+    }
+
     /**
      * Méthode appelée lorsqu'une touche est appuyée.
      * Elle contrôle le buffer de direction et l'activation des fantômes.
@@ -13,15 +19,15 @@ public class PacmanController {
      */
     public final void keyPressedHandler(final KeyEvent event) {
         if (event.getCode() == KeyCode.ESCAPE) {
-            if (!InGameGui.INSTANCE.isPaused()) {
-                InGameGui.pause(true);
+            if (!InGameGui.isPaused()) {
+                inGameGui.pause(true);
                 return;
             } else {
-                InGameGui.pause(false);
+                inGameGui.pause(false);
             }
         }
 
-        if (InGameGui.INSTANCE.isPaused()) {
+        if (InGameGui.isPaused()) {
             return;
         }
 
