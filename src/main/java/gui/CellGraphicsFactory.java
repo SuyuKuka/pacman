@@ -1,5 +1,6 @@
 package gui;
 
+import config.Cell.Content;
 import geometry.IntCoordinates;
 import javafx.scene.Group;
 import javafx.scene.Node;
@@ -40,21 +41,24 @@ public class CellGraphicsFactory {
         var group = new Group();
         group.setTranslateX(pos.x() * scale);
         group.setTranslateY(pos.y() * scale);
+
         var cell = state.getConfig().getCell(pos);
+
         var dot = new Circle();
-        group.getChildren().add(dot);
-        dot.setRadius(
-            switch (cell.initialContent()) {
-            case DOT -> scale / dotScale;
-            case ENERGIZER -> scale / energizerScale;
-            case NOTHING -> 0;
-            case SPAWN -> 0;
-            case TUNNEL -> 0;
-            case RESTRICTED -> 0;
-        });
-        dot.setCenterX(scale / 2);
-        dot.setCenterY(scale / 2);
-        dot.setFill(Color.YELLOW);
+        if (cell.initialContent() == Content.DOT || cell.initialContent() == Content.ENERGIZER) {
+            group.getChildren().add(dot);
+
+            dot.setRadius(
+                switch (cell.initialContent()) {
+                case DOT -> scale / dotScale;
+                case ENERGIZER -> scale / energizerScale;
+                default -> 0;
+            });
+            dot.setCenterX(scale / 2);
+            dot.setCenterY(scale / 2);
+            dot.setFill(Color.YELLOW);
+        }
+
         if (cell.northWall()) {
             var nWall = new Rectangle();
             nWall.setHeight(scale / wallScale);
