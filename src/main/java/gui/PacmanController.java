@@ -6,7 +6,18 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
 public class PacmanController {
+
     private static InGameGui inGameGui;
+    private PacMan pacman;
+
+    /**
+     * Constructeur pour {@link PacmanController}.
+     * Associe un objet {@link PacMan} à une "manette".
+     * @param pacman {@link PacMan}
+     */
+    public PacmanController(final PacMan pacman) {
+        this.pacman = pacman;
+    }
 
     public static void setInGameGui(final InGameGui inGameGui) {
         PacmanController.inGameGui = inGameGui;
@@ -20,6 +31,7 @@ public class PacmanController {
     public final void keyPressedHandler(final KeyEvent event) {
         if (event.getCode() == KeyCode.ESCAPE) {
             if (!InGameGui.isPaused()) {
+                pacman.setDirection(Direction.NONE);
                 inGameGui.pause(true);
                 return;
             } else {
@@ -31,24 +43,16 @@ public class PacmanController {
             return;
         }
 
-        PacMan.INSTANCE.setBufferDirection(
+        pacman.setBufferDirection(
                 switch (event.getCode()) {
                     case UP -> Direction.NORTH;
                     case RIGHT -> Direction.EAST;
                     case DOWN -> Direction.SOUTH;
                     case LEFT -> Direction.WEST;
-                    default -> PacMan.INSTANCE.getBufferDirection();
+                    default -> pacman.getBufferDirection();
                 });
-        PacMan.INSTANCE.setBufferDurationTime(0);
+        pacman.setDirectionBufferTimer(0);
 
-        // Activation des fantômes à la première input
-        if (PacMan.INSTANCE.getPacManMoved() == 0
-            && (event.getCode().equals(KeyCode.UP)
-            || event.getCode().equals(KeyCode.RIGHT)
-            || event.getCode().equals(KeyCode.DOWN)
-            || event.getCode().equals(KeyCode.LEFT))) {
-            PacMan.INSTANCE.setPacManMoved(1);
-        }
     }
 
     /**
@@ -57,6 +61,6 @@ public class PacmanController {
      * @param event {@code KeyEvent}
      */
     public final void keyReleasedHandler(final KeyEvent event) {
-        PacMan.INSTANCE.setBufferDurationTime(0);
+        pacman.setDirectionBufferTimer(0);
     }
 }

@@ -2,9 +2,8 @@ package model;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
-import model.MazeState.Mode;
+import model.MazeState.GhostState;
 
-import static model.Direction.NONE;
 import static model.Direction.NORTH;
 import static model.Direction.EAST;
 import static model.Direction.SOUTH;
@@ -13,251 +12,289 @@ import static model.Direction.WEST;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import config.Cell;
 import config.MazeConfig;
 import config.Cell.Content;
 
-public enum Ghost implements Critter {
-    /** Différents fantômes. */
-    BLINKY, INKY, PINKY, CLYDE;
+public final class Ghost extends Critter {
+    /** Vitesse du fantôme loesqu'il est dans un Tunnel. */
+        private static final int TUNNEL_SPEED = 3;
+    /** Vitesse du fantôme lorsqu'il à été mangé par {@link PacMan}. */
+    private static final int EATEN_SPEED = 20;
 
-    /** Position du fantôme. */
-    private RealCoordinates pos;
-    /** Direction du fantôme. */
-    private Direction direction = Direction.NONE;
-    /** Target du fantôme. */
+    /** Types de fantômes disponibles. (BLINKY, PINKY, INKY et CLYDE).
+     * Chaque fantôme a un comportement différent lors du jeu.
+    */
+    public enum GhostType {
+        /** {@link Ghost} rouge. */
+        BLINKY,
+        /** {@link Ghost} rose. */
+        PINKY,
+        /** {@link Ghost} cyan. */
+        INKY,
+        /** {@link Ghost} jaune. */
+        CLYDE
+    };
+
+    /** Type du fantôme actuel. */
+    private final GhostType ghostType;
+    /** Coordonnées cible du {@link Ghost}. */
     private RealCoordinates target;
-    /** Etat activé. */
-    private boolean activated;
-    /** Etat mangé. */
-    private boolean eaten;
+    /** {@link PacMan} attaché au {@link Ghost}. */
+    private PacMan pacman;
+    private final RealCoordinates eatenTarget;
+    private final RealCoordinates scatterTarget;
+    private RealCoordinates chaseTarget;
 
-    @Override
-    public RealCoordinates getPos() {
-        return pos;
-    }
+    /** Variable nécessaire seulement pour les {@link Ghost} de type {@link GhostType INKY}.
+     * Utile notamment pour le calcul de sa cible en {@link GhostState#CHASE}.
+    */
+    private final Ghost inkyLinkedGhost;
 
-    @Override
-    public void setPos(final RealCoordinates newPos) {
-        pos = newPos;
-    }
-
-    @Override
-    public void setDirection(final Direction dir) {
-        direction = dir;
-    }
-
-    @Override
-    public Direction getDirection() {
-        return direction;
-    }
-
-    @Override
-    public double getSpeed() {
-        final int normalSpeed = 6;
-        return normalSpeed;
-    }
+    private boolean eaten = false;
+    private boolean activated = false;
 
     /**
-     * Retourne le target du fantôme.
-     * @return {@code RealCoordinates}
+     * Constructeur spécial pour créer un {@link GhostType#INKY}.
+     * Inky à besoin d'un fantôme lié pour calculer sa cible en mode CHASE.
+     * @param ghostType
+     * @param inkyLinkedGhost
+     * @param pacman
+     * @param spawnPos
+     * @param eatenTarget
+     * @param scatterTarget
      */
-    public RealCoordinates getTarget() {
-        return target;
+    public Ghost(final GhostType ghostType, final Ghost inkyLinkedGhost, final PacMan pacman,
+        final RealCoordinates spawnPos, final RealCoordinates eatenTarget,
+            final RealCoordinates scatterTarget) {
+        this.ghostType = ghostType;
+        this.inkyLinkedGhost = inkyLinkedGhost;
+        this.pacman = pacman;
+        this.setSpawnPos(spawnPos);
+        this.setPos(spawnPos);
+        this.eatenTarget = eatenTarget;
+        this.scatterTarget = scatterTarget;
+        this.target = scatterTarget;
     }
 
     /**
-     * Retourne true si le fantôme est activé.
+     * Constructeur pour créer un {@link Ghost}.
+     * @param ghostType
+     * @param pacman
+     * @param spawnPos
+     * @param eatenTarget
+     * @param scatterTarget
+     */
+    public Ghost(final GhostType ghostType, final PacMan pacman, final RealCoordinates spawnPos,
+        final RealCoordinates eatenTarget, final RealCoordinates scatterTarget) {
+        this(ghostType, null, pacman, spawnPos, eatenTarget, scatterTarget);
+    }
+
+    /**
+     * Fonction générale qui actualise tous les paramètres d'un {@link Ghost}.
+     * @param state {@link MazeState}
+     * @param deltaTns Tick de temps.
+     */
+    public void update(final MazeState state, final long deltaTns) {
+        boolean hasDirectionReversed = updateState(state);
+        updateTarget(state);
+        if (!hasDirectionReversed) {
+            updateDirection(state);
+        }
+        updatePosition(state, deltaTns);
+    }
+
+    /**
+     * Actualise les paramètres du {@link Ghost} en fonction de l'état du {@link MazeState}.
+     * La fonction renvoie true si elle a déjà changé la direction des {@link Ghost}.
+     * @param state
      * @return {@code boolean}
      */
-    public boolean isActivated() {
-        return activated;
+    public boolean updateState(final MazeState state) {
+        // Retire l'état mangé et sa vitesse si il est arrivé a destination.
+        if (eaten && getPos().equals(eatenTarget)) {
+            setSpeed(getNormalSpeed());
+            eaten = false;
+        }
+        if (pacman.isEnergized() && state.getGhostState() != GhostState.FRIGHTENED) {
+            setDirection(getDirection().getOpposite());
+            return true;
+        }
+        if (!activated) {
+            switch (ghostType) {
+                case INKY:
+                    final int inkyThreshold = state.getConfig().getTotalPacGomme() / 15;
+                    if (state.getEatenPacgomme() >= inkyThreshold) {
+                        activated = true;
+                    }
+                    return false;
+                case CLYDE:
+                    final int clydeThreshold = state.getConfig().getTotalPacGomme() / 3;
+                    if (state.getEatenPacgomme() >= clydeThreshold) {
+                        activated = true;
+                    }
+                    return false;
+                default:
+                    break;
+            }
+        }
+        GhostState ghostState = state.getGhostState();
+        if (ghostState != GhostState.FRIGHTENED && ghostState != state.getCurrentState()) {
+            state.setGhostState(state.getCurrentState());
+            setDirection(getDirection().getOpposite());
+            return true;
+        }
+        return false;
     }
 
     /**
-     * Retourne true si le fantôme a été mangé.
-     * @return {@code boolean}
+     * Actualise la cible du {@link Ghost}.
+     * @param state
      */
-    public boolean isEaten() {
-        return eaten;
+    public void updateTarget(final MazeState state) {
+        if (eaten) {
+            if (!target.equals(eatenTarget)) {
+                target = eatenTarget;
+            }
+        } else if (state.getCurrentState() == GhostState.SCATTER && !target.equals(scatterTarget)) {
+            target = scatterTarget;
+        } else if (state.getCurrentState() == GhostState.CHASE) {
+            chaseTarget = calcChaseTarget();
+            target = chaseTarget;
+        }
     }
 
     /**
-     * Set l'état {@link #eaten}.
-     * @param isEaten {@code boolean}
+     * Actualise la direction du {@link Ghost}.
+     * @param state
      */
-    public void setEaten(final boolean isEaten) {
-        eaten = isEaten;
+    public void updateDirection(final MazeState state) {
+        if (state.getCurrentState() == GhostState.FRIGHTENED && activated && !eaten) {
+            setDirection(getRandomDirection(state));
+        } else if (isInSpawn(state.getConfig()) && !eaten) {
+            setDirection(exitSpawnDirection(state.getConfig()));
+        } else {
+            setDirection(directionClosestToTarget(state));
+        }
     }
 
     /**
-     * Set le target du fantôme lorsqu'il a été mangé.
+     * Actualise la position du {@link Ghost}.
+     * @param state
+     * @param deltaTns
      */
-    private void setEatenTarget() {
-        final int targetX = 13;
-        final int targetY = 17;
-        target = new IntCoordinates(
-            targetX, targetY).toRealCoordinates(1.0
-        );
+    public void updatePosition(final MazeState state, final long deltaTns) {
+        updateSpeed(state);
+        if (activated) {
+            boolean precision = isInSpawn(state.getConfig());
+            setCalibratedPos(getPos(), nextPos(deltaTns), state.getConfig(), precision);
+        }
     }
 
     /**
-     * La méthode renvoie {@code true} si le fantôme est dans un tunnel de
-     * téléportation horizontal de 3 de longueur à la position y = 10.
-     * @param config
+     * Actualise la vitesse du {@link Ghost}.
+     * @param state
+     */
+    public void updateSpeed(final MazeState state) {
+        if (isInTunnel(state.getConfig())) {
+            setSpeed(TUNNEL_SPEED);
+        } else if (!isInTunnel(state.getConfig())) {
+            setSpeed(getNormalSpeed());
+        }
+        if (eaten) {
+            setSpeed(EATEN_SPEED);
+        }
+    }
+
+    /**
+     * Méthode qui renvoie la cible du {@link Ghost} lorsqu'il est en {@link GhostType#CHASE}.
+     * <br><br> Chaque fantôme calcule sa cible différement.<br><br>
+     * @return cible {@link RealCoordinates}
+     */
+    public RealCoordinates calcChaseTarget() {
+        switch (ghostType) {
+            case BLINKY:
+                return calcBlinkyChaseTarget();
+            case PINKY:
+                return calcPinkyChaseTarget();
+            case INKY:
+                return calcInkyChaseTarget();
+            case CLYDE:
+                return calcClydeChaseTarget();
+            default:
+                break;
+        }
+        // sécurité
+        return pacman.getPos();
+    }
+
+    /**
+     * La cible de Blinky est toujours la position actuelle de PacMan.
+     * @return cible {@link RealCoordinates}
+     */
+    public RealCoordinates calcBlinkyChaseTarget() {
+        return pacman.getPos();
+    }
+
+    /**
+     * La cible de Pinky est toujours 4 cases devant PacMan. <br><br>
+     * Exception pour la direction Nord où la cible est aussi décalé de 4 cases à l'Est.
+     * @return cible {@link RealCoordinates}
+     */
+    public RealCoordinates calcPinkyChaseTarget() {
+        final int distance = 4;
+        RealCoordinates targetCell = RealCoordinates.
+            directionToUnit(pacman.getLastDirection()).times(distance);
+        if (pacman.getLastDirection() == NORTH) {
+            targetCell = targetCell.plus(new RealCoordinates(-distance, 0));
+        }
+        return pacman.getPos().plus(targetCell);
+    }
+
+    /**
+     * La cible de Inky est toujours la symétrie centrale entre la position de Blinky et
+     * la 2eme case devant PacMan. <br> <br>
+     * Exception pour le Nord où la case devant PacMan est aussi décalé de 2 cases à l'Est.
+     * @return cible {@link RealCoordinates}
+     */
+    public RealCoordinates calcInkyChaseTarget() {
+        final int distance = 2;
+        RealCoordinates blinkyPos = inkyLinkedGhost.getPos();
+        RealCoordinates pacTPos = pacman.getPos().
+        plus(RealCoordinates.directionToUnit(pacman.getLastDirection()).times(distance));
+        if (pacman.getLastDirection() == NORTH) {
+            pacTPos = pacTPos.plus(new RealCoordinates(-distance, 0));
+        }
+        RealCoordinates vecteur =
+            new RealCoordinates(pacTPos.x() - blinkyPos.x(), pacTPos.y() - blinkyPos.y()).times(2);
+        return blinkyPos.plus(vecteur);
+    }
+
+    /**
+     * La cible de Clyde est la position de PacMan mais lorsqu'il est à 8 cases de PacMan,
+     * sa cible devient celle de son mode {@GhostType#SCATTER}.
+     * @return cible {@link RealCoordinates}
+     */
+    public RealCoordinates calcClydeChaseTarget() {
+        final int radiusRange = 8;
+        if (getDistance(getPos(), pacman.getPos()) < radiusRange) {
+            return scatterTarget;
+        }
+        return pacman.getPos();
+    }
+
+    /**
+     * La méthode renvoie {@code true} si le fantôme est dans un tunnel.
+     * @param config {@link MazeConfig}
      * @return {@code true} si dans un tunnel
      */
     public boolean isInTunnel(final MazeConfig config) {
-        return config.getCell(pos.round()).initialContent() == Content.TUNNEL;
-    }
-
-    /**
-     * La méthode met à jour le target de {@code BLINKY} en {@code CHASE} mode.
-     */
-    public static void updateBlinky() {
-        // Lorsque le fantôme a été mangé
-        if (BLINKY.eaten) {
-            BLINKY.setEatenTarget();
-        // Cas général
-        } else {
-            BLINKY.target = PacMan.INSTANCE.getPos();
+        if (config.getCell(getPos().toIntCoordinates()).initialContent() == Content.TUNNEL) {
+            return true;
         }
-    }
-
-    /**
-     * La méthode met à jour le target de {@code PINKY} en {@code CHASE} mode.
-     */
-    public static void updatePinky() {
-        // Lorsque le fantôme a été mangé
-        if (PINKY.eaten) {
-            PINKY.setEatenTarget();
-            return;
-        }
-
-        double deltaX;
-        double deltaY;
-        // Pour éviter les situations lorsque Pac-Man est stationnaire
-        Direction pacDir = PacMan.INSTANCE.getDirection() == NONE
-        ? PacMan.INSTANCE.getLastDirection() : PacMan.INSTANCE.getDirection();
-
-        switch (pacDir) {
-            // Si Pac-Man regarde le Nord, le target
-            // se trouve deux cases en haut et deux cases à gauche de lui
-            case NORTH:
-                deltaX = new IntCoordinates(2, 0).toRealCoordinates(1.0).x();
-                deltaY = new IntCoordinates(0, 2).toRealCoordinates(1.0).y();
-                PINKY.target = new RealCoordinates(
-                    PacMan.INSTANCE.getPos().x() - deltaX,
-                    PacMan.INSTANCE.getPos().y() - deltaY
-                );
-                break;
-            // Pour les autres directions,
-            // le target se trouvera 2 cases devant Pac-Man
-            case EAST:
-                deltaX = new IntCoordinates(2, 0).toRealCoordinates(1.0).x();
-                PINKY.target = new RealCoordinates(
-                    PacMan.INSTANCE.getPos().x() + deltaX,
-                    PacMan.INSTANCE.getPos().y()
-                );
-                break;
-            case SOUTH:
-                deltaY = new IntCoordinates(0, 2).toRealCoordinates(1.0).y();
-                PINKY.target = new RealCoordinates(
-                    PacMan.INSTANCE.getPos().x(),
-                    PacMan.INSTANCE.getPos().y() + deltaY
-                );
-                break;
-            case WEST:
-                deltaX = new IntCoordinates(2, 0).toRealCoordinates(1.0).x();
-                PINKY.target = new RealCoordinates(
-                    PacMan.INSTANCE.getPos().x() - deltaX,
-                    PacMan.INSTANCE.getPos().y()
-                );
-                break;
-            default:
-                PINKY.target = PacMan.INSTANCE.getPos();
-                break;
-        }
-    }
-
-    /**
-     * La méthode met à jour le target de {@code INKY} en {@code CHASE} mode.
-     */
-    public static void updateInky() {
-        // Lorsque le fantôme a été mangé
-        if (INKY.eaten) {
-            INKY.setEatenTarget();
-            return;
-        }
-
-        // Pour éviter les situations lorsque Pac-Man est stationnaire
-        Direction pacDir = PacMan.INSTANCE.getDirection() == NONE
-        ? PacMan.INSTANCE.getLastDirection() : PacMan.INSTANCE.getDirection();
-
-        // Le target d'Inky se trouve à 2 fois la distances
-        // entre la position de Blinky et une case devant Pac-Man
-        switch (pacDir) {
-            case NORTH:
-                INKY.target = new RealCoordinates(
-                    2 * PINKY.target.x() + 2 - BLINKY.getPos().x(),
-                    2 * PINKY.target.y() + 2 - BLINKY.getPos().y()
-                );
-                break;
-            case EAST:
-                INKY.target = new RealCoordinates(
-                    2 * PINKY.target.x() - 2 - BLINKY.getPos().x(),
-                    2 * PINKY.target.y() - BLINKY.getPos().y()
-                );
-                break;
-            case SOUTH:
-                INKY.target = new RealCoordinates(
-                    2 * PINKY.target.x() - BLINKY.getPos().x(),
-                    2 * PINKY.target.y() - 2 - BLINKY.getPos().y()
-                );
-                break;
-            case WEST:
-                INKY.target = new RealCoordinates(
-                    2 * PINKY.target.x() + 2 - BLINKY.getPos().x(),
-                    2 * PINKY.target.y() - BLINKY.getPos().y()
-                );
-                break;
-            default:
-                INKY.target = PacMan.INSTANCE.getPos();
-                break;
-        }
-    }
-
-    /**
-     * La méthode met à jour le target de {@code CLYDE} en {@code CHASE} mode.
-     */
-    public static void updateClyde() {
-        // Lorsque le fantôme a été mangé
-        if (CLYDE.eaten) {
-            CLYDE.setEatenTarget();
-            return;
-        }
-
-        // Dans le vrai jeu, si Clyde se trouve dans un rayon de 8 cases
-        // de Pac-Man, ce dernier aura comme target le target en mode SCATTER
-        // Sinon le target est identique à Blinky (la position de Pac-Man)
-
-        // Ici, ce rayon de 8 cases sera remplacé par 4 car le fonctionnement
-        // des cellules est différent (ici, les cellules sont plus grandes que
-        // celles du jeu original)
-        final int radiusRange = 8;
-        if (Math.sqrt(
-                Math.pow(CLYDE.getPos().x() - PacMan.INSTANCE.getPos().x(), 2)
-                + Math.pow(CLYDE.getPos().y() - PacMan.INSTANCE.getPos().y(), 2)
-            ) < radiusRange) {
-            final int targetX = 0;
-            final int targetY = 34;
-            CLYDE.target = new IntCoordinates(
-                targetX, targetY).toRealCoordinates(1.0
-            );
-        } else {
-            CLYDE.target = PacMan.INSTANCE.getPos();
-        }
+        return false;
     }
 
     /**
@@ -267,11 +304,11 @@ public enum Ghost implements Critter {
      * @return Une {@code List<Direction>} contenant les directions possibles.
      */
     public List<Direction> possibleDirections(final MazeState state) {
-        List<Direction> directions = new ArrayList<>(Arrays.asList(NORTH, WEST, SOUTH, EAST));
-        directions.remove(getDirection().getOpposite());
         if (isInTunnel(state.getConfig())) {
             return Arrays.asList(getDirection());
         }
+        List<Direction> directions = new ArrayList<>(Arrays.asList(NORTH, WEST, SOUTH, EAST));
+        directions.remove(getDirection().getOpposite());
         if (getPos().x() != Math.floor(getPos().x())) {
             directions.remove(NORTH);
             directions.remove(SOUTH);
@@ -281,20 +318,8 @@ public enum Ghost implements Critter {
             directions.remove(WEST);
         }
         // Cas où le fantôme se trouve sur les cellules dites "murs invisibles".
-        if (state.getConfig().getCell(getPos().round()).initialContent() == Content.RESTRICTED) {
+        if (state.getConfig().getCell(getPos().toIntCoordinates()).restricted()) {
             directions.remove(NORTH);
-        }
-        if (!eaten && state.getConfig().getCell(getPos().round()).initialContent()
-            == Content.SPAWN) {
-            //CHECKSTYLE:OFF
-            if (pos.x() <= 13) {
-                directions.remove(WEST);
-            }
-            if (pos.x() >= 14) {
-                directions.remove(EAST);
-            }
-            //CHECKSTYLE:ON
-            directions.remove(SOUTH);
         }
 
         if (directions.size() == 1) {
@@ -302,14 +327,17 @@ public enum Ghost implements Critter {
         }
 
         List<Direction> possibleDirections = new ArrayList<>();
-        for (Direction dir : directions) {
-            RealCoordinates tmpPos = RealCoordinates.directionToUnit(dir).plus(this.getPos());
-            if (tmpPos.x() >= 0 && tmpPos.x() < state.getConfig().getGrid()[0].length) {
-                final int posY = (int) Math.round(tmpPos.y());
-                final int posX = (int) Math.round(tmpPos.x());
+        for (Direction direction : directions) {
+            RealCoordinates pos = RealCoordinates.directionToUnit(direction).plus(this.getPos());
+            if (pos.x() >= 0 && pos.x() < state.getConfig().getGrid()[0].length) {
+                final int posY = (int) Math.round(pos.y());
+                final int posX = (int) Math.round(pos.x());
                 Cell targetCell = state.getConfig().getGrid()[posY][posX];
+                if (targetCell.initialContent() == Content.SPAWN && activated && !eaten) {
+                    continue;
+                }
                 if (!targetCell.hasWall()) {
-                    possibleDirections.add(dir);
+                    possibleDirections.add(direction);
                 }
             }
         }
@@ -317,327 +345,164 @@ public enum Ghost implements Critter {
     }
 
     /**
-     * La méthode retourne la {@code Direction} la plus proche du target en
-     * utilisant la méthode {@code possibleDirections()}.<br>
-     * </br>
-     * Si la liste des directions possibles est nulle, la méthode retourne la
-     * direction contraire à la direction actuelle.<br>
-     * </br>
-     * Si le fantôme est au centre du spawn, la méthode retourne {@code NORTH}.
-     * @param state
+     * La méthode renvoie la {@code Direction} la plus proche de sa cible en
+     * utilisant la méthode {@code possibleDirections()}.
+     * @param state {@link MazeState}
      * @return La {@code Direction} la plus proche du target.
      */
     public Direction directionClosestToTarget(final MazeState state) {
-        List<Direction> possibleDirections = possibleDirections(state);
+        // Directions possibles qu'il peut prendre (la direction derrière lui n'est pas incluse).
+        List<Direction> possibleDir = possibleDirections(state);
 
-        // Si le fantôme se trouve dans un cul-de-sac, il se retourne
-        if (possibleDirections.isEmpty()) {
-            reverseDirection(state.getConfig());
-            return direction;
+        // Si le fantôme se trouve dans un cul-de-sac, il se retourne (toujours possible)
+        if (possibleDir.isEmpty()) {
+            return getDirection().getOpposite();
+        }
+        // Si une seule direction n'est possible, renvoie cette direction.
+        if (possibleDir.size() == 1) {
+            return possibleDir.get(0);
         }
 
-        // Oblige le fantôme à sortir du home
-        final int spawnX = 8;
-        final int spawnY = 10;
-        if (pos.equals(
-                new IntCoordinates(spawnX, spawnY).toRealCoordinates(1.0))
-            ) {
-            return NORTH;
-        }
-
-        double[] deltaDist = {-1, -1, -1, -1};
-
-        final int north = 0;
-        final int west = 1;
-        final int south = 2;
-        final int east = 3;
-
-        // Calcul des distances entre le fantôme et le target après déplacement
-        for (Direction dir : possibleDirections) {
-            switch (dir) {
-                case NORTH:
-                    deltaDist[north] = Math.sqrt(Math.pow(
-                        target.x() - pos.x(), 2)
-                        + Math.pow((target.y() - (pos.y() - 1)),
-                        2));
-                    break;
-                case WEST:
-                    deltaDist[west] = Math.sqrt(Math.pow(
-                        target.x() - (pos.x() - 1), 2)
-                        + Math.pow((target.y() - pos.y()),
-                        2));
-                    break;
-                case SOUTH:
-                    deltaDist[south] = Math.sqrt(Math.pow(
-                        target.x() - pos.x(), 2)
-                        + Math.pow((target.y() - (pos.y() + 1)),
-                        2));
-                    break;
-                case EAST:
-                    deltaDist[east] = Math.sqrt(Math.pow(
-                        target.x() - (pos.x() + 1), 2)
-                        + Math.pow((target.y() - pos.y()),
-                        2));
-                    break;
-                default:
-                    break;
+        // Prend la direction où la distance est la plus petite.
+        double[] deltaDist = new double[possibleDir.size()];
+        double min = getDistance(getPos().plus(
+            RealCoordinates.directionToUnit(possibleDir.get(0))), target);
+        int indice = 0;
+        for (int i = 1; i < possibleDir.size(); i++) {
+            final RealCoordinates possiblePos = RealCoordinates.directionToUnit(possibleDir.get(i));
+            deltaDist[i] = getDistance(getPos().plus(possiblePos), target);
+            if (deltaDist[i] < min) {
+                min = deltaDist[i];
+                indice = i;
             }
         }
-
-        // Détermination de la plus petite distance
-        final double big = 10000;
-        double minVal = big;
-        int min = -1;
-        for (int i = 0; i < deltaDist.length; i++) {
-            if (deltaDist[i] != -1 && deltaDist[i] < minVal) {
-                min = i;
-                minVal = deltaDist[i];
-            }
-        }
-        switch (min) {
-            case north:
-                return NORTH;
-            case west:
-                return WEST;
-            case south:
-                return SOUTH;
-            case east:
-                return EAST;
-            default:
-                return NONE;
-        }
+        return possibleDir.get(indice);
     }
 
     /**
      * La méthode renvoie une direction "aléatoire" basée sur la direction du
      * fantôme et des probabilités de chaque direction.
      * Les probabilités sont basées sur le jeu original : 16.3% Nord, 25.2% Est,
-     * 28.5% Sud, 29.9% Ouest.
-     * @param state
+     * 28.5% Sud, 30.0% Ouest.
+     * @param state {@link MazeState}
+     * @return {@link Direction}
      */
-    public void setRandomDirection(final MazeState state) {
+    public Direction getRandomDirection(final MazeState state) {
         List<Direction> possibles = possibleDirections(state);
-        final double rand = Math.random() * 100;
-        final double probaNorth = 16.3;
-        final double probaEast = probaNorth + 25.2;
-        final double probaSouth = probaEast + 28.5;
-        if (rand < probaNorth) {
-            if (!possibles.isEmpty()) {
-                direction = possibles.get(0);
-            } else {
-                reverseDirection(state.getConfig());
+        if (possibles.size() == 1) {
+            return possibles.get(0);
+        }
+        //CHECKSTYLE:OFF: checkstyle:magicnumber
+        List<Double> dirProba = new ArrayList<>(Arrays.asList(16.3, 25.2, 28.5, 30.0));
+        List<Direction> dirList = new ArrayList<>(Arrays.asList(NORTH, EAST, SOUTH, WEST));
+
+        for (int i = 0; i < dirList.size(); i++) {
+            if (!possibles.contains(dirList.get(i))) {
+                dirProba.set((i+1)%dirList.size(),
+                     dirProba.get(i) + dirProba.get((i+1) % dirList.size()));
+                dirList.remove(i);
+                dirProba.remove(i);
+                i--;
             }
         }
-        if (rand >= probaNorth && rand < probaEast) {
-            if (possibles.contains(EAST)) {
-                direction = EAST;
-            } else if (possibles.contains(SOUTH)) {
-                direction = SOUTH;
-            } else if (possibles.contains(WEST)) {
-                direction = WEST;
-            } else if (possibles.contains(NORTH)) {
-                direction = NORTH;
-            } else {
-                reverseDirection(state.getConfig());
+        double random = Math.random() * 100; // 0 à 100
+        int j = 0;
+        for (int i = 0; i < dirProba.size(); i++) {
+            random -= dirProba.get(i);
+            if (random <= 0) {
+                break;
             }
+            j++;
         }
-        if (rand >= probaEast && rand < probaSouth) {
-            if (possibles.contains(SOUTH)) {
-                direction = SOUTH;
-            } else if (possibles.contains(WEST)) {
-                direction = WEST;
-            } else if (!possibles.isEmpty()) {
-                direction = possibles.get(0);
-            } else {
-                reverseDirection(state.getConfig());
-            }
-        }
-        if (rand >= probaSouth) {
-            if (possibles.contains(WEST)) {
-                direction = WEST;
-            } else if (!possibles.isEmpty()) {
-                direction = possibles.get(0);
-            } else {
-                reverseDirection(state.getConfig());
-            }
-        }
+        //CHECKSTYLE:ON: checkstyle:magicnumber
+        return dirList.get(j);
     }
 
     /**
-     * Méthode qui appelle la méthode {@link #reverseDirection} pour chaque
-     * critter.
-     * @param config {@link MazeConfig#config} Configuration actuelle de la map
-     * @param critters {@code List<Critter>} Liste des critters
+     * Méthode qui renvoie vraie si le {@link RealCoordinates}
+     * donné se trouve dans le spawn des {@link Ghost}.
+     * @param config {@link MazeConfig}
+     * @return true ou false
      */
-    public static void reverseGhostsDirection(
-        final MazeConfig config, final List<Critter> critters
-        ) {
-        for (Critter critter : critters) {
-            if (critter instanceof Ghost) {
-                ((Ghost) critter).reverseDirection(config);
+    public boolean isInSpawn(final MazeConfig config) {
+        Set<IntCoordinates> neighbours = getPos().intNeighbours();
+        for (var cell : neighbours) {
+            if (config.getCell(cell).initialContent() == Content.SPAWN) {
+                return true;
             }
         }
+        return false;
     }
 
     /**
-     * Change la direction actuelle du fantôme en sa direction opposée.
-     * @param config {@link MazeConfig#config} Configuration actuelle de la map
+     * Méthode qui indique la trajectoire à prendre pour un fantôme pour sortir du spawn.
+     * @param config
+     * @return {@code boolean}
      */
-    public void reverseDirection(final MazeConfig config) {
-        if (eaten) {
-            return;
+    public Direction exitSpawnDirection(final MazeConfig config) {
+        RealCoordinates pos1 = config.getGhostSpawnPos()[0];
+        RealCoordinates pos2 = config.getGhostSpawnPos()[1];
+        double spawnXCenter = (pos1.x() + pos2.x()) / 2;
+        if (getPos().x() < spawnXCenter) {
+            return EAST;
+        } else if (getPos().x() > spawnXCenter) {
+            return WEST;
         }
-        switch (direction) {
-            case NORTH:
-                if (!config.getCell(
-                    new IntCoordinates(
-                        pos.round().x(), pos.round().y() + 1)
-                    ).northWall()
-                    ) {
-                    direction = SOUTH;
-                }
-                break;
-            case EAST:
-                if (!config.getCell(
-                    new IntCoordinates(
-                        pos.round().x() - 1, pos.round().y())
-                    ).eastWall()) {
-                    direction = WEST;
-                }
-                break;
-            case SOUTH:
-                if (!config.getCell(
-                    new IntCoordinates(
-                        pos.round().x(), pos.round().y() - 1)
-                    ).southWall()) {
-                    direction = NORTH;
-                }
-                break;
-            case WEST:
-                if (!config.getCell(
-                    new IntCoordinates(
-                        pos.round().x() + 1, pos.round().y())
-                    ).westWall()) {
-                    direction = EAST;
-                }
-                break;
-            default:
-                break;
-        }
+        return NORTH;
     }
 
     /**
-     * Réinitialise la position des fantômes après un reset.
-     * @param state {@code MazeState} Etat actuel de la map
+     * Renvoie la distance entre 2 {@link RealCoordinates}.
+     * @param pos1 {@link RealCoordinates}
+     * @param pos2 {@link RealCoordinates}
+     * @return {@code int}
      */
-    public void resetGhostPos(final MazeState state) {
-        final int inkyThreshold = 30;
-        final int clydeThreshold = state.getMaxScore() / 3;
-        if (this == BLINKY
-            || this == INKY && state.getPacgomme() >= inkyThreshold
-            ) {
-            direction = EAST;
-        } else if (this == PINKY) {
-            direction = NORTH;
-        } else if (this == CLYDE && state.getPacgomme() >= clydeThreshold) {
-            direction = WEST;
-        } else {
-            direction = NONE;
-        }
-
-        pos = (state.getInitialPos().get(this));
+    public static int getDistance(final RealCoordinates pos1, final RealCoordinates pos2) {
+        return Math.abs((int)
+        (Math.sqrt(Math.pow(pos2.x() - pos1.x(), 2) + Math.pow(pos2.y() - pos1.y(), 2))));
     }
 
-    /**
-     * La méthode initialise la variable {@code start} qui garde l'heure UNIX au
-     * lancement de la partie (lorsque Pac-Man bouge pour la première fois),
-     * initialise le premier mode en {@code SCATTER} et
-     * initialise les directions de {@code BLINKY} et de {@code PINKY}.
-     */
-    public static void activateGhost() {
-        BLINKY.activated = true;
-        PINKY.activated = true;
-        INKY.activated = false;
-        CLYDE.activated = false;
-        BLINKY.direction = EAST;
-        PINKY.direction = NORTH;
+    public GhostType getGhostType() {
+        return ghostType;
     }
 
-    /**
-     * La méthode met à jour les targets de chaque fantôme
-     * selon le mode courant.
-     * Elle met aussi à jour la direction de chaque fantôme
-     * lorsqu'il entre dans une intersection. {@code INKY} et {@code CLYDE} ne
-     * peuvent bouger seulement lorsqu'un score a été atteint.
-     * @param deltaTns La variation du temps entre deux instants.
-     * @param state {@code MazeState} Etat actuel de la map
-     */
-    public static void updateGhost(final long deltaTns, final MazeState state) {
-        List<Ghost> critters = List.of(CLYDE, BLINKY, INKY, PINKY);
-        for (Ghost critter : critters) {
-            critter.calibratePos(
-                deltaTns, critter.getPos(),
-                critter.nextPos(deltaTns),
-                state.getHeight(),
-                state.getWidth()
-            );
-            RealCoordinates pos = critter.getPos();
-
-            // Lorsque le fantôme mangé retourne au spawn
-            final int spawnX = 13;
-            final int spawnY = 17;
-            if (critter.eaten
-                && pos.equals(
-                    new IntCoordinates(spawnX, spawnY).toRealCoordinates(1.0)
-                )) {
-                critter.eaten = false;
-            }
-
-            final int inkyThreshold = 30;
-            final int clydeThreshold = state.getMaxScore() / 3;
-            // Activation d'Inky à partir de 30 points
-            if (critter == INKY
-                && !INKY.activated && state.getPacgomme() >= inkyThreshold
-                ) {
-                INKY.activated = true;
-                critter.direction = EAST;
-            // Activation de Clyde lorsqu'un tier des points
-            // totaux a été obtenu
-            } else if (critter == CLYDE
-                && !CLYDE.activated && state.getPacgomme() >= clydeThreshold
-                ) {
-                CLYDE.activated = true;
-                critter.direction = WEST;
-            // Set direction aléatoire en FRIGHTENED mode
-            } else if (!critter.eaten
-                    && state.getMode() == Mode.FRIGHTENED
-                    && pos.x() % 1 == 0 && pos.y() % 1 == 0
-                ) {
-                state.frightenedMode(critter);
-            // Set direction la plus proche du target
-            } else if (critter.activated
-                    && pos.x() % 1 == 0 && pos.y() % 1 == 0) {
-                critter.direction =
-                    critter.directionClosestToTarget(state);
-            }
-        }
+    public RealCoordinates getTarget() {
+        return target;
     }
 
-    /** Set le target de chaque fantôme en{@code Scatter}mode. */
-    public static void setScatterTarget() {
-        final int[] scatterX = {0, 27};
-        final int[] scatterY = {2, 34};
-        BLINKY.target = new IntCoordinates(
-            scatterX[1], scatterY[0]).toRealCoordinates(1.0
-        );
-        INKY.target = new IntCoordinates(
-            scatterX[1], scatterY[1]).toRealCoordinates(1.0
-        );
-        PINKY.target = new IntCoordinates(
-            scatterX[0], scatterY[0]).toRealCoordinates(1.0
-        );
-        CLYDE.target = new IntCoordinates(
-            scatterX[0], scatterY[1]).toRealCoordinates(1.0
-        );
+    public void setTarget(final RealCoordinates target) {
+        this.target = target;
+    }
+
+    public PacMan getPacman() {
+        return pacman;
+    }
+
+    public void setPacman(final PacMan pacman) {
+        this.pacman = pacman;
+    }
+
+    public RealCoordinates getEatenTarget() {
+        return eatenTarget;
+    }
+
+    public RealCoordinates getScatterTarget() {
+        return scatterTarget;
+    }
+
+    public boolean isEaten() {
+        return eaten;
+    }
+
+    public void setEaten(final boolean eaten) {
+        this.eaten = eaten;
+    }
+
+    public boolean isActivated() {
+        return activated;
+    }
+
+    public void setActivated(final boolean activated) {
+        this.activated = activated;
     }
 }
