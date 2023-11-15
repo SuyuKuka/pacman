@@ -1,7 +1,8 @@
 package gui;
 
-import config.Cell.Content;
+import config.Cell;
 import geometry.IntCoordinates;
+import geometry.RealCoordinates;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.paint.Color;
@@ -42,23 +43,21 @@ public class CellGraphicsFactory {
         group.setTranslateX(pos.x() * scale);
         group.setTranslateY(pos.y() * scale);
 
-        var cell = state.getConfig().getCell(pos);
+        Cell cell = state.getConfig().getCell(pos);
 
         var dot = new Circle();
-        if (cell.initialContent() == Content.DOT || cell.initialContent() == Content.ENERGIZER) {
-            group.getChildren().add(dot);
-
-            dot.setRadius(
-                switch (cell.initialContent()) {
-                case DOT -> scale / dotScale;
-                case ENERGIZER -> scale / energizerScale;
-                default -> 0;
-            });
-            dot.setCenterX(scale / 2);
-            dot.setCenterY(scale / 2);
-            dot.setFill(Color.YELLOW);
-        }
-
+        group.getChildren().add(dot);
+        dot.setRadius(
+            switch (cell.initialContent()) {
+            case DOT -> scale / dotScale;
+            case ENERGIZER -> scale / energizerScale;
+            case NOTHING -> 0;
+            case SPAWN -> 0;
+            case TUNNEL -> 0;
+        });
+        dot.setCenterX(scale / 2);
+        dot.setCenterY(scale / 2);
+        dot.setFill(Color.YELLOW);
         if (cell.northWall()) {
             var nWall = new Rectangle();
             nWall.setHeight(scale / wallScale);
@@ -98,7 +97,8 @@ public class CellGraphicsFactory {
         return new GraphicsUpdater() {
             @Override
             public void update() {
-                dot.setVisible(!state.getGridState(pos));
+                Cell cell = state.getConfig().getCell(pos);
+                dot.setVisible(cell.isDrawn());
             }
 
             @Override
@@ -114,7 +114,7 @@ public class CellGraphicsFactory {
      * @param pos Position du target
      * @return {@code GraphicsUpdater}
      */
-    public GraphicsUpdater showTarget(final IntCoordinates pos) {
+    public GraphicsUpdater showTarget(final RealCoordinates pos) {
         final int radius = 5;
         var group = new Group();
         group.setTranslateX(pos.x() * scale);

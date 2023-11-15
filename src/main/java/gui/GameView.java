@@ -1,6 +1,7 @@
 package gui;
 
 import geometry.IntCoordinates;
+import geometry.RealCoordinates;
 import javafx.animation.AnimationTimer;
 import javafx.scene.layout.Pane;
 import model.Ghost;
@@ -57,8 +58,7 @@ public final class GameView {
         var critterFactory = new CritterGraphicsFactory(SCALE);
         var cellFactory = new CellGraphicsFactory(SCALE);
         graphicsUpdaters = new ArrayList<>();
-
-        for (var critter : maze.getCritters()) {
+        for (var critter : maze.getConfig().getCritters()) {
             addGraphics(critterFactory.makeGraphics(critter));
         }
 
@@ -137,10 +137,8 @@ public final class GameView {
         if (showTarget) {
             var cellFactory = new CellGraphicsFactory(SCALE);
             if (ghost.getTarget() != null) {
-                int xTarg = (int) (ghost.getTarget().x());
-                int yTarg = (int) (ghost.getTarget().y());
-                IntCoordinates targetPos = new IntCoordinates(xTarg, yTarg);
-                addGraphics(cellFactory.showTarget(targetPos));
+                RealCoordinates target = ghost.getTarget();
+                addGraphics(cellFactory.showTarget(target));
             }
         }
     }

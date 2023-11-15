@@ -19,13 +19,13 @@ public final class MapVerification {
         for (int i = 1; i < c.length - 1; i++) {
             boolean isTunnel = c[i - 1][0].hasWall() && c[i + 1][0].hasWall();
             if (c[i][0].initialContent() == Content.DOT && isTunnel) {
-                c[i][0] = new Cell(false, false, false, false, Content.TUNNEL);
-                c[i][c[0].length - 1] = new Cell(false, false, false, false, Content.TUNNEL);
+                c[i][0] = new Cell(false, false, false, false, Content.TUNNEL, false);
+                c[i][c[0].length - 1] = new Cell(false, false, false, false, Content.TUNNEL, false);
                 for (int j = 1; j < c[i].length; j++) {
                     isTunnel = c[i - 1][j].hasWall() && c[i + 1][j].hasWall();
                     if (c[i][j].initialContent() == Content.DOT && isTunnel) {
-                        c[i][j] = new Cell(false, false, false, false, Content.TUNNEL);
-                        c[i][c[0].length - j - 1] = new Cell(f, f, f, f, Content.TUNNEL);
+                        c[i][j] = new Cell(false, false, false, false, Content.TUNNEL, false);
+                        c[i][c[0].length - j - 1] = new Cell(f, f, f, f, Content.TUNNEL, f);
                     } else {
                         break;
                     }
@@ -42,8 +42,7 @@ public final class MapVerification {
     public static boolean isAValidWall(final Cell c) {
         if (c.initialContent() == Content.DOT
             || c.initialContent() == Content.ENERGIZER
-            || c.initialContent() == Content.TUNNEL
-            || c.initialContent() == Content.RESTRICTED) {
+            || c.initialContent() == Content.TUNNEL) {
             return true;
         }
         if (!c.northWall() && !c.eastWall() && !c.southWall()
@@ -85,7 +84,7 @@ public final class MapVerification {
                     wall[1] = (j == posXMaze || isAValidWall(grid[i][j + 1]));
                     wall[2] = (i == grid.length - posYMaze || isAValidWall(grid[i + 1][j]));
                     wall[3] = (j == 0 || isAValidWall(grid[i][j - 1]));
-                    copy[i][j] = new Cell(wall[0], wall[1], wall[2], wall[3], Content.NOTHING);
+                    copy[i][j] = new Cell(wall[0], wall[1], wall[2], wall[3], Content.NOTHING, f);
                 } else {
                     copy[i][j] = grid[i][j];
                 }

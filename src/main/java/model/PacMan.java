@@ -1,121 +1,200 @@
 package model;
 
-import config.Cell.Content;
 
 import java.util.Set;
-
 import config.Cell;
+import config.Cell.Content;
 import config.MazeConfig;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
+import utils.Music;
 
+public final class PacMan extends Critter {
 
-/**
- * Implements Pac-Man character using singleton pattern.
- * FIXME : check whether singleton is really a good idea.
- * (Faudra transformer Pac-Man en objet si on veut ajouter
- * du multijoueur local et associer à chaque pacman un pacmanController)
- */
-public final class PacMan implements Critter {
-    /** Direction de PacMan. */
-    private Direction direction = Direction.NONE;
-    /** Dernière direction de PacMan. */
-    private Direction lastDirection;
-    /** Position de PacMan. */
-    private RealCoordinates pos;
-    /**
-     * 1 si Pac-Man bouge pour la première fois,
-     * 0 sinon et -1 après qu'il ait bougé.
-     */
-    private int pacManMoved = 0;
-    /** Etat energisé. */
-    private boolean energized;
+    private static final int ENERGIZED_SPEED = 13;
 
-    // Buffer du Controller de PacMan
-    /** Direction stockée à l'appuie d'une touche. */
+    /** Dernière {@link Direction} de {@link PacMan} qui n'est pas {@link Direction#NONE}. */
+    private Direction lastDirection = Direction.NONE;
+    /* Buffer du Controller de PacMan
+    Pour faciliter le mouvement lors des intersections, le jeu garde en mémoire la dernière
+    direction que l'utilisateur a entré même si celle-ci n'est pas accessible à ce moment
+    pendant une très courte durée et l'utilise si possible.
+    */
     private Direction bufferDirection = Direction.NONE;
-    /**
-     * Temps en seconde avant que la direction stockée
-     * dans le buffer se retire.
-     */
-    private static final double BUFFER_MAX_TIME = 0.7;
-    /** Temps passé sans que l'utilisateur n'ait appuyé une touche. */
-    private double bufferDurationTime = 0;
-
-    // Timer :
-    /** Durée depuis que Pac-Man est energisé. */
+    private static final double MAX_BUFFER_DIRECTION_TIME = 0.7;
+    private double directionBufferTimer = 0;
+    // Etat énergisé de PacMan :
+    private boolean energized = false;
+    private static final double MAX_ENERGIZED_TIME = 7;
     private double energizedTimer = 0;
-    /** Durée maximale de l'état energisé. */
-    private static final double MAX_ENERGIZED_TIME = 6;
 
-    private PacMan() {
-    }
-
-    /** Implémentation du singleton. */
-    public static final PacMan INSTANCE = new PacMan();
-
-    @Override
-    public RealCoordinates getPos() {
-        return pos;
-    }
-
-    @Override
-    public double getSpeed() {
-        final int energizedSpeed = 9;
-        final int normalSpeed = 7;
-        return isEnergized() ? energizedSpeed : normalSpeed;
-    }
-
-    @Override
-    public Direction getDirection() {
-        return direction;
-    }
-
-    @Override
-    public void setDirection(final Direction newDirection) {
-        direction = newDirection;
-    }
-
-    @Override
-    public void setPos(final RealCoordinates newPos) {
-        pos = newPos;
+    /**
+     * Fonction générale de {@link PacMan} qui actualise tous ses paramètres.
+     * @param state
+     * @param deltaTns
+     */
+    public void update(final MazeState state, final long deltaTns) {
+        updateLastDirection();
+        eat(state);
+        if (isBufferDirectionValid(deltaTns, state.getConfig())) {
+            setDirection(bufferDirection);
+        }
+        updateSpeed();
+        updatePosition(deltaTns, state.getConfig());
+        updateDirectionBufferTime(deltaTns);
+        updateEnergizedTime(deltaTns);
     }
 
     /**
-     * Retourne true si Pac-Man est energisé.
+     * Actualise le paramètre {@code lastDirection}.
+     */
+    public void updateLastDirection() {
+        if (getDirection() != Direction.NONE) {
+            lastDirection = getDirection();
+        }
+    }
+
+    /**
+     * Met à jour l'état de PacMan s'il mange un energizer. <br><br>
+     * Augmente le score du jeu s'il mange un dot.
+     * @param state
+     */
+    public void eat(final MazeState state) {
+        if (!eatDot(state)) {
+            eatEnergizer(state);
+        }
+    }
+
+    /**
+     * Renvoie true si PacMan mange un dot et augmente le score.
+     * @param state
      * @return {@code boolean}
      */
-    public boolean isEnergized() {
-        return energized;
+    public boolean eatDot(final MazeState state) {
+        IntCoordinates pacPos = getPos().toIntCoordinates();
+        if (state.getConfig().getCell(pacPos).initialContent() == Cell.Content.DOT) {
+            Music.playSound("eat");
+            boolean restricted = state.getConfig().getGrid()[pacPos.y()][pacPos.x()].restricted();
+            state.getConfig().getGrid()[pacPos.y()][pacPos.x()] =
+                new Cell(false, false, false, false, Content.NOTHING, restricted);
+            final int dotScore = 10;
+            state.addScore(dotScore);
+            return true;
+        }
+        return false;
     }
 
     /**
-     * Set l'état energisé à{@code true}si Pac-Man se trouve sur une cellule
-     * avec un{@code ENERGIZER}. Le timer est reset s'il est déjà energisé.
-     * @param mazeConfig {@link MazeConfig#config}
-     * Configuration actuelle de la map
+     * Rend PacMan énergisé s'il a mangé un énergiseur.
+     * @param state
      */
-    public void containsEnergizer(final MazeConfig mazeConfig) {
-        if (mazeConfig.getCell(
-                new IntCoordinates(
-                    pos.round().x(), pos.round().y()
-                )
-            ).initialContent() == Content.ENERGIZER) {
-            if (energized) {
-                energizedTimer = 0;
-            }
+    public void eatEnergizer(final MazeState state) {
+        IntCoordinates pacPos = getPos().toIntCoordinates();
+        if (state.getConfig().getCell(pacPos).initialContent() == Cell.Content.ENERGIZER) {
+            Music.playSound("eat");
+            Music.playLoopingBgMusic("energized");
+            boolean restricted = state.getConfig().getGrid()[pacPos.y()][pacPos.x()].restricted();
+            state.getConfig().getGrid()[pacPos.y()][pacPos.x()] =
+                new Cell(false, false, false, false, Content.NOTHING, restricted);
+            energizedTimer = 0;
             energized = true;
         }
     }
 
     /**
-     * Incrémente {@link #energizedTimer} à chaque tick.
+     * Méthode qui vérifie si la {@link Direction} stockée dans le Buffer est valide.
+     * S'il l'est, remplace la {@link Direction} de {@link PacMan} par celui-ci et
+     * réinitialise le contenu du Buffer. Renvoie faux le cas échant.
+     * @param deltaTns
+     * @param config
+     * @return {@code boolean}
+     */
+    public boolean isBufferDirectionValid(final long deltaTns, final MazeConfig config) {
+        if (bufferDirection == Direction.NONE) {
+            return false;
+        }
+        final Set<IntCoordinates> neighbours = nextPos(deltaTns, bufferDirection).intNeighbours();
+        final int maxNeighbours = 4;
+        if (neighbours.size() >= maxNeighbours) {
+            return false;
+        }
+        for (IntCoordinates c: neighbours) {
+            Cell cell = config.getCell(c);
+            if (cell.hasWall() || cell.initialContent() == Content.SPAWN) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Méthode qui met à jour la vitesse de PacMan en fonction de s'il est énergisé ou non.
+     */
+    public void updateSpeed() {
+        if (energized) {
+            setSpeed(ENERGIZED_SPEED);
+        } else {
+            setSpeed(getNormalSpeed());
+        }
+    }
+
+    /**
+     * Méthode qui actualise la position de PacMan.
+     * @param deltaTns
+     * @param config
+     */
+    public void updatePosition(final long deltaTns, final MazeConfig config) {
+        if (wallCheck(deltaTns, config)) {
+            return;
+        }
+        setCalibratedPos(getPos(), nextPos(deltaTns), config, false);
+    }
+
+    /**
+     * Méthode qui vérifie si PacMan va rencontrer un mur.
+     * @param deltaTns
+     * @param config
+     * @return {@code boolean}
+     */
+    public boolean wallCheck(final long deltaTns, final MazeConfig config) {
+        RealCoordinates nextPos = nextPos(deltaTns);
+        Set<IntCoordinates> nextNeighbours = nextPos.intNeighbours();
+        if (!getPos().intNeighbours().containsAll(nextNeighbours)) {
+            for (IntCoordinates c : nextNeighbours) {
+                Cell cell = config.getCell(c);
+                if (cell.hasWall() || cell.initialContent() == Content.SPAWN) {
+                    setPos(getPos().centerCell(nextPos, false));
+                    setDirection(Direction.NONE);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Incrémente {@link #bufferDurationTime} à chaque tick.
+     * {@link #bufferDurationTime} est réinitialisé s'il dépasse
+     * {@link #BUFFER_MAX_TIME}.
+     * @param deltaTns Durée d'un tick
+     */
+    public void updateDirectionBufferTime(final long deltaTns) {
+        final double nanoseconds = Math.pow(10, 9);
+        directionBufferTimer += deltaTns / nanoseconds;
+        if (directionBufferTimer >= MAX_BUFFER_DIRECTION_TIME) {
+            directionBufferTimer = 0;
+            bufferDirection = Direction.NONE;
+        }
+    }
+
+    /**
+     * Incrémente {@link #energizedTime} à chaque tick.
      * {@link #energizedTimer} est réinitialisé s'il dépasse
      * {@link #MAX_ENERGIZED_TIME}.
      * @param deltaTns Durée d'un tick
      */
-    public void increaseEnergizedTimer(final long deltaTns) {
+    public void updateEnergizedTime(final long deltaTns) {
         if (isEnergized()) {
             final double nanoseconds = Math.pow(10, 9);
             energizedTimer += deltaTns / nanoseconds;
@@ -127,173 +206,78 @@ public final class PacMan implements Critter {
     }
 
     /**
-     * Retourne la dernière direction de Pac-Man.
-     * @return {@link #lastDirection}
-     */
-    public Direction getLastDirection() {
-        return lastDirection;
-    }
-
-    /**
-     * Retourne l'entier indiquant si Pac-Man a bougé.
-     * @return {@link #pacManMoved}
-     */
-    public int getPacManMoved() {
-        return pacManMoved;
-    }
-
-    /**
-     * Set {@link #pacManMoved} à{@code state}.
-     * @param state Choix entre 0, 1 et -1.
-     */
-    public void setPacManMoved(final int state) {
-        pacManMoved = state;
-    }
-
-    /**
-     * Set la durée du buffer {@link #bufferDurationTime}.
-     * @param duration {@code double}
-     */
-    public void setBufferDurationTime(final double duration) {
-        bufferDurationTime = duration;
-    }
-
-    /**
-     * Retourne la direction du buffer {@link #bufferDirection}.
-     * @return {@code Direction}
-     */
-    public Direction getBufferDirection() {
-        return bufferDirection;
-    }
-
-    /**
-     * Set la direction du {@link #bufferDirection}.
-     * @param dir {@code Direction}
-     */
-    public void setBufferDirection(final Direction dir) {
-        bufferDirection = dir;
-    }
-
-    /**
-     * Incrémente {@link #bufferDurationTime} à chaque tick.
-     * {@link #bufferDurationTime} est réinitialisé s'il dépasse
-     * {@link #BUFFER_MAX_TIME}.
-     * @param deltaTns Durée d'un tick
-     */
-    public void updateBufferDurationTime(final long deltaTns) {
-        final double nanoseconds = Math.pow(10, 9);
-        bufferDurationTime += deltaTns / nanoseconds;
-        if (bufferDurationTime >= BUFFER_MAX_TIME) {
-            bufferDurationTime = 0;
-            bufferDirection = Direction.NONE;
-        }
-    }
-
-    /**
      * Réinitialise l'état de Pac-Man.
      * {@link #pacManMoved}, {@link #energized}, {@link #bufferDirection} sont
      * remis à zéro.
      */
     public void resetPacMan() {
-        PacMan.INSTANCE.pacManMoved = 0;
-        PacMan.INSTANCE.energized = false;
-        PacMan.INSTANCE.bufferDirection = Direction.NONE;
+        energized = false;
+        setDirection(Direction.NONE);
+        bufferDirection = Direction.NONE;
     }
 
     /**
      * Réinitialise la position de Pac-Man.
-     * @param state {@code MazeState} Etat actuel de la map
+     * {@link #pacManMoved}, {@link #energized}, {@link #bufferDirection} sont remis à zéro.
+     * @param state {@link MazeState} Etat actuel de la map
      */
-    public void resetPacManPos(final MazeState state) {
-        PacMan.INSTANCE.direction = Direction.NONE;
-        PacMan.INSTANCE.pos = state.getInitialPos().get(PacMan.INSTANCE);
+    public void resetPacMan(final MazeState state) {
+        setDirection(Direction.NONE);
+        bufferDirection = Direction.NONE;
+        lastDirection = Direction.NONE;
+        setPos(getSpawnPos());
     }
 
-    /**
-     * Cette méthode actualise la position({@link RealCoordinates})
-     * et la {@link Direction} de {@link PacMan} <br><br> en fonction du terrain
-     * ({@link MazeConfig}) à l'instant suivant {@code deltaTns}.
-     * @param deltaTns La variation du temps entre deux instants.
-     * @param config {@code MazeConfig} Map.
-     */
-    public void updatePacMan(final long deltaTns, final MazeConfig config) {
-        final RealCoordinates curPos = getPos();
-        RealCoordinates nextPos = nextPos(deltaTns);
-
-        // Modifie ou non la direction de PacMan en fonction
-        // de la direction du buffer et du terrain
-        if (bufferDirection != Direction.NONE && isBufferDirectionValid(deltaTns, config)) {
-            nextPos = nextPos(deltaTns, bufferDirection);
-            setDirection(bufferDirection);
-            bufferDirection = Direction.NONE;
-        }
-        if (!curPos.intNeighbours().containsAll(nextPos.intNeighbours())) {
-            nextPos = calibratePacManPos(nextPos, config);
-        }
-        calibratePos(deltaTns, curPos, nextPos, config.getHeight(), config.getWidth());
-        updateBufferDurationTime(deltaTns);
-
-        if (getDirection() != Direction.NONE) {
-            lastDirection = getDirection();
-        }
-        // Si Pac-Man mange un ENERGIZER
-        IntCoordinates pacPos = getPos().round();
-        if (config.getGrid()[pacPos.y()][pacPos.x()].initialContent() == Cell.Content.ENERGIZER) {
-            config.getGrid()[pacPos.y()][pacPos.x()] =
-                new Cell(false, false, false, false, Content.NOTHING);
-            energized = true;
-        }
-        increaseEnergizedTimer(deltaTns);
+    public static int getEnergizedSpeed() {
+        return ENERGIZED_SPEED;
     }
 
-
-     /**
-     * Méthode qui calcul la position à la frame suivante
-     * de PacMan en fonction de {@code Direction}. <br><br>
-     * Si cette position est valable, change la {@code Direction} de PacMan
-     * sinon, garde l'ancienne {@code Direction}.
-     * @param deltaTns  Temps écoulée.
-     * @param config {@link MazeConfig#config}
-     * @return Retourne vraie si un changement de direction est possible,
-     * faux sinon.
-     */
-    public boolean isBufferDirectionValid(
-        final long deltaTns, final MazeConfig config) {
-        final Direction dir = getDirection();
-        if (dir == bufferDirection) {
-            return false;
-        }
-        final Set<IntCoordinates> nextNeighbours =
-            nextPos(deltaTns, bufferDirection).intNeighbours();
-        final int maxNeighbours = 4;
-        if (nextNeighbours.size() >= maxNeighbours) {
-            return false;
-        }
-        for (IntCoordinates c: nextNeighbours) {
-            if (config.getCell(c).hasWall()) {
-                return false;
-            }
-        }
-       return true;
+    public Direction getLastDirection() {
+        return lastDirection;
     }
 
-    /**
-     * Méthode qui arrête la course de PacMan et retire sa direction
-     * si il rencontre un mur de face.
-     * @param nextPos {@code RealCoordinates} supposée
-     * @param config {@link MazeConfig#config}
-     * (= s'il ne traverse pas de mur) de {@code Pac-Man}.
-     * @return Retourne {@code nextPos} modifié ou non.
-     */
-    public RealCoordinates calibratePacManPos(
-        final RealCoordinates nextPos, final MazeConfig config) {
-        for (var n : nextPos.intNeighbours()) {
-            if (config.getCell(n).hasWall()) {
-                RealCoordinates newPos = getPos().adjustCoordinates(getDirection());
-                setDirection(Direction.NONE);
-                return newPos;
-            }
-        }
-        return nextPos;
+    public void setLastDirection(final Direction lastDirection) {
+        this.lastDirection = lastDirection;
     }
+
+    public Direction getBufferDirection() {
+        return bufferDirection;
+    }
+
+    public void setBufferDirection(final Direction bufferDirection) {
+        this.bufferDirection = bufferDirection;
+    }
+
+    public static double getMaxBufferDirectionTime() {
+        return MAX_BUFFER_DIRECTION_TIME;
+    }
+
+    public double getDirectionBufferTimer() {
+        return directionBufferTimer;
+    }
+
+    public void setDirectionBufferTimer(final double directionBufferTimer) {
+        this.directionBufferTimer = directionBufferTimer;
+    }
+
+    public boolean isEnergized() {
+        return energized;
+    }
+
+    public void setEnergized(final boolean energized) {
+        this.energized = energized;
+    }
+
+    public static double getMaxEnergizedTime() {
+        return MAX_ENERGIZED_TIME;
+    }
+
+    public void setEnergizedTimer(final double energizedTimer) {
+        this.energizedTimer = energizedTimer;
+    }
+
+    public double getEnergizedTimer() {
+        return energizedTimer;
+    }
+
 }

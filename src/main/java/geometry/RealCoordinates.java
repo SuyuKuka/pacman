@@ -1,6 +1,5 @@
 package geometry;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,12 +18,30 @@ public record RealCoordinates(double x, double y) {
     public static final RealCoordinates WEST_UNIT = new RealCoordinates(-1, 0);
 
     /**
+     * Renvoie un boolean vérifiant si 2 coordonnées sont identiques.
+     * @param other
+     * @return {@code boolean}
+     */
+    public boolean equals(final RealCoordinates other) {
+        return x == other.x && y == other.y;
+    }
+
+    /**
      * Additionne les deux coordonnées.
      * @param other {@link RealCoordinates}
      * @return {@link RealCoordinates}
      */
     public RealCoordinates plus(final RealCoordinates other) {
         return new RealCoordinates(x + other.x, y + other.y);
+    }
+
+    /**
+     * Soustrait les deux coordonnées.
+     * @param other {@link RealCoordinates}
+     * @return {@link RealCoordinates}
+     */
+    public RealCoordinates minus(final RealCoordinates other) {
+        return new RealCoordinates(x - other.x, y - other.y);
     }
 
     /**
@@ -51,46 +68,6 @@ public record RealCoordinates(double x, double y) {
                 new IntCoordinates((int) Math.ceil(x), (int) Math.ceil(y))
             )
         );
-    }
-
-    /**
-     * Méthode qui renvoie une liste contenant
-     * les coordonnées de 3 cellules adjacentes :
-     * à gauche, en face et à droite de la direction choisie.
-     * @param direction La direction actuelle du fantôme.
-     * @return Une {@code List<IntCoordinates>} contenant les cellules
-     * adjacentes triées dans le sens horaire
-     * (ordre : haut, droite, bas, gauche).
-     */
-    public List<IntCoordinates> getAdjacentCellsCoordinates(
-        final Direction direction
-        ) {
-        List<IntCoordinates> coordinates = new ArrayList<>();
-        switch (direction) {
-            case NORTH:
-                coordinates.add(0, new IntCoordinates((int) x, (int) y - 1));
-                coordinates.add(1, new IntCoordinates((int) x + 1, (int) y));
-                coordinates.add(2, new IntCoordinates((int) x - 1, (int) y));
-                break;
-            case EAST:
-                coordinates.add(0, new IntCoordinates((int) x, (int) y - 1));
-                coordinates.add(1, new IntCoordinates((int) x + 1, (int) y));
-                coordinates.add(2, new IntCoordinates((int) x, (int) y + 1));
-                break;
-            case SOUTH:
-                coordinates.add(0, new IntCoordinates((int) x + 1, (int) y));
-                coordinates.add(1, new IntCoordinates((int) x, (int) y + 1));
-                coordinates.add(2, new IntCoordinates((int) x - 1, (int) y));
-                break;
-            case WEST:
-                coordinates.add(0, new IntCoordinates((int) x, (int) y - 1));
-                coordinates.add(1, new IntCoordinates((int) x, (int) y + 1));
-                coordinates.add(2, new IntCoordinates((int) x - 1, (int) y));
-                break;
-            default:
-                return new ArrayList<>();
-        }
-        return coordinates;
     }
 
     /**
@@ -142,54 +119,41 @@ public record RealCoordinates(double x, double y) {
      * si on la traverse (entre{@code this}et{@code end}). <br><br>
      * Sinon, renvoie la coordonnée de destination initiale.
      * @param end Le RealCoordinates destination
+     * @param precision {@code boolean}
      * @return Retourne un {@link RealCoordinates} qui prend soit
      * les coordonnées exacte du centre d'une case traversée,
      * soit la valeur{@code end}.
      */
-    public RealCoordinates centerCell(final RealCoordinates end) {
-        if (this.intNeighbours().containsAll(end.intNeighbours())) {
-            return end;
-        }
-        Direction d = this.getDirectionTo(end);
+    public RealCoordinates centerCell(final RealCoordinates end, final boolean precision) {
+        //CHECKSTYLE:OFF
+        final Direction d = this.getDirectionTo(end);
+        final double value = precision ? 0.5 : 1;
         switch (d) {
         case NORTH:
-        case SOUTH:
-            if ((int) this.y() != this.y()) {
-                return this.adjustCoordinates(d);
+            if (y % value != 0 && end.y() % value > this.y() % value) {
+                return new RealCoordinates(x, y - y % value);
             }
             break;
         case EAST:
+            if (x % value != 0 && end.x() % value < this.x() % value) {
+                return new RealCoordinates((x - x % value) + value, y);
+            }
+            break;
+        case SOUTH:
+            if (y % value != 0 && end.y() % value < this.y() % value) {
+                return new RealCoordinates(x, (y - y % value) + value);
+            }
+            break;
         case WEST:
-            if ((int) this.x() != this.x()) {
-                return this.adjustCoordinates(d);
+            if (x % value != 0 && end.x() % value > this.x() % value) {
+                return new RealCoordinates(x - x % value, y);
             }
             break;
         default:
             break;
         }
         return end;
-    }
-    /**
-     * Méthode qui renvoie un {@link RealCoordinates} "ajustée"
-     * en fonction des cellules par rapport à la {@link Direction}.
-     * @param direction Direction choisie.
-     * @return Un {@code RealCoordinates} modifié ou non.
-     */
-
-    public RealCoordinates adjustCoordinates(final Direction direction) {
-        switch (direction) {
-            case NORTH:
-                return this.floorY();
-            case EAST:
-                return this.ceilX();
-            case SOUTH:
-                return this.ceilY();
-            case WEST:
-                return this.floorX();
-            default:
-                break;
-        }
-        return this;
+        //CHECKSTYLE:ON
     }
 
     /**
@@ -218,7 +182,7 @@ public record RealCoordinates(double x, double y) {
      * Arrondie le {@link RealCoordinates} et renvoie un {@link IntCoordinates}.
      * @return {@link IntCoordinates}
      */
-    public IntCoordinates round() {
+    public IntCoordinates toIntCoordinates() {
         return new IntCoordinates((int) Math.round(x), (int) Math.round(y));
     }
 
@@ -257,4 +221,5 @@ public record RealCoordinates(double x, double y) {
     public RealCoordinates ceilY() {
         return new RealCoordinates(x, (int) Math.ceil(y));
     }
+
 }

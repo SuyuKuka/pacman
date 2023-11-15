@@ -128,10 +128,10 @@ public final class CritterGraphicsFactory {
             if (((Ghost) critter).isEaten()) {
                 return "ghost_white_eaten";
             }
-            if (PacMan.INSTANCE.isEnergized()) {
+            if (((Ghost) critter).getPacman().isEnergized()) {
                 return "ghost_white_2";
             }
-            switch ((Ghost) critter) {
+            switch (((Ghost) critter).getGhostType()) {
                 case BLINKY:
                     return "ghost_blinky";
                 case CLYDE:

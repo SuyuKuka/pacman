@@ -29,7 +29,7 @@ public enum Direction {
     }
 
     /**
-     * Renvoie la direction opposé.
+     * Renvoie la {@link Direction} opposée à celle appelée.
      * @return {@link Direction}
      */
     public Direction getOpposite() {

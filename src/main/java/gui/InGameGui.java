@@ -23,9 +23,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import model.Direction;
 import model.MazeState;
-import model.PacMan;
 import utils.Resources;
 import utils.Music;
 
@@ -129,7 +127,7 @@ public final class InGameGui {
         // Affiche le score
         scoreText.setText("Score: " + state.getScore());
         // Total : 150 pac-gommes en classique
-        if (state.getPacgomme() == state.getMaxScore() && !end) {
+        if (!end && state.getEatenPacgomme() >= state.getConfig().getTotalPacGomme()) {
             end = true;
             state.playerWin();
             endGameMenu = endGameMenu(true, state);
@@ -187,7 +185,7 @@ public final class InGameGui {
      * @param state Le {@link MazeState} actuel
      */
     public void updateLives(final MazeState state) {
-        if (state.getLives() < state.getTotalLive()) {
+        if (state.getLives() < state.getTotalLives()) {
             lives[state.getLives()].setVisible(false);
         }
 
@@ -342,9 +340,6 @@ public final class InGameGui {
     }
 
     private VBox pauseMenu() {
-        PacMan.INSTANCE.setPacManMoved(0);
-        PacMan.INSTANCE.setDirection(Direction.NONE);
-
         final int titleSize = 104;
         final int textSize = 38;
         final int textSpacing = 20;

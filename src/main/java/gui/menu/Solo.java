@@ -25,6 +25,7 @@ import gui.GameView;
 import gui.InGameGui;
 import gui.PacmanController;
 import model.MazeState;
+import model.PacMan;
 import utils.Music;
 
 public final class Solo extends Menu {
@@ -215,6 +216,7 @@ public final class Solo extends Menu {
         );
 
         MazeState maze;
+        PacMan pacman = new PacMan();
         final int classique = 0;
         final int facile = 1;
         final int moyen = 2;
@@ -222,34 +224,34 @@ public final class Solo extends Menu {
         final int impossible = 4;
         switch (level) {
             case classique:
-                maze = new MazeState(MazeConfig.makeExample1());
+                maze = new MazeState(MazeConfig.makeExample1(pacman));
                 break;
 
             case facile: // TODO : Autres niveaux à faire
-                maze = new MazeState(MazeConfig.makeExample1());
+                maze = new MazeState(MazeConfig.makeExample1(pacman));
                 break;
 
             case moyen:
-                maze = new MazeState(MazeConfig.makeExample1());
+                maze = new MazeState(MazeConfig.makeExample1(pacman));
                 break;
 
             case difficile:
-                maze = new MazeState(MazeConfig.makeExample1());
+                maze = new MazeState(MazeConfig.makeExample1(pacman));
                 break;
 
             case impossible:
-                maze = new MazeState(MazeConfig.makeExample1());
+                maze = new MazeState(MazeConfig.makeExample1(pacman));
                 break;
 
             default:
-                maze = new MazeState(MazeConfig.makeExample1());
+                maze = new MazeState(MazeConfig.makeExample1(pacman));
                 break;
         }
 
         primaryStage.setScene(gameScene);
         InGameGui inGameGui = new InGameGui(primaryStage, gameScene);
 
-        var pacmanController = new PacmanController();
+        var pacmanController = new PacmanController(pacman);
         gameScene.setOnKeyPressed(pacmanController::keyPressedHandler);
         gameScene.setOnKeyReleased(pacmanController::keyReleasedHandler);
         PacmanController.setInGameGui(inGameGui);
