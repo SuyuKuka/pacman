@@ -14,7 +14,7 @@ import java.net.URL;
 public final class Music {
     /** {@code Clip}de musique/son. */
     private static Clip bgMusicClip = null;
-    private static float currentVolume = 1.0f;
+    private static float currentVolume = 0.0f;
 
     private Music() {
     }

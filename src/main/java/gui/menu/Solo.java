@@ -256,7 +256,7 @@ public final class Solo extends Menu {
         gameScene.setOnKeyReleased(pacmanController::keyReleasedHandler);
         PacmanController.setInGameGui(inGameGui);
 
-        GameView.INSTANCE.setGameView(maze, inGameGui, pane);
+        GameView.INSTANCE.setGameView(maze, inGameGui, pane, gameScene);
         GameView.INSTANCE.stopAnimation();
         primaryStage.show();
         GameView.INSTANCE.animate();

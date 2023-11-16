@@ -3,6 +3,7 @@ package gui;
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
 import javafx.animation.AnimationTimer;
+import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import model.Ghost;
 import model.MazeState;
@@ -23,8 +24,12 @@ public final class GameView {
     /** Largeur additionnelle pour l'affichage des infos à droite. */
     private static final double RIGHT_WIDTH = 300;
     /** Nombre de pixels représentant une unité de la map. */
-    private static final double SCALE = 18;
+    private double SCALE = 20;
     private InGameGui inGameGui;
+    private Scene gameScene;
+    private double initialWidth;
+    private double initialHeight;
+
 
     private GameView() {
     }
@@ -35,6 +40,15 @@ public final class GameView {
     private void addGraphics(final GraphicsUpdater updater) {
         gameRoot.getChildren().add(updater.getNode());
         graphicsUpdaters.add(updater);
+        gameScene.widthProperty().addListener((obs, oldVal, newVal) -> {
+            double scaleFactor = newVal.doubleValue() / initialWidth;
+            SCALE *= scaleFactor;
+        });
+        
+        gameScene.heightProperty().addListener((obs, oldVal, newVal) -> {
+            double scaleFactor = newVal.doubleValue() / initialHeight;
+            SCALE *= scaleFactor;
+        });
     }
 
     /**
@@ -45,18 +59,19 @@ public final class GameView {
      * le jeu sera affiché
      */
     public void setGameView(
-        final MazeState maze, final InGameGui newInGameGui, final Pane root) {
+        final MazeState maze, final InGameGui newInGameGui, final Pane root, final Scene gameScene) {
         instMaze = maze;
         inGameGui = newInGameGui;
         gameRoot = root;
+        this.gameScene=gameScene;
 
-        // pixels per cell
-        root.setMinWidth(maze.getWidth() * SCALE + RIGHT_WIDTH);
-        root.setMinHeight(maze.getHeight() * SCALE);
+        initialWidth = gameScene.getWidth();
+        initialHeight = gameScene.getHeight();
         root.setStyle("-fx-background-color: #000000");
-
-        var critterFactory = new CritterGraphicsFactory(SCALE);
-        var cellFactory = new CellGraphicsFactory(SCALE);
+            //20 normal
+            //28 full screen pour moi
+        var critterFactory = new CritterGraphicsFactory(20);
+        var cellFactory = new CellGraphicsFactory(20);
         graphicsUpdaters = new ArrayList<>();
         for (var critter : maze.getConfig().getCritters()) {
             addGraphics(critterFactory.makeGraphics(critter));
@@ -94,6 +109,7 @@ public final class GameView {
                 instMaze.update(deltaT);
                 inGameGui.updateScore(instMaze);
                 inGameGui.updateLives(instMaze);
+                
 
                 // Changer les boolean pour afficher les infos respectifs
                 tests(deltaT, false, false, false, null);
