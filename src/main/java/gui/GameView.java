@@ -43,12 +43,6 @@ public final class GameView {
         graphicsUpdaters.add(updater);
     }
 
-    private void removeGraphics(final GraphicsUpdater updater){
-        gameRoot.getChildren().remove(updater.getNode());
-        graphicsUpdaters.remove(updater);
-        
-    }
-
     /**
      * @param maze  le "modèle" de cette vue
      * (le labyrinthe et tout ce qui s'y trouve)
@@ -103,42 +97,38 @@ public final class GameView {
         final CellGraphicsFactory cellFactory,
         double newVal,
         double oldVal)
-        {
+        {;
         //SUPPRESSION
         inGameGui.getScorePane().getChildren().remove(inGameGui.getScoreText());
         ((Pane) gameScene.getRoot()).getChildren().remove(inGameGui.getScorePane());
         for (ImageView img : inGameGui.getLives()) {
             ((Pane) gameScene.getRoot()).getChildren().remove(img);
         }
-        for (model.Critter critter : instMaze.getConfig().getCritters()) {
-            removeGraphics(critterFactory.makeGraphics(critter));
+        List<GraphicsUpdater> copyList = new ArrayList<>(graphicsUpdaters);
+        for (GraphicsUpdater updater : copyList) {
+            gameRoot.getChildren().remove(updater.getNode());
+            graphicsUpdaters.remove(updater);
         }
-        for (int x = 0; x < instMaze.getWidth(); x++) {
-            for (int y = 0; y < instMaze.getHeight(); y++) {
-                removeGraphics(cellFactory.makeGraphics(instMaze, new IntCoordinates(x, y)));
-            }
-        }
-
-        System.out.println(graphicsUpdaters.size());
+        
         //SCALE + TRANSLATE
         SCALE++;
 
         //RAJOUT
-        // CritterGraphicsFactory newCritterFactory = new CritterGraphicsFactory(SCALE);
-        // CellGraphicsFactory newCellFactory = new CellGraphicsFactory(SCALE);
+        CritterGraphicsFactory newCritterFactory = new CritterGraphicsFactory(SCALE);
+        CellGraphicsFactory newCellFactory = new CellGraphicsFactory(SCALE);
 
-        // for (model.Critter critter : instMaze.getConfig().getCritters()) {
-        //     addGraphics(newCritterFactory.makeGraphics(critter));
-        // }
+        for (model.Critter critter : instMaze.getConfig().getCritters()) {
+            addGraphics(newCritterFactory.makeGraphics(critter));
+        }
 
-        // for (int x = 0; x < instMaze.getWidth(); x++) {
-        //     for (int y = 0; y < instMaze.getHeight(); y++) {
-        //         addGraphics(newCellFactory.makeGraphics(instMaze, new IntCoordinates(x, y)));
-        //     }
-        // }
+        for (int x = 0; x < instMaze.getWidth(); x++) {
+            for (int y = 0; y < instMaze.getHeight(); y++) {
+                addGraphics(newCellFactory.makeGraphics(instMaze, new IntCoordinates(x, y)));
+            }
+        }
 
-        // inGameGui.displayLives(instMaze, SCALE);
-        // inGameGui.displayScore(instMaze, SCALE);
+        inGameGui.displayLives(instMaze, SCALE);
+        inGameGui.displayScore(instMaze, SCALE);
     }
 
     public void resizeHeight(
@@ -153,34 +143,31 @@ public final class GameView {
         for (ImageView img : inGameGui.getLives()) {
             ((Pane) gameScene.getRoot()).getChildren().remove(img);
         }
-        for (model.Critter critter : instMaze.getConfig().getCritters()) {
-            removeGraphics(critterFactory.makeGraphics(critter));
-        }
-        for (int x = 0; x < instMaze.getWidth(); x++) {
-            for (int y = 0; y < instMaze.getHeight(); y++) {
-                removeGraphics(cellFactory.makeGraphics(instMaze, new IntCoordinates(x, y)));
-            }
+        List<GraphicsUpdater> copyList = new ArrayList<>(graphicsUpdaters);
+        for (GraphicsUpdater updater : copyList) {
+            gameRoot.getChildren().remove(updater.getNode());
+            graphicsUpdaters.remove(updater);
         }
 
         //SCAKE + TRANSLATE
         SCALE++;
 
         //RAJOUT
-        // CritterGraphicsFactory newCritterFactory = new CritterGraphicsFactory(SCALE);
-        // CellGraphicsFactory newCellFactory = new CellGraphicsFactory(SCALE);
+        CritterGraphicsFactory newCritterFactory = new CritterGraphicsFactory(SCALE);
+        CellGraphicsFactory newCellFactory = new CellGraphicsFactory(SCALE);
 
-        // for (model.Critter critter : instMaze.getConfig().getCritters()) {
-        //     addGraphics(newCritterFactory.makeGraphics(critter));
-        // }
+        for (model.Critter critter : instMaze.getConfig().getCritters()) {
+            addGraphics(newCritterFactory.makeGraphics(critter));
+        }
 
-        // for (int x = 0; x < instMaze.getWidth(); x++) {
-        //     for (int y = 0; y < instMaze.getHeight(); y++) {
-        //         addGraphics(newCellFactory.makeGraphics(instMaze, new IntCoordinates(x, y)));
-        //     }
-        // }
+        for (int x = 0; x < instMaze.getWidth(); x++) {
+            for (int y = 0; y < instMaze.getHeight(); y++) {
+                addGraphics(newCellFactory.makeGraphics(instMaze, new IntCoordinates(x, y)));
+            }
+        }
 
-        // inGameGui.displayLives(instMaze, SCALE);
-        // inGameGui.displayScore(instMaze, SCALE);
+        inGameGui.displayLives(instMaze, SCALE);
+        inGameGui.displayScore(instMaze, SCALE);
 
     }
 
