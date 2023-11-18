@@ -3,6 +3,7 @@ package gui;
 import java.util.ArrayList;
 
 import gui.menu.Menu;
+import gui.menu.Multiplayer;
 import gui.menu.Solo;
 import gui.menu.Menu.KeySelector;
 import gui.menu.Menu.MouseSelector;
@@ -65,15 +66,20 @@ public final class InGameGui {
     /** Boolean indiquant si la partie est mise en pause. */
     private static boolean paused = false;
 
+    private String mode;
+
     /**
      * Constructeur{@code InGameGui}.
      * @param stage
      * @param scene
+     * @param mode
      */
-    public InGameGui(final Stage stage, final Scene scene) {
+    public InGameGui(final Stage stage, final Scene scene, final String mode) {
         primaryStage = stage;
         gameScene = scene;
+        this.mode = mode;
         addPauseHandlers();
+        setPaused(false);
         Music.playSound("start", () -> Music.playLoopingBgMusic("siren_1"));
     }
 
@@ -226,8 +232,8 @@ public final class InGameGui {
         );
 
         Text select1 = Menu.createText(">", textSize);
-        Text retry = Menu.createText("Retry", textSize);
-        HBox option1 = Menu.createHBox(textSpacing, Pos.CENTER, select1, retry);
+        Text restart = Menu.createText("Restart", textSize);
+        HBox option1 = Menu.createHBox(textSpacing, Pos.CENTER, select1, restart);
 
         Text select2 = Menu.createText(">", textSize);
         Text quitter = Menu.createText("Quit", textSize);
@@ -240,7 +246,7 @@ public final class InGameGui {
         endGameSelects.add(2, select2);
 
         endgameOptions.add(0, continuer);
-        endgameOptions.add(1, retry);
+        endgameOptions.add(1, restart);
         endgameOptions.add(2, quitter);
 
         VBox titleBox = Menu.createVBox(0, Pos.CENTER, gameover, score);
@@ -271,15 +277,19 @@ public final class InGameGui {
                 //TODO
             }
         };
-        EventHandler<MouseEvent> retry = new EventHandler<>() {
+        EventHandler<MouseEvent> restart = new EventHandler<>() {
             @Override
             public void handle(final MouseEvent mouseEvent) {
                 endgameOptions.get(1).removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
-                Solo.startLevel(primaryStage, currentLevel);
+                if (mode.equals("Solo")) {
+                    Solo.startLevel(primaryStage, currentLevel);
+                } else {
+                    Multiplayer.startLevel(primaryStage, currentLevel);
+                }
             }
         };
         endgameOptions.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, next);
-        endgameOptions.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, retry);
+        endgameOptions.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, restart);
         endgameOptions.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
             Menu quit = new Menu();
             Menu.setMusicStarted(false);
@@ -307,7 +317,11 @@ public final class InGameGui {
                         break;
 
                     case 1:
-                        Solo.startLevel(primaryStage, currentLevel);
+                        if (mode.equals("Solo")) {
+                            Solo.startLevel(primaryStage, currentLevel);
+                        } else {
+                            Multiplayer.startLevel(primaryStage, currentLevel);
+                        }
                         break;
 
                     case 2:
@@ -356,8 +370,8 @@ public final class InGameGui {
         );
 
         Text select1 = Menu.createText(">", textSize);
-        Text retry = Menu.createText("Retry", textSize);
-        HBox option1 = Menu.createHBox(textSpacing, Pos.CENTER, select1, retry);
+        Text restart = Menu.createText("Restart", textSize);
+        HBox option1 = Menu.createHBox(textSpacing, Pos.CENTER, select1, restart);
 
         Text select2 = Menu.createText(">", textSize);
         Text quitter = Menu.createText("Quit", textSize);
@@ -375,7 +389,7 @@ public final class InGameGui {
         pauseSelects.add(2, select2);
 
         pauseOptions.add(0, continuer);
-        pauseOptions.add(1, retry);
+        pauseOptions.add(1, restart);
         pauseOptions.add(2, quitter);
 
         return Menu.createVBox(
@@ -392,19 +406,23 @@ public final class InGameGui {
     }
 
     private void addPauseHandlers() {
-        EventHandler<MouseEvent> retry = new EventHandler<>() {
+        EventHandler<MouseEvent> restart = new EventHandler<>() {
             @Override
             public void handle(final MouseEvent mouseEvent) {
                 pauseOptions.get(1).removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
                 setPaused(false);
-                Solo.startLevel(primaryStage, currentLevel);
+                if (mode.equals("Solo")) {
+                    Solo.startLevel(primaryStage, currentLevel);
+                } else {
+                    Multiplayer.startLevel(primaryStage, currentLevel);
+                }
             }
         };
 
         pauseOptions.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent ->
             pause(false)
         );
-        pauseOptions.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, retry);
+        pauseOptions.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, restart);
         pauseOptions.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
             Menu quit = new Menu();
             Menu.setMusicStarted(false);
@@ -433,7 +451,11 @@ public final class InGameGui {
 
                     case 1:
                         setPaused(false);
-                        Solo.startLevel(primaryStage, currentLevel);
+                        if (mode.equals("Solo")) {
+                            Solo.startLevel(primaryStage, currentLevel);
+                        } else {
+                            Multiplayer.startLevel(primaryStage, currentLevel);
+                        }
                         break;
 
                     case 2:

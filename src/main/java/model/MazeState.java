@@ -17,7 +17,7 @@ public final class MazeState {
     }
 
     //CHECKSTYLE:OFF
-    private final static double nanoseconds = Math.pow(10, 9);
+    private static final double NANOSECONDS = Math.pow(10, 9);
     //CHECKSTYLE:ON
 
     /** MazeState actuel pour les tests unitaires. */
@@ -58,10 +58,9 @@ public final class MazeState {
             if (currentLiveTime == null && config.getPacman().getDirection() != Direction.NONE) {
                 currentLiveTime = 0.0;
                 config.activateGhost();
-                return;
             } else if (currentLiveTime != null) {
                 updateGhost(deltaTns);
-                currentLiveTime += deltaTns / nanoseconds;
+                currentLiveTime += deltaTns / NANOSECONDS;
                 updateCollision();
             }
         }
@@ -184,8 +183,12 @@ public final class MazeState {
         if (critter instanceof Ghost) {
             ((Ghost) critter).setPos(((Ghost) critter).getSpawnPos());
             ((Ghost) critter).setEaten(false);
+            if (((Ghost) critter).getDirectionBuffer() != null) {
+                ((Ghost) critter).getDirectionBuffer().setBufferDirection(Direction.NONE);
+                critter.setDirection(Direction.NONE);
+            }
         } else {
-            config.getPacman().resetPacMan(this);
+            config.getPacman().resetPacMan();
             CritterGraphicsFactory.setResetPacImg(true);
         }
     }

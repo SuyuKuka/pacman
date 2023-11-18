@@ -2,6 +2,7 @@ package config;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
+import model.Buffer;
 import model.Critter;
 import model.Direction;
 import model.Ghost;
@@ -56,10 +57,10 @@ public class MazeConfig {
 
     /**
      * Constructeur qui initialise les configs pour la carte courante.
-     * @param pacman {@link PacMan}
+     * @param versus Si on est en mode Versus
      * @param configPath {@code String}Le path du fichier JSON de la map
      */
-    public MazeConfig(final PacMan pacman, final String configPath) {
+    public MazeConfig(final boolean versus, final String configPath) {
         grid = getJSONMaze(configPath);
         for (int i = 0; i < getHeight(); i++) {
             for (int j = 0; j < getWidth(); j++) {
@@ -70,7 +71,7 @@ public class MazeConfig {
         MapVerification.tunnelFinder(grid);
         MapVerification.removeUnnecessaryWall(grid);
         //CHECKSTYLE:OFF
-        this.pacman = pacman;
+        pacman = new PacMan();
         final int ghostSpawnX = getWidth() / 2 - 4;
         final int ghostSpawnY = getHeight() / 2 - 3;
         ghostSpawnPos[0] = new RealCoordinates(ghostSpawnX, ghostSpawnY);
@@ -80,10 +81,15 @@ public class MazeConfig {
         pacman.setPos(pacman.getSpawnPos());
         Ghost blinky = new Ghost(
             GhostType.BLINKY, pacman,
-            critterSpawnOrTargetPos(GhostType.BLINKY, "critterSpawn", configPath),
+            versus
+            ? new RealCoordinates(13, 15)
+            : critterSpawnOrTargetPos(GhostType.BLINKY, "critterSpawn", configPath),
             critterSpawnOrTargetPos(GhostType.BLINKY, "eatenTarget", configPath),
             critterSpawnOrTargetPos(GhostType.BLINKY, "target", configPath)
         );
+        if (versus) {
+            blinky.setDirectionBuffer(new Buffer());
+        }
         Ghost inky = new Ghost(
             GhostType.INKY, blinky, pacman,
             critterSpawnOrTargetPos(GhostType.INKY, "critterSpawn", configPath),
@@ -266,6 +272,9 @@ public class MazeConfig {
             switch (ghost.getGhostType()) {
                 case BLINKY:
                     ghost.setActivated(true);
+                    if (ghost.getDirectionBuffer() != null) {
+                        break;
+                    }
                     ghost.setDirection(Direction.EAST);
                     break;
                 case PINKY:
@@ -314,12 +323,13 @@ public class MazeConfig {
     }
 
     /**
-     * Retourne un {@link MazeConfig} test.
-     * @param pacman {@link PacMan}
+     * Retourne un {@link MazeConfig}. Si{@code versus}est{@code true}, initialise
+     * un {@link GhostType#BLINKY} jouable.
+     * @param versus {@code true}si en mode Versus
      * @return {@link MazeConfig}
      */
-    public static MazeConfig makeExample1(final PacMan pacman) {
-        return new MazeConfig(pacman, "src/main/java/config/Level1.json");
+    public static MazeConfig classicalConfig(final boolean versus) {
+        return new MazeConfig(versus, "src/main/java/config/Level1.json");
     }
 
     /**

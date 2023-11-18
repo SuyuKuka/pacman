@@ -22,7 +22,7 @@ public final class Ghost extends Critter {
     /** Vitesse du fantôme loesqu'il est dans un Tunnel. */
         private static final int TUNNEL_SPEED = 3;
     /** Vitesse du fantôme lorsqu'il à été mangé par {@link PacMan}. */
-    private static final int EATEN_SPEED = 20;
+    private static final int EATEN_SPEED = 12;
 
     /** Types de fantômes disponibles. (BLINKY, PINKY, INKY et CLYDE).
      * Chaque fantôme a un comportement différent lors du jeu.
@@ -36,7 +36,7 @@ public final class Ghost extends Critter {
         INKY,
         /** {@link Ghost} jaune. */
         CLYDE
-    };
+    }
 
     /** Type du fantôme actuel. */
     private final GhostType ghostType;
@@ -46,7 +46,6 @@ public final class Ghost extends Critter {
     private PacMan pacman;
     private final RealCoordinates eatenTarget;
     private final RealCoordinates scatterTarget;
-    private RealCoordinates chaseTarget;
 
     /** Variable nécessaire seulement pour les {@link Ghost} de type {@link GhostType INKY}.
      * Utile notamment pour le calcul de sa cible en {@link GhostState#CHASE}.
@@ -55,6 +54,9 @@ public final class Ghost extends Critter {
 
     private boolean eaten = false;
     private boolean activated = false;
+
+    /** Buffer utilisé pour le mode versus en multijoueur. */
+    private Buffer directionBuffer = null;
 
     /**
      * Constructeur spécial pour créer un {@link GhostType#INKY}.
@@ -98,12 +100,32 @@ public final class Ghost extends Critter {
      * @param deltaTns Tick de temps.
      */
     public void update(final MazeState state, final long deltaTns) {
-        boolean hasDirectionReversed = updateState(state);
-        updateTarget(state);
-        if (!hasDirectionReversed) {
-            updateDirection(state);
+        if (isPlayerGhost()) {
+            updatePlayerGhost(state, deltaTns);
+        } else {
+            boolean hasDirectionReversed = updateState(state);
+            updateTarget(state);
+            if (!hasDirectionReversed) {
+                updateDirection(state);
+            }
+            updatePosition(state, deltaTns);
         }
-        updatePosition(state, deltaTns);
+    }
+
+    /**
+     * Méthode qui met à jour le fantôme joueur.
+     * @param state {@link MazeState}
+     * @param deltaTns Tick de temps.
+     */
+    public void updatePlayerGhost(final MazeState state, final long deltaTns) {
+        if (directionBuffer.isBufferDirectionValid(this, deltaTns, state.getConfig())) {
+            setDirection(directionBuffer.getBufferDirection());
+        }
+        boolean precision = isInSpawn(state.getConfig());
+        updateSpeed(state);
+        updatePosition(deltaTns, state.getConfig(), precision);
+        directionBuffer.updateDirectionBufferTime(deltaTns);
+        updateState(state);
     }
 
     /**
@@ -118,6 +140,11 @@ public final class Ghost extends Critter {
             setSpeed(getNormalSpeed());
             eaten = false;
         }
+
+        if (isPlayerGhost()) {
+            return false;
+        }
+
         if (pacman.isEnergized() && state.getGhostState() != GhostState.FRIGHTENED) {
             setDirection(getDirection().getOpposite());
             return true;
@@ -161,8 +188,7 @@ public final class Ghost extends Critter {
         } else if (state.getCurrentState() == GhostState.SCATTER && !target.equals(scatterTarget)) {
             target = scatterTarget;
         } else if (state.getCurrentState() == GhostState.CHASE) {
-            chaseTarget = calcChaseTarget();
-            target = chaseTarget;
+            target = calcChaseTarget();
         }
     }
 
@@ -291,10 +317,7 @@ public final class Ghost extends Critter {
      * @return {@code true} si dans un tunnel
      */
     public boolean isInTunnel(final MazeConfig config) {
-        if (config.getCell(getPos().toIntCoordinates()).initialContent() == Content.TUNNEL) {
-            return true;
-        }
-        return false;
+        return config.getCell(getPos().toIntCoordinates()).initialContent() == Content.TUNNEL;
     }
 
     /**
@@ -398,8 +421,10 @@ public final class Ghost extends Critter {
 
         for (int i = 0; i < dirList.size(); i++) {
             if (!possibles.contains(dirList.get(i))) {
-                dirProba.set((i+1)%dirList.size(),
-                     dirProba.get(i) + dirProba.get((i+1) % dirList.size()));
+                dirProba.set(
+                    (i+1)%dirList.size(),
+                    dirProba.get(i) + dirProba.get((i+1) % dirList.size())
+                );
                 dirList.remove(i);
                 dirProba.remove(i);
                 i--;
@@ -504,5 +529,17 @@ public final class Ghost extends Critter {
 
     public void setActivated(final boolean activated) {
         this.activated = activated;
+    }
+
+    public Buffer getDirectionBuffer() {
+        return directionBuffer;
+    }
+
+    public void setDirectionBuffer(final Buffer directionBuffer) {
+        this.directionBuffer = directionBuffer;
+    }
+
+    public boolean isPlayerGhost() {
+        return directionBuffer != null;
     }
 }
