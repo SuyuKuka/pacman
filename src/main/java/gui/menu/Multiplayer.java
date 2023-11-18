@@ -1,7 +1,14 @@
 package gui.menu;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import config.MazeConfig;
+import gui.GameView;
+import gui.InGameGui;
+import gui.controller.Controller;
+import gui.controller.GhostController;
+import gui.controller.PacmanController;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -14,10 +21,15 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import model.Ghost;
+import model.MazeState;
+import model.Ghost.GhostType;
+import utils.Music;
 
 public final class Multiplayer extends Menu {
     /** Initialise un rootPane pour Multiplayer. */
@@ -50,8 +62,59 @@ public final class Multiplayer extends Menu {
         primaryStage.show();
     }
 
-    private void startLevel(final Stage primaryStage) {
-        int selected = Menu.getSelected();
+    /**
+     * Méthode permettant de lancer un niveau, le niveau lancé dépend de
+     * la variable statique {@code selected} de la classe {@code Menu}.
+     * @param primaryStage
+     * @param mode
+     */
+    public static void startLevel(final Stage primaryStage, final int mode) {
+        InGameGui.setCurrentLevel(mode);
+        Music.stopBackgroundMusic();
+
+        Pane pane = new Pane();
+
+        Scene gameScene = new Scene(
+            pane,
+            primaryStage.getScene() == null
+            ? primaryStage.getWidth() : primaryStage.getScene().getWidth(),
+            primaryStage.getScene() == null
+            ? primaryStage.getHeight() : primaryStage.getScene().getHeight()
+        );
+
+        MazeState maze;
+        final int versus = 0;
+        final int coop = 1;
+        switch (mode) {
+            case versus:
+                maze = new MazeState(MazeConfig.classicalConfig(true));
+                break;
+            case coop:
+                maze = new MazeState(MazeConfig.classicalConfig(false));
+                break;
+
+            default:
+                maze = new MazeState(MazeConfig.classicalConfig(false));
+                break;
+        }
+        List<Ghost> blinkys = maze.getConfig().getGhostKind(GhostType.BLINKY);
+        Ghost playerGhost = blinkys.get(0);
+
+        primaryStage.setScene(gameScene);
+        InGameGui inGameGui = new InGameGui(primaryStage, gameScene, "Multi");
+
+        Controller.setInGameGui(inGameGui);
+        var pacmanController = new PacmanController(maze.getConfig().getPacman());
+        var playerGhostController = new GhostController(playerGhost);
+        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, pacmanController::keyPressedHandler);
+        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, playerGhostController::keyPressedHandler);
+        gameScene.addEventHandler(KeyEvent.KEY_RELEASED, pacmanController::keyReleasedHandler);
+        gameScene.addEventHandler(KeyEvent.KEY_RELEASED, playerGhostController::keyReleasedHandler);
+
+        GameView.INSTANCE.setGameView(maze, inGameGui, pane);
+        GameView.INSTANCE.stopAnimation();
+        primaryStage.show();
+        GameView.INSTANCE.animate();
     }
 
     @Override
@@ -109,18 +172,17 @@ public final class Multiplayer extends Menu {
             @Override
             public void handle(final MouseEvent mouseEvent) {
                 options.get(0).removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
-                startLevel(primaryStage);
+                startLevel(primaryStage, 0);
             }
         };
         EventHandler<MouseEvent> mouseClick1 = new EventHandler<>() {
             @Override
             public void handle(final MouseEvent mouseEvent) {
                 options.get(1).removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
-                startLevel(primaryStage);
+                startLevel(primaryStage, 1);
             }
         };
 
-        // TODO : Niveau versus
         options.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseClick0);
         // TODO : Niveau coop
         options.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseClick1);
@@ -138,7 +200,7 @@ public final class Multiplayer extends Menu {
                         Menu menu = new Menu();
                         menu.start(primaryStage);
                     } else {
-                        startLevel(primaryStage);
+                        startLevel(primaryStage, Menu.getSelected());
                     }
                 }
             }

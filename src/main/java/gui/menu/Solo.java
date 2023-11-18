@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import config.MazeConfig;
 import gui.GameView;
 import gui.InGameGui;
-import gui.PacmanController;
+import gui.controller.Controller;
+import gui.controller.PacmanController;
 import model.MazeState;
-import model.PacMan;
 import utils.Music;
 
 public final class Solo extends Menu {
@@ -216,7 +216,6 @@ public final class Solo extends Menu {
         );
 
         MazeState maze;
-        PacMan pacman = new PacMan();
         final int classique = 0;
         final int facile = 1;
         final int moyen = 2;
@@ -224,37 +223,37 @@ public final class Solo extends Menu {
         final int impossible = 4;
         switch (level) {
             case classique:
-                maze = new MazeState(MazeConfig.makeExample1(pacman));
+                maze = new MazeState(MazeConfig.classicalConfig(false));
                 break;
 
             case facile: // TODO : Autres niveaux à faire
-                maze = new MazeState(MazeConfig.makeExample1(pacman));
+                maze = new MazeState(MazeConfig.classicalConfig(false));
                 break;
 
             case moyen:
-                maze = new MazeState(MazeConfig.makeExample1(pacman));
+                maze = new MazeState(MazeConfig.classicalConfig(false));
                 break;
 
             case difficile:
-                maze = new MazeState(MazeConfig.makeExample1(pacman));
+                maze = new MazeState(MazeConfig.classicalConfig(false));
                 break;
 
             case impossible:
-                maze = new MazeState(MazeConfig.makeExample1(pacman));
+                maze = new MazeState(MazeConfig.classicalConfig(false));
                 break;
 
             default:
-                maze = new MazeState(MazeConfig.makeExample1(pacman));
+                maze = new MazeState(MazeConfig.classicalConfig(false));
                 break;
         }
 
         primaryStage.setScene(gameScene);
-        InGameGui inGameGui = new InGameGui(primaryStage, gameScene);
+        InGameGui inGameGui = new InGameGui(primaryStage, gameScene, "Solo");
 
-        var pacmanController = new PacmanController(pacman);
+        var pacmanController = new PacmanController(maze.getConfig().getPacman());
         gameScene.setOnKeyPressed(pacmanController::keyPressedHandler);
         gameScene.setOnKeyReleased(pacmanController::keyReleasedHandler);
-        PacmanController.setInGameGui(inGameGui);
+        Controller.setInGameGui(inGameGui);
 
         GameView.INSTANCE.setGameView(maze, inGameGui, pane);
         GameView.INSTANCE.stopAnimation();
