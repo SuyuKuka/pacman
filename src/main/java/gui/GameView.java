@@ -26,11 +26,14 @@ public final class GameView {
     private static final double RIGHT_WIDTH = 300;
     /** Nombre de pixels représentant une unité de la map. */
     private final double initialScale = 16;
-    private double scale;
+    private double scale = initialScale;
     private InGameGui inGameGui;
     private Scene gameScene;
     private double initialWidth;
     private double initialHeight;
+    private double initialTranslateX;
+    private double initialTranslateY;
+    private boolean hasScale;
 
 
     private GameView() {
@@ -60,16 +63,15 @@ public final class GameView {
         gameRoot = root;
         this.gameScene = scene;
 
-        final int test = 4;
-        final int test1 = -15;
+        initialTranslateX = gameScene.getWidth() / 4 - initialScale;
+        initialTranslateY = -15;
 
         initialWidth = gameScene.getWidth();
         initialHeight = gameScene.getHeight();
         root.setStyle("-fx-background-color: #000000");
-        gameRoot.setTranslateX(gameScene.getWidth() / test - initialScale);
-        gameRoot.setTranslateY(test1);
-            //20 normal
-            //28 full screen pour moi
+        gameRoot.setTranslateX(initialTranslateX);
+        gameRoot.setTranslateY(initialTranslateY);
+
         CritterGraphicsFactory critterFactory = new CritterGraphicsFactory(initialScale);
         CellGraphicsFactory cellFactory = new CellGraphicsFactory(initialScale);
 
@@ -123,8 +125,21 @@ public final class GameView {
             graphicsUpdaters.remove(updater);
         }
 
-        //SCALE + TRANSLATE
-        scale++;
+        //TODO : SCALE + TRANSLATE
+        double diffX = newVal-oldVal;
+        System.out.println("-----------------");
+        System.out.println(gameRoot.getTranslateX() + diffX - scale);
+        System.out.println(initialTranslateX);
+        System.out.println("-----------------");
+        if(gameRoot.getTranslateX() + diffX - scale > initialTranslateX){
+            System.out.println("big");
+            gameRoot.setTranslateX(gameRoot.getTranslateX() + diffX/4 - scale);
+            scale=30;
+        }else{
+            System.out.println("small");
+            gameRoot.setTranslateX(initialTranslateX);
+            scale=initialScale;
+        }
 
         //RAJOUT
         CritterGraphicsFactory newCritterFactory = new CritterGraphicsFactory(scale);
@@ -169,8 +184,25 @@ public final class GameView {
             graphicsUpdaters.remove(updater);
         }
 
-        //SCAKE + TRANSLATE
-        scale++;
+        //TODO : SCALE + TRANSLATE
+        double diffY = newVal-oldVal;
+
+        if(gameRoot.getTranslateY() + diffY - scale > initialTranslateY){
+            System.out.println("big");
+            gameRoot.setTranslateY(-10);
+            scale=30;
+        }else{
+            System.out.println("small");
+            gameRoot.setTranslateY(initialTranslateY);
+            scale=initialScale;
+        }
+
+        //si la taille width n'a pas changé alors on augmente pas le scale
+        if(diffY>0){
+            scale++;
+        }else if(diffY<0){
+            scale--;
+        }
 
         //RAJOUT
         CritterGraphicsFactory newCritterFactory = new CritterGraphicsFactory(scale);
@@ -188,7 +220,6 @@ public final class GameView {
 
         inGameGui.displayLives(instMaze, scale);
         inGameGui.displayScore(instMaze, scale);
-
     }
 
 
