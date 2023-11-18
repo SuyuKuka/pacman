@@ -19,8 +19,8 @@ public class Intro extends Application {
      */
     @Override
     public void start(final Stage primaryStage) {
-        final int width = 700;
-        final int height = 700;
+        final int width = 900;
+        final int height = 600;
         primaryStage.setMinWidth(width);
         primaryStage.setMinHeight(height);
 

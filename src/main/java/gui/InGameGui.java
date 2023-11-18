@@ -65,6 +65,8 @@ public final class InGameGui {
     /** Boolean indiquant si la partie est mise en pause. */
     private static boolean paused = false;
 
+    private final int heightDiff = 40;
+
     /**
      * Constructeur{@code InGameGui}.
      * @param stage
@@ -82,7 +84,6 @@ public final class InGameGui {
      * du {@link #primaryStage}.
      */
     public void setDimBackground() {
-        final int heightDiff = 40;
         final double opacity = 0.6;
         dimBackground = new Rectangle(
             0, 0, primaryStage.getWidth(),
@@ -96,19 +97,15 @@ public final class InGameGui {
      * Méthode qui affiche la zone du score lors du démarrage de la partie.
      * @param state Le {@link MazeState} actuel
      */
-    public void displayScore(final MazeState state) {
+    public void displayScore(final MazeState state, final double scale) {
         // Création d'un texte
         scoreText = new Text();
         // Position du score
-        final int translateX = 30 / 2;
-        final int translateY1 = 30 / 6;
-        final int translateY2 = 50;
         scoreText.setTranslateX(
-            (double) (state.getWidth() + state.getHeight()) * translateX
+            (double) (state.getWidth()) * scale +  24*3
         );
         scoreText.setTranslateY(
-            (double) (state.getHeight() + state.getWidth())
-            * translateY1 - translateY2
+            (double) scale+(heightDiff*3)
         );
         // Configuration du texte
         final int fontSize = 24;
@@ -141,18 +138,15 @@ public final class InGameGui {
      * @param state Le {@link MazeState} actuel
      * @return {@code ImageView}
      */
-    private ImageView setLife(final MazeState state) {
+    private ImageView setLife(final MazeState state, final double scale) {
         ImageView imageView = new ImageView();
         Image image = Resources.getImage("pacman");
 
-        final int yScale1 = 30 / 2;
-        final int yScale2 = 50;
-        final double widthScale = 1.4;
         imageView.setImage(image);
         imageView.setY(
-            (double) (state.getHeight() + state.getWidth()) * yScale1 - yScale2
+            (double) (state.getHeight()) * scale - state.getHeight() * 2
         );
-        imageView.setFitWidth(state.getWidth() * widthScale);
+        imageView.setFitWidth(state.getHeight() * scale/state.getWidth());
         imageView.setPreserveRatio(true);
         return imageView;
     }
@@ -161,15 +155,14 @@ public final class InGameGui {
      * Méthode affichant les vies de Pac-Man au démarrage d'une partie.
      * @param state Le {@link MazeState} actuel
      */
-    public void displayLives(final MazeState state) {
-        final double spacing = 1.9;
-        final int translateX = 30 / 2;
+    public void displayLives(final MazeState state, final double scale) {
+        final double spacing = state.getWidth() / scale;
         lives = new ImageView[state.getLives()];
         for (int i = 0; i < lives.length; i++) {
-            ImageView life = setLife(state);
+            ImageView life = setLife(state, scale);
             life.setX(
-                ((state.getWidth() + state.getHeight() + i * spacing)
-                * translateX)
+                ((state.getWidth() + i * spacing)
+                * scale + heightDiff/3)
             );
             lives[i] = life;
             if (!((Pane) gameScene.getRoot()).getChildren()
@@ -463,5 +456,17 @@ public final class InGameGui {
 
     public static void setCurrentLevel(final int currentLevel) {
         InGameGui.currentLevel = currentLevel;
+    }
+
+    public StackPane getScorePane(){
+        return scorePane;
+    }
+
+    public Text getScoreText() {
+        return scoreText;
+    }
+    
+    public ImageView[] getLives() {
+        return lives;
     }
 }

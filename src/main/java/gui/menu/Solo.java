@@ -248,6 +248,7 @@ public final class Solo extends Menu {
                 break;
         }
 
+        gameScene.setFill(Color.BLACK);
         primaryStage.setScene(gameScene);
         InGameGui inGameGui = new InGameGui(primaryStage, gameScene);
 
