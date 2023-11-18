@@ -67,6 +67,9 @@ public final class InGameGui {
 
     private final int heightDiff = 40;
 
+    private final int trois = 3;
+    private final int vingtquatre = 24;
+
     /**
      * Constructeur{@code InGameGui}.
      * @param stage
@@ -96,16 +99,17 @@ public final class InGameGui {
     /**
      * Méthode qui affiche la zone du score lors du démarrage de la partie.
      * @param state Le {@link MazeState} actuel
+     * @param scale le scale
      */
     public void displayScore(final MazeState state, final double scale) {
         // Création d'un texte
         scoreText = new Text();
         // Position du score
         scoreText.setTranslateX(
-            (double) (state.getWidth()) * scale +  24*3
+            (double) (state.getWidth()) * scale +  vingtquatre * trois
         );
         scoreText.setTranslateY(
-            (double) scale+(heightDiff*3)
+            (double) scale + (heightDiff * trois)
         );
         // Configuration du texte
         final int fontSize = 24;
@@ -136,6 +140,7 @@ public final class InGameGui {
     /**
      * Méthode qui initialise une image du tableau {@link #lives}.
      * @param state Le {@link MazeState} actuel
+     * @param scale le scale
      * @return {@code ImageView}
      */
     private ImageView setLife(final MazeState state, final double scale) {
@@ -146,7 +151,7 @@ public final class InGameGui {
         imageView.setY(
             (double) (state.getHeight()) * scale - state.getHeight() * 2
         );
-        imageView.setFitWidth(state.getHeight() * scale/state.getWidth());
+        imageView.setFitWidth(state.getHeight() * scale / state.getWidth());
         imageView.setPreserveRatio(true);
         return imageView;
     }
@@ -154,6 +159,7 @@ public final class InGameGui {
     /**
      * Méthode affichant les vies de Pac-Man au démarrage d'une partie.
      * @param state Le {@link MazeState} actuel
+     * @param scale le scale
      */
     public void displayLives(final MazeState state, final double scale) {
         final double spacing = state.getWidth() / scale;
@@ -162,7 +168,7 @@ public final class InGameGui {
             ImageView life = setLife(state, scale);
             life.setX(
                 ((state.getWidth() + i * spacing)
-                * scale + heightDiff/3)
+                * scale + heightDiff / trois)
             );
             lives[i] = life;
             if (!((Pane) gameScene.getRoot()).getChildren()
@@ -458,14 +464,14 @@ public final class InGameGui {
         InGameGui.currentLevel = currentLevel;
     }
 
-    public StackPane getScorePane(){
+    public StackPane getScorePane() {
         return scorePane;
     }
 
     public Text getScoreText() {
         return scoreText;
     }
-    
+
     public ImageView[] getLives() {
         return lives;
     }

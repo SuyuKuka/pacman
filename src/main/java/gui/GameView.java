@@ -25,7 +25,8 @@ public final class GameView {
     /** Largeur additionnelle pour l'affichage des infos à droite. */
     private static final double RIGHT_WIDTH = 300;
     /** Nombre de pixels représentant une unité de la map. */
-    private double SCALE = 16;
+    private final double initialScale = 16;
+    private double scale;
     private InGameGui inGameGui;
     private Scene gameScene;
     private double initialWidth;
@@ -48,25 +49,30 @@ public final class GameView {
      * (le labyrinthe et tout ce qui s'y trouve)
      * @param newInGameGui {@code InGameGui}courant
      * @param root  le nœud racine dans la scène JavaFX dans lequel
+     * @param scene la Scene du jeu
      * le jeu sera affiché
      */
     public void setGameView(
-        final MazeState maze, final InGameGui newInGameGui, final Pane root,final Scene gameScene) {
+        final MazeState maze, final InGameGui newInGameGui,
+        final Pane root, final Scene scene) {
         instMaze = maze;
         inGameGui = newInGameGui;
         gameRoot = root;
-        this.gameScene = gameScene;
+        this.gameScene = scene;
+
+        final int test = 4;
+        final int test1 = -15;
 
         initialWidth = gameScene.getWidth();
         initialHeight = gameScene.getHeight();
         root.setStyle("-fx-background-color: #000000");
-        gameRoot.setTranslateX(gameScene.getWidth()/4 - SCALE);
-        gameRoot.setTranslateY(-15);
+        gameRoot.setTranslateX(gameScene.getWidth() / test - initialScale);
+        gameRoot.setTranslateY(test1);
             //20 normal
             //28 full screen pour moi
-        CritterGraphicsFactory critterFactory = new CritterGraphicsFactory(SCALE);
-        CellGraphicsFactory cellFactory = new CellGraphicsFactory(SCALE);
-        
+        CritterGraphicsFactory critterFactory = new CritterGraphicsFactory(initialScale);
+        CellGraphicsFactory cellFactory = new CellGraphicsFactory(initialScale);
+
         for (model.Critter critter : maze.getConfig().getCritters()) {
             addGraphics(critterFactory.makeGraphics(critter));
         }
@@ -80,24 +86,31 @@ public final class GameView {
         }
 
         System.out.println(graphicsUpdaters.size());
-        inGameGui.displayLives(maze, SCALE);
-        inGameGui.displayScore(maze, SCALE);
+        inGameGui.displayLives(maze, initialScale);
+        inGameGui.displayScore(maze, initialScale);
 
         gameScene.widthProperty().addListener((obs, oldVal, newVal) -> {
             resizeWidth(critterFactory, cellFactory, newVal.doubleValue(), oldVal.doubleValue());
         });
-        
+
         gameScene.heightProperty().addListener((obs, oldVal, newVal) -> {
             resizeHeight(critterFactory, cellFactory, newVal.doubleValue(), oldVal.doubleValue());
         });
     }
 
+    /**
+     * Resize la longeur.
+     * @param critterFactory
+     * @param cellFactory
+     * @param newVal
+     * @param oldVal
+     */
     public void resizeWidth(
         final CritterGraphicsFactory critterFactory,
         final CellGraphicsFactory cellFactory,
-        double newVal,
-        double oldVal)
-        {;
+        final double newVal,
+        final double oldVal) {
+
         //SUPPRESSION
         inGameGui.getScorePane().getChildren().remove(inGameGui.getScoreText());
         ((Pane) gameScene.getRoot()).getChildren().remove(inGameGui.getScorePane());
@@ -109,13 +122,13 @@ public final class GameView {
             gameRoot.getChildren().remove(updater.getNode());
             graphicsUpdaters.remove(updater);
         }
-        
+
         //SCALE + TRANSLATE
-        SCALE++;
+        scale++;
 
         //RAJOUT
-        CritterGraphicsFactory newCritterFactory = new CritterGraphicsFactory(SCALE);
-        CellGraphicsFactory newCellFactory = new CellGraphicsFactory(SCALE);
+        CritterGraphicsFactory newCritterFactory = new CritterGraphicsFactory(scale);
+        CellGraphicsFactory newCellFactory = new CellGraphicsFactory(scale);
 
         for (model.Critter critter : instMaze.getConfig().getCritters()) {
             addGraphics(newCritterFactory.makeGraphics(critter));
@@ -127,16 +140,23 @@ public final class GameView {
             }
         }
 
-        inGameGui.displayLives(instMaze, SCALE);
-        inGameGui.displayScore(instMaze, SCALE);
+        inGameGui.displayLives(instMaze, scale);
+        inGameGui.displayScore(instMaze, scale);
     }
 
+    /**
+     * Resize la hauteur.
+     * @param critterFactory
+     * @param cellFactory
+     * @param newVal
+     * @param oldVal
+     */
     public void resizeHeight(
         final CritterGraphicsFactory critterFactory,
         final CellGraphicsFactory cellFactory,
-        double newVal,
-        double oldVal)
-        {
+        final double newVal,
+        final double oldVal) {
+
         //SUPPRESSION
         inGameGui.getScorePane().getChildren().remove(inGameGui.getScoreText());
         ((Pane) gameScene.getRoot()).getChildren().remove(inGameGui.getScorePane());
@@ -150,11 +170,11 @@ public final class GameView {
         }
 
         //SCAKE + TRANSLATE
-        SCALE++;
+        scale++;
 
         //RAJOUT
-        CritterGraphicsFactory newCritterFactory = new CritterGraphicsFactory(SCALE);
-        CellGraphicsFactory newCellFactory = new CellGraphicsFactory(SCALE);
+        CritterGraphicsFactory newCritterFactory = new CritterGraphicsFactory(scale);
+        CellGraphicsFactory newCellFactory = new CellGraphicsFactory(scale);
 
         for (model.Critter critter : instMaze.getConfig().getCritters()) {
             addGraphics(newCritterFactory.makeGraphics(critter));
@@ -166,8 +186,8 @@ public final class GameView {
             }
         }
 
-        inGameGui.displayLives(instMaze, SCALE);
-        inGameGui.displayScore(instMaze, SCALE);
+        inGameGui.displayLives(instMaze, scale);
+        inGameGui.displayScore(instMaze, scale);
 
     }
 
@@ -192,7 +212,6 @@ public final class GameView {
                 instMaze.update(deltaT);
                 inGameGui.updateScore(instMaze);
                 inGameGui.updateLives(instMaze);
-                
 
                 // Changer les boolean pour afficher les infos respectifs
                 tests(deltaT, false, false, false, null);
@@ -234,7 +253,7 @@ public final class GameView {
             FpsAndThreads.updateThread(deltaT);
         }
         if (showTarget) {
-            var cellFactory = new CellGraphicsFactory(SCALE);
+            var cellFactory = new CellGraphicsFactory(scale);
             if (ghost.getTarget() != null) {
                 RealCoordinates target = ghost.getTarget();
                 addGraphics(cellFactory.showTarget(target));
