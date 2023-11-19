@@ -223,27 +223,27 @@ public final class Solo extends Menu {
         final int impossible = 4;
         switch (level) {
             case classique:
-                maze = new MazeState(MazeConfig.classicalConfig(false));
+                maze = new MazeState(MazeConfig.classicalConfig(false, false));
                 break;
 
             case facile: // TODO : Autres niveaux à faire
-                maze = new MazeState(MazeConfig.classicalConfig(false));
+                maze = new MazeState(MazeConfig.classicalConfig(false, false));
                 break;
 
             case moyen:
-                maze = new MazeState(MazeConfig.classicalConfig(false));
+                maze = new MazeState(MazeConfig.classicalConfig(false, false));
                 break;
 
             case difficile:
-                maze = new MazeState(MazeConfig.classicalConfig(false));
+                maze = new MazeState(MazeConfig.classicalConfig(false, false));
                 break;
 
             case impossible:
-                maze = new MazeState(MazeConfig.classicalConfig(false));
+                maze = new MazeState(MazeConfig.classicalConfig(false, false));
                 break;
 
             default:
-                maze = new MazeState(MazeConfig.classicalConfig(false));
+                maze = new MazeState(MazeConfig.classicalConfig(false, false));
                 break;
         }
 

@@ -9,6 +9,7 @@ import gui.InGameGui;
 import gui.controller.Controller;
 import gui.controller.GhostController;
 import gui.controller.PacmanController;
+import gui.controller.PacmanController2;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -87,14 +88,14 @@ public final class Multiplayer extends Menu {
         final int coop = 1;
         switch (mode) {
             case versus:
-                maze = new MazeState(MazeConfig.classicalConfig(true));
+                maze = new MazeState(MazeConfig.classicalConfig(true, false));
                 break;
             case coop:
-                maze = new MazeState(MazeConfig.classicalConfig(false));
+                maze = new MazeState(MazeConfig.classicalConfig(false, true));
                 break;
 
             default:
-                maze = new MazeState(MazeConfig.classicalConfig(false));
+                maze = new MazeState(MazeConfig.classicalConfig(false, false));
                 break;
         }
         List<Ghost> blinkys = maze.getConfig().getGhostKind(GhostType.BLINKY);
@@ -106,10 +107,21 @@ public final class Multiplayer extends Menu {
         Controller.setInGameGui(inGameGui);
         var pacmanController = new PacmanController(maze.getConfig().getPacman());
         var playerGhostController = new GhostController(playerGhost);
+        var pacmanController2 = new PacmanController2(maze.getConfig().getPacman2());
+
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, pacmanController::keyPressedHandler);
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, playerGhostController::keyPressedHandler);
+        if (mode == versus) {
+            gameScene.addEventHandler(
+                KeyEvent.KEY_PRESSED, playerGhostController::keyPressedHandler
+            );
+            gameScene.addEventHandler(
+                KeyEvent.KEY_RELEASED, playerGhostController::keyReleasedHandler
+            );
+        } else if (mode == coop) {
+            gameScene.addEventHandler(KeyEvent.KEY_PRESSED, pacmanController2::keyPressedHandler);
+            gameScene.addEventHandler(KeyEvent.KEY_RELEASED, pacmanController2::keyReleasedHandler);
+        }
         gameScene.addEventHandler(KeyEvent.KEY_RELEASED, pacmanController::keyReleasedHandler);
-        gameScene.addEventHandler(KeyEvent.KEY_RELEASED, playerGhostController::keyReleasedHandler);
 
         GameView.INSTANCE.setGameView(maze, inGameGui, pane);
         GameView.INSTANCE.stopAnimation();

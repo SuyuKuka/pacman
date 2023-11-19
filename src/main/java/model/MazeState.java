@@ -54,8 +54,18 @@ public final class MazeState {
      */
     public void update(final long deltaTns) {
         if (lives > 0 && !win) {
+
             config.getPacman().update(this, deltaTns);
-            if (currentLiveTime == null && config.getPacman().getDirection() != Direction.NONE) {
+            Direction pacman1Dir = config.getPacman().getDirection();
+            Direction pacman2Dir
+            = config.isCoop() ? config.getPacman2().getDirection() : Direction.NONE;
+
+            if (config.isCoop()) {
+                config.getPacman2().update(this, deltaTns);
+            }
+
+            if (currentLiveTime == null
+            && (pacman1Dir != Direction.NONE || pacman2Dir != Direction.NONE)) {
                 currentLiveTime = 0.0;
                 config.activateGhost();
             } else if (currentLiveTime != null) {
@@ -81,11 +91,27 @@ public final class MazeState {
      * Méthode qui actualise l'état actuel du jeu en fonction de si pacman est énergisé.
      */
     public void energizedCheck() {
-        if (config.getPacman().isEnergized() && ghostState != GhostState.FRIGHTENED) {
+        final boolean setStateFrightened;
+        final boolean removeBGM;
+        if (config.isCoop()) {
+            setStateFrightened
+            = config.getPacman().isEnergized() || config.getPacman2().isEnergized()
+            && ghostState != GhostState.FRIGHTENED;
+            removeBGM
+            = !config.getPacman().isEnergized() && !config.getPacman2().isEnergized()
+            && ghostState == GhostState.FRIGHTENED;
+        } else {
+            setStateFrightened
+            = config.getPacman().isEnergized() && ghostState != GhostState.FRIGHTENED;
+            removeBGM
+            = !config.getPacman().isEnergized() && ghostState == GhostState.FRIGHTENED;
+        }
+
+        if (setStateFrightened) {
             Music.playSound("energizer");
             Music.playLoopingBgMusic("energized");
             ghostState = GhostState.FRIGHTENED;
-        } else if (!config.getPacman().isEnergized() && ghostState == GhostState.FRIGHTENED) {
+        } else if (removeBGM) {
             Music.stopBackgroundMusic();
         }
     }
@@ -99,10 +125,17 @@ public final class MazeState {
         final double collisionRange = 0.7;
         final int eatScore = 200;
         final RealCoordinates pacmanPos = config.getPacman().getPos();
+        RealCoordinates pacman2Pos = new RealCoordinates(0, 0);
+        if (config.isCoop()) {
+            pacman2Pos = config.getPacman2().getPos();
+        }
+
         for (Ghost ghost : config.getGhostList()) {
             final RealCoordinates ghostPos = ghost.getPos();
             if (Math.abs(ghostPos.x() - pacmanPos.x()) <= collisionRange
-                    && Math.abs(ghostPos.y() - pacmanPos.y()) <= collisionRange) {
+            && Math.abs(ghostPos.y() - pacmanPos.y()) <= collisionRange
+            || Math.abs(ghostPos.x() - pacman2Pos.x()) <= collisionRange
+            && Math.abs(ghostPos.y() - pacman2Pos.y()) <= collisionRange) {
                 if (!ghost.isEaten() && config.getPacman().isEnergized()) {
                     addScore(eatScore);
                     ghost.setEaten(true);
@@ -189,6 +222,9 @@ public final class MazeState {
             }
         } else {
             config.getPacman().resetPacMan();
+            if (config.isCoop()) {
+                config.getPacman2().resetPacMan();
+            }
             CritterGraphicsFactory.setResetPacImg(true);
         }
     }

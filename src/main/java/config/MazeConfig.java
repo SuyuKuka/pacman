@@ -30,7 +30,7 @@ import static model.Direction.WEST;
 import config.Cell.Content;
 import config.Cell.Type;
 
-public class MazeConfig {
+public final class MazeConfig {
     private static final HashMap<String, String> LINE_TABLE = new HashMap<>();
 
     static {
@@ -54,13 +54,16 @@ public class MazeConfig {
     private final PacMan pacman;
     private final List<Ghost> ghostList = new ArrayList<>();
 
+    /** Pac-Man 2 en Coop.*/
+    private final PacMan pacman2;
 
     /**
      * Constructeur qui initialise les configs pour la carte courante.
      * @param versus Si on est en mode Versus
+     * @param coop Si on est en mode Coop
      * @param configPath {@code String}Le path du fichier JSON de la map
      */
-    public MazeConfig(final boolean versus, final String configPath) {
+    public MazeConfig(final boolean versus, final boolean coop, final String configPath) {
         grid = getJSONMaze(configPath);
         for (int i = 0; i < getHeight(); i++) {
             for (int j = 0; j < getWidth(); j++) {
@@ -75,38 +78,51 @@ public class MazeConfig {
         final int ghostSpawnX = getWidth() / 2 - 4;
         final int ghostSpawnY = getHeight() / 2 - 3;
         ghostSpawnPos[0] = new RealCoordinates(ghostSpawnX, ghostSpawnY);
-        ghostSpawnPos[1] = new RealCoordinates(ghostSpawnX + 7, ghostSpawnY + 4);
+        ghostSpawnPos[1] = new RealCoordinates((double) ghostSpawnX + 7, (double) ghostSpawnY + 4);
 
-        pacman.setSpawnPos(critterSpawnOrTargetPos(null, "critterSpawn", configPath));
+        pacman.setSpawnPos(critterSpawnOrTargetPos(null, false, "critterSpawn", configPath));
         pacman.setPos(pacman.getSpawnPos());
+
+        // Multijoueur Coop
+        if (coop) {
+            pacman2 = new PacMan();
+            pacman2.setSpawnPos(critterSpawnOrTargetPos(null, true, "critterSpawn", configPath));
+            pacman2.setPos(pacman2.getSpawnPos());
+        } else {
+            pacman2 = null;
+        }
+
         Ghost blinky = new Ghost(
-            GhostType.BLINKY, pacman,
+            GhostType.BLINKY, pacman, pacman2,
             versus
             ? new RealCoordinates(13, 15)
-            : critterSpawnOrTargetPos(GhostType.BLINKY, "critterSpawn", configPath),
-            critterSpawnOrTargetPos(GhostType.BLINKY, "eatenTarget", configPath),
-            critterSpawnOrTargetPos(GhostType.BLINKY, "target", configPath)
+            : critterSpawnOrTargetPos(GhostType.BLINKY, false, "critterSpawn", configPath),
+            critterSpawnOrTargetPos(GhostType.BLINKY, false, "eatenTarget", configPath),
+            critterSpawnOrTargetPos(GhostType.BLINKY, false, "target", configPath)
         );
+
         if (versus) {
             blinky.setDirectionBuffer(new Buffer());
         }
+
         Ghost inky = new Ghost(
-            GhostType.INKY, blinky, pacman,
-            critterSpawnOrTargetPos(GhostType.INKY, "critterSpawn", configPath),
-            critterSpawnOrTargetPos(GhostType.INKY, "eatenTarget", configPath),
-            critterSpawnOrTargetPos(GhostType.INKY, "target", configPath)
+            GhostType.INKY, blinky, pacman, pacman2,
+            critterSpawnOrTargetPos(GhostType.INKY, false, "critterSpawn", configPath),
+            critterSpawnOrTargetPos(GhostType.INKY, false, "eatenTarget", configPath),
+            critterSpawnOrTargetPos(GhostType.INKY, false, "target", configPath)
         );
+
         Ghost pinky = new Ghost(
-            GhostType.PINKY, pacman,
-            critterSpawnOrTargetPos(GhostType.PINKY, "critterSpawn", configPath),
-            critterSpawnOrTargetPos(GhostType.PINKY, "eatenTarget", configPath),
-            critterSpawnOrTargetPos(GhostType.PINKY, "target", configPath)
+            GhostType.PINKY, pacman, pacman2,
+            critterSpawnOrTargetPos(GhostType.PINKY, false, "critterSpawn", configPath),
+            critterSpawnOrTargetPos(GhostType.PINKY, false, "eatenTarget", configPath),
+            critterSpawnOrTargetPos(GhostType.PINKY, false, "target", configPath)
         );
         Ghost clyde = new Ghost(
-            GhostType.CLYDE, pacman,
-            critterSpawnOrTargetPos(GhostType.CLYDE, "critterSpawn", configPath),
-            critterSpawnOrTargetPos(GhostType.CLYDE, "eatenTarget", configPath),
-            critterSpawnOrTargetPos(GhostType.CLYDE, "target", configPath)
+            GhostType.CLYDE, pacman, pacman2,
+            critterSpawnOrTargetPos(GhostType.CLYDE, false, "critterSpawn", configPath),
+            critterSpawnOrTargetPos(GhostType.CLYDE, false, "eatenTarget", configPath),
+            critterSpawnOrTargetPos(GhostType.CLYDE, false, "target", configPath)
         );
         ghostList.addAll(Arrays.asList(blinky, inky, pinky, clyde));
         //CHECKSTYLE:ON
@@ -177,12 +193,13 @@ public class MazeConfig {
      * Méthode qui retourne un{@code RealCoordinates}du spawn ou du target
      * en{@code SCATTER}d'un{@code Critter}depuis le fichier de configuration.
      * @param type {@link GhostType} du fantôme,{@code null} si Pac-Man
+     * @param pacman2 Si en coop
      * @param config {@code String} "critterSpawn" / "target" / "eatenTarget"
      * @param path Le chemin du fichier à importer.
      * @return {@code RealCoordinates}
      */
     public static RealCoordinates critterSpawnOrTargetPos(
-            final GhostType type, final String config, final String path) {
+            final GhostType type, final boolean pacman2, final String config, final String path) {
         //CHECKSTYLE:OFFcheckstyle:magicnumber
         try {
             String file = FileUtils.readFileToString(
@@ -193,7 +210,7 @@ public class MazeConfig {
             String[] pos = new String[2];
             if (type == null) {
                 jArray = new JSONArray(jObject.getJSONArray("critterSpawn"));
-                pos = jArray.getString(4).split(";");
+                pos = jArray.getString(pacman2 ? 5 : 4).split(";");
                 return new RealCoordinates(Double.valueOf(pos[0]), Double.valueOf(pos[1]));
             }
             jArray = new JSONArray(jObject.getJSONArray(config));
@@ -267,7 +284,7 @@ public class MazeConfig {
      * Initialise le jeu et active les {@link Ghost} du type
      * {@link GhostType#BLINKY} et {@link GhostType#PINKY}.
      */
-    public final void activateGhost() {
+    public void activateGhost() {
         for (Ghost ghost : ghostList) {
             switch (ghost.getGhostType()) {
                 case BLINKY:
@@ -291,7 +308,7 @@ public class MazeConfig {
      * Réinitialise la position des fantômes après un reset.
      * @param state {@code MazeState} Etat actuel de la map
      */
-    public final void resetGhostPos(final MazeState state) {
+    public void resetGhostPos(final MazeState state) {
         final int inkyThreshold = 30;
         final int clydeThreshold = state.getConfig().getTotalPacGomme() / 3;
         for (Ghost ghost : ghostList) {
@@ -326,10 +343,11 @@ public class MazeConfig {
      * Retourne un {@link MazeConfig}. Si{@code versus}est{@code true}, initialise
      * un {@link GhostType#BLINKY} jouable.
      * @param versus {@code true}si en mode Versus
+     * @param coop {@code true}si en mode Coop
      * @return {@link MazeConfig}
      */
-    public static MazeConfig classicalConfig(final boolean versus) {
-        return new MazeConfig(versus, "src/main/java/config/Level1.json");
+    public static MazeConfig classicalConfig(final boolean versus, final boolean coop) {
+        return new MazeConfig(versus, coop, "src/main/java/config/Level1.json");
     }
 
     /**
@@ -342,6 +360,9 @@ public class MazeConfig {
             critters.add(ghost);
         }
         critters.add(pacman);
+        if (pacman2 != null) {
+            critters.add(pacman2);
+        }
         return critters;
     }
 
@@ -350,7 +371,7 @@ public class MazeConfig {
      * @param ghostType {@link GhostType}
      * @return {@code Lit<Ghost>}
      */
-    public final List<Ghost> getGhostKind(final GhostType ghostType) {
+    public List<Ghost> getGhostKind(final GhostType ghostType) {
         List<Ghost> oneKind = new ArrayList<>();
         for (Ghost ghost : ghostList) {
             if (ghost.getGhostType() == ghostType)  {
@@ -360,43 +381,35 @@ public class MazeConfig {
         return oneKind;
     }
 
-    /**
-     * Méthode qui renvoie vraie si le {@link RealCoordinates}
-     * donné se trouve à l'entrée du spawn des {@link Ghost}.
-     * @param pos {@link RealCoordinates}
-     * @return true ou false
-     */
-    public boolean isAtSpawnEntrance(final RealCoordinates pos) {
-        final double xEntrance = 3;
-        double leftPosXEntrance = ghostSpawnPos[0].x() + xEntrance;
-        if (pos.y() == ghostSpawnPos[0].y()
-            && pos.x() >= leftPosXEntrance && pos.x() <= leftPosXEntrance + 1) {
-            return true;
-        }
-        return false;
+    public boolean isCoop() {
+        return pacman2 != null;
     }
 
-    public final Cell[][] getGrid() {
+    public Cell[][] getGrid() {
         return grid;
     }
 
-    public final int[] getGhostStateSwap() {
+    public int[] getGhostStateSwap() {
         return ghostStateSwap;
     }
 
-    public final int getTotalPacGomme() {
+    public int getTotalPacGomme() {
         return totalPacGomme;
     }
 
-    public final RealCoordinates[] getGhostSpawnPos() {
+    public RealCoordinates[] getGhostSpawnPos() {
         return ghostSpawnPos;
     }
 
-    public final PacMan getPacman() {
+    public PacMan getPacman() {
         return pacman;
     }
 
-    public final List<Ghost> getGhostList() {
+    public PacMan getPacman2() {
+        return pacman2;
+    }
+
+    public List<Ghost> getGhostList() {
         return ghostList;
     }
 
