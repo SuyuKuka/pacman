@@ -2,7 +2,6 @@ package model;
 
 import config.MazeConfig;
 import geometry.RealCoordinates;
-import gui.CritterGraphicsFactory;
 import utils.Music;
 
 public final class MazeState {
@@ -91,30 +90,15 @@ public final class MazeState {
      * Méthode qui actualise l'état actuel du jeu en fonction de si pacman est énergisé.
      */
     public void energizedCheck() {
-        final boolean setStateFrightened;
-        final boolean removeBGM;
-        if (config.isCoop()) {
-            setStateFrightened
-            = config.getPacman().isEnergized() || config.getPacman2().isEnergized()
-            && ghostState != GhostState.FRIGHTENED;
-            removeBGM
-            = !config.getPacman().isEnergized() && !config.getPacman2().isEnergized()
-            && ghostState == GhostState.FRIGHTENED;
-        } else {
-            setStateFrightened
-            = config.getPacman().isEnergized() && ghostState != GhostState.FRIGHTENED;
-            removeBGM
-            = !config.getPacman().isEnergized() && ghostState == GhostState.FRIGHTENED;
-        }
-
-        if (setStateFrightened) {
+        if (config.getPacman().isEnergized() && ghostState != GhostState.FRIGHTENED) {
             Music.playSound("energizer");
             Music.playLoopingBgMusic("energized");
             ghostState = GhostState.FRIGHTENED;
-        } else if (removeBGM) {
+        } else if (!config.getPacman().isEnergized() && ghostState == GhostState.FRIGHTENED) {
             Music.stopBackgroundMusic();
         }
     }
+
 
     /**
      * La méthode appelle la méthode {@link #playerLost} lorsque Pac-Man est au
@@ -216,7 +200,7 @@ public final class MazeState {
         if (critter instanceof Ghost) {
             ((Ghost) critter).setPos(((Ghost) critter).getSpawnPos());
             ((Ghost) critter).setEaten(false);
-            if (((Ghost) critter).getDirectionBuffer() != null) {
+            if (((Ghost) critter).isPlayer()) {
                 ((Ghost) critter).getDirectionBuffer().setBufferDirection(Direction.NONE);
                 critter.setDirection(Direction.NONE);
             }
@@ -224,8 +208,9 @@ public final class MazeState {
             config.getPacman().resetPacMan();
             if (config.isCoop()) {
                 config.getPacman2().resetPacMan();
+                config.getPacman2().getGraphicsBuffer().setResetPacImg(true);
             }
-            CritterGraphicsFactory.setResetPacImg(true);
+            config.getPacman().getGraphicsBuffer().setResetPacImg(true);
         }
     }
 

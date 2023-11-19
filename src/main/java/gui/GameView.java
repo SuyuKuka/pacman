@@ -6,6 +6,7 @@ import javafx.animation.AnimationTimer;
 import javafx.scene.layout.Pane;
 import model.Ghost;
 import model.MazeState;
+import model.PacMan;
 import utils.FpsAndThreads;
 
 import java.util.ArrayList;
@@ -59,7 +60,11 @@ public final class GameView {
         var cellFactory = new CellGraphicsFactory(SCALE);
         graphicsUpdaters = new ArrayList<>();
         for (var critter : maze.getConfig().getCritters()) {
-            addGraphics(critterFactory.makeGraphics(critter));
+            if (critter instanceof PacMan) {
+                addGraphics(critterFactory.makePacGraphics((PacMan) critter));
+            } else {
+                addGraphics(critterFactory.makeGhostGraphics((Ghost) critter));
+            }
         }
 
         for (int x = 0; x < maze.getWidth(); x++) {

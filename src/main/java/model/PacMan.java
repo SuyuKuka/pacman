@@ -5,19 +5,21 @@ import config.Cell;
 import config.Cell.Content;
 
 import geometry.IntCoordinates;
+import gui.GraphicsBuffer;
 import utils.Music;
 
 public final class PacMan extends Critter {
 
     private static final int ENERGIZED_SPEED = 9;
+    public static final double MAX_ENERGIZED_TIME = 6;
 
     /** Dernière {@link Direction} de {@link PacMan} qui n'est pas {@link Direction#NONE}. */
     private Direction lastDirection = Direction.NONE;
     // Etat énergisé de PacMan :
+    private static double energizedTimer = 0;
     private boolean energized = false;
-    private static final double MAX_ENERGIZED_TIME = 6;
-    private double energizedTimer = 0;
-    private Buffer directionBuffer = new Buffer();
+    private DirectionBuffer directionBuffer = new DirectionBuffer();
+    private GraphicsBuffer graphicsBuffer = new GraphicsBuffer();
 
     /**
      * Fonction générale de {@link PacMan} qui actualise tous ses paramètres.
@@ -33,7 +35,9 @@ public final class PacMan extends Critter {
         updateSpeed();
         updatePosition(deltaTns, state.getConfig(), false);
         directionBuffer.updateDirectionBufferTime(deltaTns);
-        updateEnergizedTime(deltaTns);
+        if (this != state.getConfig().getPacman2()) {
+            updateEnergizedTime(deltaTns);
+        }
     }
 
     /**
@@ -87,8 +91,13 @@ public final class PacMan extends Critter {
             boolean restricted = state.getConfig().getGrid()[pacPos.y()][pacPos.x()].restricted();
             state.getConfig().getGrid()[pacPos.y()][pacPos.x()] =
                 new Cell(false, false, false, false, Content.NOTHING, restricted);
-            energizedTimer = energized ? energizedTimer : 0;
-            energized = true;
+            setEnergizedTimer(energized ? energizedTimer : 0);
+            if (state.getConfig().isCoop()) {
+                state.getConfig().getPacman().setEnergized(true);
+                state.getConfig().getPacman2().setEnergized(true);
+            } else {
+                energized = true;
+            }
         }
     }
 
@@ -112,9 +121,9 @@ public final class PacMan extends Critter {
     public void updateEnergizedTime(final long deltaTns) {
         if (isEnergized()) {
             final double nanoseconds = Math.pow(10, 9);
-            energizedTimer += deltaTns / nanoseconds;
+            setEnergizedTimer(energizedTimer + deltaTns / nanoseconds);
             if (energizedTimer >= MAX_ENERGIZED_TIME) {
-                energizedTimer = 0;
+                setEnergizedTimer(0);
                 energized = false;
             }
         }
@@ -122,7 +131,7 @@ public final class PacMan extends Critter {
 
     /**
      * Réinitialise l'état de Pac-Man.
-     * {@link #energized}, {@link Buffer#bufferDirection}. {@link Critter#direction},
+     * {@link #energized}, {@link DirectionBuffer#bufferDirection}. {@link Critter#direction},
      * {@link #lastDirection} et la position de Pac-Man sont remis à zéro.
      */
     public void resetPacMan() {
@@ -157,15 +166,19 @@ public final class PacMan extends Critter {
         return MAX_ENERGIZED_TIME;
     }
 
-    public void setEnergizedTimer(final double energizedTimer) {
-        this.energizedTimer = energizedTimer;
+    public static void setEnergizedTimer(final double energizedTimer) {
+        PacMan.energizedTimer = energizedTimer;
     }
 
-    public double getEnergizedTimer() {
+    public static double getEnergizedTimer() {
         return energizedTimer;
     }
 
-    public Buffer getDirectionBuffer() {
+    public DirectionBuffer getDirectionBuffer() {
         return directionBuffer;
+    }
+
+    public GraphicsBuffer getGraphicsBuffer() {
+        return graphicsBuffer;
     }
 }

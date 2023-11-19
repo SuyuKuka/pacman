@@ -7,14 +7,14 @@ import config.Cell.Content;
 import config.MazeConfig;
 import geometry.IntCoordinates;
 
-public final class Buffer {
+public final class DirectionBuffer {
     /* Buffer d'un controller
-    Pour faciliter le mouvement lors des intersections, le jeu garde en mémoire la dernière
-    direction que l'utilisateur a entré même si celle-ci n'est pas accessible à ce moment
-    pendant une très courte durée et l'utilise si possible.
-    */
-    private Direction bufferDirection = Direction.NONE;
+     * Pour faciliter le mouvement lors des intersections, le jeu garde en mémoire la dernière
+     * direction que l'utilisateur a entré même si celle-ci n'est pas accessible à ce moment
+     * pendant une très courte durée et l'utilise si possible.
+     */
     private static final double MAX_BUFFER_DIRECTION_TIME = 0.7;
+    private Direction bufferDirection = Direction.NONE;
     private double directionBufferTimer = 0;
 
     /**
