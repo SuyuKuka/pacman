@@ -2,6 +2,7 @@ package model;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
+import gui.GraphicsBuffer;
 import model.MazeState.GhostState;
 
 import static model.Direction.NORTH;
@@ -20,7 +21,7 @@ import config.Cell.Content;
 
 public final class Ghost extends Critter {
     /** Vitesse du fantôme loesqu'il est dans un Tunnel. */
-        private static final int TUNNEL_SPEED = 3;
+    private static final int TUNNEL_SPEED = 3;
     /** Vitesse du fantôme lorsqu'il à été mangé par {@link PacMan}. */
     private static final int EATEN_SPEED = 12;
 
@@ -57,7 +58,8 @@ public final class Ghost extends Critter {
     private boolean activated = false;
 
     /** Buffer utilisé pour le mode versus en multijoueur. */
-    private Buffer directionBuffer = null;
+    private DirectionBuffer directionBuffer = null;
+    private GraphicsBuffer graphicsBuffer = new GraphicsBuffer();
 
     /**
      * Constructeur spécial pour créer un {@link GhostType#INKY}.
@@ -105,7 +107,7 @@ public final class Ghost extends Critter {
      * @param deltaTns Tick de temps.
      */
     public void update(final MazeState state, final long deltaTns) {
-        if (isPlayerGhost()) {
+        if (isPlayer()) {
             updatePlayerGhost(state, deltaTns);
         } else {
             boolean hasDirectionReversed = updateState(state);
@@ -146,7 +148,7 @@ public final class Ghost extends Critter {
             eaten = false;
         }
 
-        if (isPlayerGhost()) {
+        if (isPlayer()) {
             return false;
         }
 
@@ -540,15 +542,19 @@ public final class Ghost extends Critter {
         this.activated = activated;
     }
 
-    public Buffer getDirectionBuffer() {
+    public DirectionBuffer getDirectionBuffer() {
         return directionBuffer;
     }
 
-    public void setDirectionBuffer(final Buffer directionBuffer) {
+    public void setDirectionBuffer(final DirectionBuffer directionBuffer) {
         this.directionBuffer = directionBuffer;
     }
 
-    public boolean isPlayerGhost() {
+    public boolean isPlayer() {
         return directionBuffer != null;
+    }
+
+    public GraphicsBuffer getGraphicsBuffer() {
+        return graphicsBuffer;
     }
 }

@@ -2,7 +2,6 @@ package config;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
-import model.Buffer;
 import model.Critter;
 import model.Direction;
 import model.Ghost;
@@ -51,9 +50,8 @@ public final class MazeConfig {
     private int totalPacGomme = 0;
     /**Les coordonnées du sommet haut-gauche et bas-droite du spawn des {@link model.Ghost}.*/
     private final RealCoordinates[] ghostSpawnPos = new RealCoordinates[2];
-    private final PacMan pacman;
     private final List<Ghost> ghostList = new ArrayList<>();
-
+    private final PacMan pacman;
     /** Pac-Man 2 en Coop.*/
     private final PacMan pacman2;
 
@@ -100,11 +98,6 @@ public final class MazeConfig {
             critterSpawnOrTargetPos(GhostType.BLINKY, false, "eatenTarget", configPath),
             critterSpawnOrTargetPos(GhostType.BLINKY, false, "target", configPath)
         );
-
-        if (versus) {
-            blinky.setDirectionBuffer(new Buffer());
-        }
-
         Ghost inky = new Ghost(
             GhostType.INKY, blinky, pacman, pacman2,
             critterSpawnOrTargetPos(GhostType.INKY, false, "critterSpawn", configPath),
@@ -289,7 +282,7 @@ public final class MazeConfig {
             switch (ghost.getGhostType()) {
                 case BLINKY:
                     ghost.setActivated(true);
-                    if (ghost.getDirectionBuffer() != null) {
+                    if (ghost.isPlayer()) {
                         break;
                     }
                     ghost.setDirection(Direction.EAST);
