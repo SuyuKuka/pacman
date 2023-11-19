@@ -44,6 +44,7 @@ public final class Ghost extends Critter {
     private RealCoordinates target;
     /** {@link PacMan} attaché au {@link Ghost}. */
     private PacMan pacman;
+    private PacMan pacman2;
     private final RealCoordinates eatenTarget;
     private final RealCoordinates scatterTarget;
 
@@ -64,16 +65,18 @@ public final class Ghost extends Critter {
      * @param ghostType
      * @param inkyLinkedGhost
      * @param pacman
+     * @param pacman2
      * @param spawnPos
      * @param eatenTarget
      * @param scatterTarget
      */
     public Ghost(final GhostType ghostType, final Ghost inkyLinkedGhost, final PacMan pacman,
-        final RealCoordinates spawnPos, final RealCoordinates eatenTarget,
-            final RealCoordinates scatterTarget) {
+    final PacMan pacman2, final RealCoordinates spawnPos, final RealCoordinates eatenTarget,
+    final RealCoordinates scatterTarget) {
         this.ghostType = ghostType;
         this.inkyLinkedGhost = inkyLinkedGhost;
         this.pacman = pacman;
+        this.pacman2 = pacman2;
         this.setSpawnPos(spawnPos);
         this.setPos(spawnPos);
         this.eatenTarget = eatenTarget;
@@ -85,13 +88,15 @@ public final class Ghost extends Critter {
      * Constructeur pour créer un {@link Ghost}.
      * @param ghostType
      * @param pacman
+     * @param pacman2
      * @param spawnPos
      * @param eatenTarget
      * @param scatterTarget
      */
-    public Ghost(final GhostType ghostType, final PacMan pacman, final RealCoordinates spawnPos,
-        final RealCoordinates eatenTarget, final RealCoordinates scatterTarget) {
-        this(ghostType, null, pacman, spawnPos, eatenTarget, scatterTarget);
+    public Ghost(final GhostType ghostType, final PacMan pacman, final PacMan pacman2,
+    final RealCoordinates spawnPos, final RealCoordinates eatenTarget,
+    final RealCoordinates scatterTarget) {
+        this(ghostType, null, pacman, pacman2, spawnPos, eatenTarget, scatterTarget);
     }
 
     /**
@@ -501,6 +506,10 @@ public final class Ghost extends Critter {
 
     public PacMan getPacman() {
         return pacman;
+    }
+
+    public PacMan getPacman2() {
+        return pacman2;
     }
 
     public void setPacman(final PacMan pacman) {

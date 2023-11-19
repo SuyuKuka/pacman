@@ -9,7 +9,7 @@ import utils.Resources;
 
 public final class CritterGraphicsFactory {
     /** (Nombre d'update par seconde) / 60. */
-    private static final double UPDATE_FREQUENCY = (double) 1 / 4;
+    private static final double UPDATE_FREQUENCY = (double) 1 / 6;
     /** Scale pour la taille des critters. */
     private static final double SIZE = 0.7;
     /** Boolean indiquant s'il faut remettre l'image par défaut de Pac-Man. */
@@ -60,6 +60,7 @@ public final class CritterGraphicsFactory {
         image.setImage(Resources.getImage(getCritterImageName(critter)));
 
         return new GraphicsUpdater() {
+            
             @Override
             public void update() {
                 buffer += UPDATE_FREQUENCY;
@@ -128,7 +129,14 @@ public final class CritterGraphicsFactory {
             if (((Ghost) critter).isEaten()) {
                 return "ghost_white_eaten";
             }
-            if (((Ghost) critter).getPacman().isEnergized()) {
+
+            /** Vérifie si Pac-Man2 existe (Multijouer-Coop)  */
+            boolean isPacMan2Energized = false;
+            if (((Ghost) critter).getPacman2()!=null){
+                isPacMan2Energized = ((Ghost) critter).getPacman2().isEnergized() ;
+            }
+
+            if (((Ghost) critter).getPacman().isEnergized() || isPacMan2Energized) {
                 return "ghost_white_2";
             }
             switch (((Ghost) critter).getGhostType()) {
@@ -142,7 +150,7 @@ public final class CritterGraphicsFactory {
                     return "ghost_pinky";
                 default:
                     return "";
-                }
+            }
         }
     }
 }
