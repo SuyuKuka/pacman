@@ -22,6 +22,8 @@ public final class PacMan extends Critter {
     private DirectionBuffer directionBuffer = new DirectionBuffer();
     private GraphicsBuffer graphicsBuffer = new GraphicsBuffer();
 
+    private String image;
+
     /**
      * Fonction générale de {@link PacMan} qui actualise tous ses paramètres.
      * @param state
@@ -220,5 +222,21 @@ public final class PacMan extends Critter {
 
     public GraphicsBuffer getGraphicsBuffer() {
         return graphicsBuffer;
+    }
+
+    /**
+     * Retourne l'image du Pac-Man.
+     */
+    @Override
+    public String getImage() {
+        return image;
+    }
+
+    /**
+     * Set l'image du Pac-Man.
+     */
+    @Override
+    public void setImage(final String image) {
+        this.image = image;
     }
 }

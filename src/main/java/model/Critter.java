@@ -10,7 +10,7 @@ public sealed class Critter permits Ghost, PacMan {
     private RealCoordinates spawnPos;
     private double speed = NORMAL_SPEED;
     private Direction direction = Direction.NONE;
-    private String image = this instanceof PacMan ? "pacman" : "";
+    private String image = "";
 
    /**
      * Méthode qui retourne la prochaine position en fonction de la vitesse
@@ -78,11 +78,19 @@ public sealed class Critter permits Ghost, PacMan {
         this.speed = speed;
     }
 
-    public final String getImage() {
+    /**
+     * Retourne l'image du critter.
+     * @return {@code String}
+     */
+    public String getImage() {
         return image;
     }
 
-    public final void setImage(final String image) {
+    /**
+     * Set l'image du critter.
+     * @param image {@code String}
+     */
+    public void setImage(final String image) {
         this.image = image;
     }
 }

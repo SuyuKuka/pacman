@@ -10,6 +10,8 @@ public final class GraphicsBuffer {
     private boolean resetPacImg = false;
     /** Boolean indiquant si la bouche du Pac-Man est ouverte. */
     private boolean isPacManMouthOpen = false;
+    private boolean add = true;
+    private int phase = 0;
 
     public double getUpdateBuffer() {
         return updateBuffer;
@@ -49,5 +51,21 @@ public final class GraphicsBuffer {
 
     public void setPacManMouthOpen(final boolean mouthOpen) {
         isPacManMouthOpen = mouthOpen;
+    }
+
+    public int getPhase() {
+        return phase;
+    }
+
+    public void setPhase(final int phase) {
+        this.phase = phase;
+    }
+
+    public boolean isAdd() {
+        return add;
+    }
+
+    public void setAdd(final boolean add) {
+        this.add = add;
     }
 }
