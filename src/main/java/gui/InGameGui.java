@@ -236,9 +236,9 @@ public final class InGameGui {
         HBox option1 = Menu.createHBox(textSpacing, Pos.CENTER, select1, restart);
 
         Text select2 = Menu.createText(">", textSize);
-        Text quitter = Menu.createText("Menu", textSize);
+        Text menu = Menu.createText("Menu", textSize);
         HBox option2 = Menu.createHBox(
-            textSpacing, Pos.CENTER, select2, quitter
+            textSpacing, Pos.CENTER, select2, menu
         );
 
         endGameSelects.add(0, select0);
@@ -247,7 +247,7 @@ public final class InGameGui {
 
         endgameOptions.add(0, continuer);
         endgameOptions.add(1, restart);
-        endgameOptions.add(2, quitter);
+        endgameOptions.add(2, menu);
 
         VBox titleBox = Menu.createVBox(0, Pos.CENTER, gameover, score);
         VBox optionBox = Menu.createVBox(
@@ -291,9 +291,9 @@ public final class InGameGui {
         endgameOptions.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, next);
         endgameOptions.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, restart);
         endgameOptions.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-            Menu quit = new Menu();
+            Menu menu = new Menu();
             Menu.setMusicStarted(false);
-            quit.start(primaryStage);
+            menu.start(primaryStage);
         });
 
         KeySelector keySel = new KeySelector(
@@ -325,9 +325,9 @@ public final class InGameGui {
                         break;
 
                     case 2:
-                        Menu quit = new Menu();
+                        Menu menu = new Menu();
                         Menu.setMusicStarted(false);
-                        quit.start(primaryStage);
+                        menu.start(primaryStage);
                         break;
 
                     default:
@@ -374,9 +374,9 @@ public final class InGameGui {
         HBox option1 = Menu.createHBox(textSpacing, Pos.CENTER, select1, restart);
 
         Text select2 = Menu.createText(">", textSize);
-        Text quitter = Menu.createText("Menu", textSize);
+        Text menu = Menu.createText("Menu", textSize);
         HBox option2 = Menu.createHBox(
-            textSpacing, Pos.CENTER, select2, quitter
+            textSpacing, Pos.CENTER, select2, menu
         );
 
         VBox titleBox = Menu.createVBox(0, Pos.CENTER, pauseText);
@@ -390,7 +390,7 @@ public final class InGameGui {
 
         pauseOptions.add(0, continuer);
         pauseOptions.add(1, restart);
-        pauseOptions.add(2, quitter);
+        pauseOptions.add(2, menu);
 
         return Menu.createVBox(
             mainBoxSpacing, Pos.CENTER, titleBox, optionBox
@@ -424,9 +424,9 @@ public final class InGameGui {
         );
         pauseOptions.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, restart);
         pauseOptions.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-            Menu quit = new Menu();
+            Menu menu = new Menu();
             Menu.setMusicStarted(false);
-            quit.start(primaryStage);
+            menu.start(primaryStage);
         });
 
         KeySelector keySel = new KeySelector(

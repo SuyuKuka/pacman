@@ -202,8 +202,8 @@ public final class Multiplayer extends Menu {
         // TODO : Niveau coop
         options.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseClick1);
         options.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-            Menu quit = new Menu();
-            quit.start(primaryStage);
+            Menu menu = new Menu();
+            menu.start(primaryStage);
         });
 
         EventHandler<KeyEvent> enterPressed = new EventHandler<KeyEvent>() {
