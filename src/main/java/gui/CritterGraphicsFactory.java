@@ -232,7 +232,8 @@ public final class CritterGraphicsFactory {
             return "eaten";
         }
 
-        if (ghost.getPacman().isEnergized() && !ghost.getGraphicsBuffer().isAlternate()) {
+        if (ghost.getGhostState() == GhostState.FRIGHTENED
+        && !ghost.getGraphicsBuffer().isAlternate()) {
             return "frightened";
         }
 
