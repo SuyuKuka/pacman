@@ -74,6 +74,7 @@ public final class MazeConfig {
         MapVerification.removeUnnecessaryWall(grid);
         //CHECKSTYLE:OFF
         pacman = new PacMan();
+        pacman.setImage("pacman_3");
         final int ghostSpawnX = getWidth() / 2 - 4;
         final int ghostSpawnY = getHeight() / 2 - 3;
         ghostSpawnPos[0] = new RealCoordinates(ghostSpawnX, ghostSpawnY);
@@ -90,6 +91,7 @@ public final class MazeConfig {
             pacman2 = new PacMan();
             pacman2.setSpawnPos(critterSpawnOrTargetPos(null, true, "critterSpawn", configPath));
             pacman2.setPos(pacman2.getSpawnPos());
+            pacman2.setImage("pacman_rainbow_3");
         } else {
             pacman2 = null;
         }

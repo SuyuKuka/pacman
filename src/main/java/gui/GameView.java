@@ -61,7 +61,7 @@ public final class GameView {
         graphicsUpdaters = new ArrayList<>();
         for (var critter : maze.getConfig().getCritters()) {
             if (critter instanceof PacMan) {
-                addGraphics(critterFactory.makePacGraphics((PacMan) critter));
+                addGraphics(critterFactory.makePacGraphics((PacMan) critter, maze));
             } else {
                 addGraphics(critterFactory.makeGhostGraphics((Ghost) critter));
             }

@@ -3,13 +3,14 @@ package gui;
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 import model.Ghost;
+import model.MazeState;
 import model.PacMan;
 import model.Ghost.GhostState;
 import utils.Resources;
 
 public final class CritterGraphicsFactory {
     /** (Nombre d'update par seconde) / 60. */
-    private static final double UPDATE_FREQUENCY = (double) 1 / 4;
+    private static final double UPDATE_FREQUENCY = (double) 25 / 60;
     /** (Nombre d'update par seconde) / 60. */
     private static final double ALTERNATE_FREQUENCY = (double) 1 / 15;
     /** Scale pour la taille des critters. */
@@ -33,15 +34,16 @@ public final class CritterGraphicsFactory {
      * {@link GraphicsUpdater#update} met à jour l'image du {@link PacMan} et
      * la position de l'image.
      * @param pacman
+     * @param maze
      * @return {@link GraphicsUpdater}
      */
-    public GraphicsUpdater makePacGraphics(final PacMan pacman) {
+    public GraphicsUpdater makePacGraphics(final PacMan pacman, final MazeState maze) {
         var image = new ImageView();
         image.setFitWidth(scale * SIZE);
         image.setFitHeight(scale * SIZE);
         image.setPreserveRatio(true);
         image.setSmooth(true);
-        image.setImage(Resources.getImage(getPacManImageName(pacman)));
+        image.setImage(Resources.getImage(getPacManImageName(pacman, image, maze)));
 
         return new GraphicsUpdater() {
             @Override
@@ -55,7 +57,7 @@ public final class CritterGraphicsFactory {
                 if (graphicsBuffer >= 1) {
                     pacman.getGraphicsBuffer().setUpdateBuffer(0);
 
-                    String newImage = getPacManImageName(pacman);
+                    String newImage = getPacManImageName(pacman, image, maze);
 
                     if (!pacman.getGraphicsBuffer().isResetPacImg()
                     && pacman.getImage().equals(newImage)) {
@@ -63,7 +65,13 @@ public final class CritterGraphicsFactory {
                     }
 
                     if (pacman.getGraphicsBuffer().isResetPacImg()) {
-                        newImage = "pacman";
+                        if (maze.getConfig().isCoop() && pacman == maze.getConfig().getPacman2()) {
+                            newImage = "pacman_rainbow_3";
+                        } else {
+                            newImage = "pacman_3";
+                        }
+                        image.setRotate(0);
+                        image.setScaleX(1);
                         pacman.getGraphicsBuffer().setResetPacImg(false);
                     }
 
@@ -95,7 +103,7 @@ public final class CritterGraphicsFactory {
         image.setFitHeight(scale * SIZE);
         image.setPreserveRatio(true);
         image.setSmooth(true);
-        image.setImage(Resources.getImage(getGhostImageName(ghost)));
+        image.setImage(Resources.getImage(getGhostImageName(ghost, image)));
 
         return new GraphicsUpdater() {
             @Override
@@ -126,7 +134,7 @@ public final class CritterGraphicsFactory {
                         );
                     }
 
-                    String newImage = getGhostImageName(ghost);
+                    String newImage = getGhostImageName(ghost, image);
 
                     if (ghost.getImage().equals(newImage)) {
                         return;
@@ -148,54 +156,111 @@ public final class CritterGraphicsFactory {
      * Méthode renvoyant le nom de l'image pour le {@link PacMan}.
      * L'image de Pac-Man dépendra de son orientation actuelle.
      * @param pacman Un {@link PacMan}
+     * @param image L'{@code ImageView}
+     * @param maze {@link MazeState}
      * @return {@code String} du nom de l'image
      */
-    private String getPacManImageName(final PacMan pacman) {
+    private String getPacManImageName(
+    final PacMan pacman, final ImageView image, final MazeState maze) {
         pacman.getGraphicsBuffer().setPacManMouthOpen(
             !pacman.getGraphicsBuffer().isPacManMouthOpen()
         );
+        final double angle = 90.0;
         switch (pacman.getDirection()) {
             case NORTH:
-                return pacman.getGraphicsBuffer().isPacManMouthOpen()
-                ? "pacman_north" : "pacman_north_ferm";
+                if (image.getRotate() != -angle) {
+                    image.setScaleX(1);
+                    image.setRotate(-angle);
+                }
+                break;
             case EAST:
-                return pacman.getGraphicsBuffer().isPacManMouthOpen()
-                ? "pacman_east" : "pacman_east_ferm";
+                if (image.getRotate() != 0 || image.getScaleX() != 1) {
+                    image.setRotate(0);
+                    image.setScaleX(1);
+                }
+                break;
             case SOUTH:
-                return pacman.getGraphicsBuffer().isPacManMouthOpen()
-                ? "pacman_south" : "pacman_south_ferm";
+                if (image.getRotate() != angle) {
+                    image.setScaleX(1);
+                    image.setRotate(angle);
+                }
+                break;
             case WEST:
-                return pacman.getGraphicsBuffer().isPacManMouthOpen()
-                ? "pacman_west" : "pacman_west_ferm";
+                if (image.getScaleX() != -1) {
+                    image.setRotate(0);
+                    image.setScaleX(-1);
+                }
+                break;
+
             default:
                 return pacman.getImage();
         }
+
+        GraphicsBuffer buffer = pacman.getGraphicsBuffer();
+
+        final String name;
+        if (maze.getConfig().isCoop() && pacman == maze.getConfig().getPacman2()) {
+            name = "pacman_rainbow_" + buffer.getPhase();
+        } else {
+            name = "pacman_" + buffer.getPhase();
+        }
+
+        final int firstImg = 1;
+        final int lastImg = 4;
+        if (buffer.getPhase() == firstImg) {
+            buffer.setAdd(true);
+        } else if (buffer.getPhase() == lastImg) {
+            buffer.setAdd(false);
+        }
+
+        if (buffer.isAdd()) {
+            buffer.setPhase(buffer.getPhase() + 1);
+        } else {
+            buffer.setPhase(buffer.getPhase() - 1);
+        }
+        return name;
     }
 
     /**
      * Méthode renvoyant le nom de l'image pour le {@link Ghost}.
-     * @param ghost Un {@link Ghost}
-     * pour alterner les images des fantômes.
+     * @param ghost Un {@link Ghost} pour alterner les images des fantômes.
+     * @param image L'{@code ImageView}
      * @return {@code String} du nom de l'image
      */
-    private String getGhostImageName(final Ghost ghost) {
+    private String getGhostImageName(final Ghost ghost, final ImageView image) {
         if (ghost.getGhostState() == GhostState.EATEN) {
-            return "ghost_eaten";
+            return "eaten";
         }
 
         if (ghost.getPacman().isEnergized() && !ghost.getGraphicsBuffer().isAlternate()) {
-            return "ghost_frightened";
+            return "frightened";
+        }
+
+        switch (ghost.getDirection()) {
+            case EAST:
+                if (image.getScaleX() != -1) {
+                    image.setScaleX(-1);
+                }
+                break;
+            case WEST:
+                if (image.getScaleX() != 1) {
+                    image.setScaleX(1);
+                }
+                break;
+
+            default:
+                break;
         }
 
         switch (ghost.getGhostType()) {
             case BLINKY:
-                return "ghost_blinky";
+                return "blinky";
             case CLYDE:
-                return "ghost_clyde";
+                return "clyde";
             case INKY:
-                return "ghost_inky";
+                return "inky";
             case PINKY:
-                return "ghost_pinky";
+                return "pinky";
             default:
                 return ghost.getImage();
         }
