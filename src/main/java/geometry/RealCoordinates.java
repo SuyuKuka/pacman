@@ -3,6 +3,8 @@ package geometry;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import config.MazeConfig;
 import model.Direction;
 
 public record RealCoordinates(double x, double y) {
@@ -71,6 +73,19 @@ public record RealCoordinates(double x, double y) {
     }
 
     /**
+     * Méthode qui renvoie vraie si les 2 {@link RealCoordinates} se trouvent sur les mêmes cellules
+     * {@code this}.
+     * @param nextPos
+     * @return {@code boolean}
+     */
+    public boolean haveSameNeighbours(final RealCoordinates nextPos) {
+        Set<IntCoordinates> curNeighbours = intNeighbours();
+        Set<IntCoordinates> nextNeighbours = nextPos.intNeighbours();
+        return curNeighbours.containsAll(nextNeighbours)
+            && curNeighbours.size() == nextNeighbours.size();
+    }
+
+    /**
      * Téléportation de gauche à droite et de haut en bas.
      * @param width Largeur de la map
      * @param height Hauteur de la map
@@ -78,8 +93,8 @@ public record RealCoordinates(double x, double y) {
      * après la téléportation.
      */
     public RealCoordinates warp(final int width, final int height) {
-        var rx = x;
-        var ry = y;
+        double rx = x;
+        double ry = y;
         while (Math.round(rx) < 0) {
             rx += width;
         }
@@ -120,22 +135,24 @@ public record RealCoordinates(double x, double y) {
      * Sinon, renvoie la coordonnée de destination initiale.
      * @param end Le RealCoordinates destination
      * @param precision {@code boolean}
+     * @param config
      * @return Retourne un {@link RealCoordinates} qui prend soit
      * les coordonnées exacte du centre d'une case traversée,
      * soit la valeur{@code end}.
      */
-    public RealCoordinates centerCell(final RealCoordinates end, final boolean precision) {
+    public RealCoordinates centeredPos(final RealCoordinates end, final boolean precision,
+        final MazeConfig config) {
         //CHECKSTYLE:OFF
         final Direction d = this.getDirectionTo(end);
         final double value = precision ? 0.5 : 1;
         switch (d) {
         case NORTH:
             if (y % value != 0 && end.y() % value > this.y() % value) {
-                return new RealCoordinates(x, y - y % value);
+                return new RealCoordinates(x, y - doubleMod(y, value));
             }
             break;
         case EAST:
-            if (x % value != 0 && end.x() % value < this.x() % value) {
+            if (end.x() % value < this.x() % value) {
                 return new RealCoordinates((x - x % value) + value, y);
             }
             break;
@@ -146,7 +163,7 @@ public record RealCoordinates(double x, double y) {
             break;
         case WEST:
             if (x % value != 0 && end.x() % value > this.x() % value) {
-                return new RealCoordinates(x - x % value, y);
+                return new RealCoordinates(x - doubleMod(x, value), y);
             }
             break;
         default:
@@ -157,25 +174,13 @@ public record RealCoordinates(double x, double y) {
     }
 
     /**
-     * Renvoie une unité de {@link RealCoordinates}
-     * en fonction de la {@link Direction}.
-     * @param d {@link Direction}
-     * @return {@code RealCoordinates}
+     * Fonction qui renvoie le modulo de 2 nombres double proprement pour
+     * les nombres négatifs.
+     * @param x
+     * @param y
      */
-    public static RealCoordinates directionToUnit(final Direction d) {
-        switch (d) {
-            case NORTH:
-                return NORTH_UNIT;
-            case EAST:
-                return EAST_UNIT;
-            case SOUTH:
-                return SOUTH_UNIT;
-            case WEST:
-                return WEST_UNIT;
-            default:
-                break;
-        }
-        return ZERO;
+    public static double doubleMod(final double x, final double y) {
+        return (x - Math.floor(x / y) * y);
     }
 
     /**
@@ -184,6 +189,25 @@ public record RealCoordinates(double x, double y) {
      */
     public IntCoordinates toIntCoordinates() {
         return new IntCoordinates((int) Math.round(x), (int) Math.round(y));
+    }
+
+    /**
+     * Renvoie un {@link RealCoordinates} avec une des coordonnée arrondie en fonction de
+     * la direction prise.
+     * @return {@link RealCoordinates}
+     */
+    public RealCoordinates roundFromDirection(final Direction dir) {
+        switch (dir) {
+            case NORTH:
+            case SOUTH:
+                return new RealCoordinates(x, Math.round(y));
+            case EAST:
+            case WEST:
+                return new RealCoordinates(Math.round(x), y);
+            default:
+                break;
+        }
+        return new RealCoordinates(Math.round(x), Math.round(y));
     }
 
     /**

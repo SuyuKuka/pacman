@@ -1,16 +1,10 @@
 package model;
 
-import java.util.Set;
-
-import config.Cell;
-import config.Cell.Content;
-import config.MazeConfig;
-import geometry.IntCoordinates;
 import geometry.RealCoordinates;
 
 public sealed class Critter permits Ghost, PacMan {
 
-    private static final int NORMAL_SPEED = 5;
+    private static final double NORMAL_SPEED = 5.0;
 
     private RealCoordinates pos;
     private RealCoordinates spawnPos;
@@ -48,60 +42,7 @@ public sealed class Critter permits Ghost, PacMan {
         }).times(getSpeed() * deltaTNS * nanoseconds));
     }
 
-    /**
-     * La méthode téléporte le{@code Critter}lorsqu'il sort par l'un des côtés de la map
-     * et le replace au côté opposé.<br><br>
-     * Elle recalibre aussi la position du{@code Critter}lorsqu'il traverse
-     * le centre d'une case afin de faciliter les opérations lors
-     * des virages.
-     * @param curPos La position actuelle
-     * @param nextPos La position suivante
-     * @param config {@link MazeConfig}
-     * @param precision {@code boolean}
-     */
-    public void setCalibratedPos(final RealCoordinates curPos,
-        final RealCoordinates nextPos, final MazeConfig config, final boolean precision) {
-        setPos(curPos.centerCell(nextPos.warp(config.getWidth(), config.getHeight()), precision));
-    }
-
-    /**
-     * Méthode qui actualise la position de PacMan ou du fantôme joueur.
-     * @param deltaTns
-     * @param config
-     * @param precision
-     */
-    public void updatePosition(
-    final long deltaTns, final MazeConfig config, final boolean precision) {
-        if (wallCheck(deltaTns, config)) {
-            return;
-        }
-        setCalibratedPos(getPos(), nextPos(deltaTns), config, precision);
-    }
-
-    /**
-     * Méthode qui vérifie si PacMan ou le fantôme joueur va rencontrer un mur.
-     * @param deltaTns
-     * @param config
-     * @return {@code boolean}
-     */
-    public boolean wallCheck(final long deltaTns, final MazeConfig config) {
-        RealCoordinates nextPos = nextPos(deltaTns);
-        Set<IntCoordinates> nextNeighbours = nextPos.intNeighbours();
-        if (!getPos().intNeighbours().containsAll(nextNeighbours)) {
-            for (IntCoordinates c : nextNeighbours) {
-                Cell cell = config.getCell(c);
-                if (cell.hasWall()
-                || cell.initialContent() == Content.SPAWN && !(this instanceof Ghost)) {
-                    setPos(getPos().centerCell(nextPos, false));
-                    setDirection(Direction.NONE);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public static int getNormalSpeed() {
+    public static double getNormalSpeed() {
         return NORMAL_SPEED;
     }
 

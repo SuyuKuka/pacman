@@ -101,7 +101,7 @@ public final class GameView {
                 inGameGui.updateLives(instMaze);
 
                 // Changer les boolean pour afficher les infos respectifs
-                tests(deltaT, false, false, false, null);
+                tests(deltaT, false, false, null);
 
                 for (var updater : graphicsUpdaters) {
                     updater.update();
@@ -125,24 +125,21 @@ public final class GameView {
      * @param deltaT Durée depuis le dernier tick
      * @param showFps {@code true}affiche les FPS
      * @param showThreads {@code true}affiche les threads
-     * @param showTarget {@code true}affiche le target
-     * @param ghost Nom du{@code Ghost}
+     * @param ghostTarget Nom du{@code Ghost}
      */
     public void tests(
-        final long deltaT,
-        final boolean showFps, final boolean showThreads,
-        final boolean showTarget, final Ghost ghost
-        ) {
+        final long deltaT, final boolean showFps,
+        final boolean showThreads, final Ghost ghostTarget) {
         if (showFps) {
             FpsAndThreads.updateFps(deltaT);
         }
         if (showThreads) {
             FpsAndThreads.updateThread(deltaT);
         }
-        if (showTarget) {
+        if (ghostTarget != null) {
             var cellFactory = new CellGraphicsFactory(SCALE);
-            if (ghost.getTarget() != null) {
-                RealCoordinates target = ghost.getTarget();
+            if (ghostTarget.getTarget() != null) {
+                RealCoordinates target = ghostTarget.getTarget();
                 addGraphics(cellFactory.showTarget(target));
             }
         }

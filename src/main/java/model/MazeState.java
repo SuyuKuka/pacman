@@ -2,11 +2,12 @@ package model;
 
 import config.MazeConfig;
 import geometry.RealCoordinates;
+import model.Ghost.GhostState;
 import utils.Music;
 
 public final class MazeState {
     /** Liste des modes. */
-    public enum GhostState {
+    public enum GameState {
         /** Chasse Pac-Man. */
         CHASE,
         /** Chacun dans un coin. */
@@ -28,8 +29,8 @@ public final class MazeState {
     private static final int TOTAL_LIVES = 3;
     private int lives;
 
-    /** {@link GhostState} actuel. */
-    private GhostState ghostState = GhostState.SCATTER;
+    /** {@link GameState} actuel. */
+    private GameState gameState = GameState.SCATTER;
     /** Chronomètre depuis le début de la partie. */
     private double totalTime = 0.0;
     private Double currentLiveTime;
@@ -53,20 +54,21 @@ public final class MazeState {
      */
     public void update(final long deltaTns) {
         if (lives > 0 && !win) {
-
-            config.getPacman().update(this, deltaTns);
-            Direction pacman1Dir = config.getPacman().getDirection();
-            Direction pacman2Dir
-            = config.isCoop() ? config.getPacman2().getDirection() : Direction.NONE;
-
-            if (config.isCoop()) {
-                config.getPacman2().update(this, deltaTns);
+            config.getPacman().updatePacMan(this, deltaTns);
+            boolean hasStarted = false;
+            if (currentLiveTime == null) {
+                hasStarted = config.getPacman().getDirection() != Direction.NONE;
+                if  (config.isCoop()) {
+                    hasStarted = hasStarted || config.getPacman2().getDirection() != Direction.NONE;
+                }
             }
-
-            if (currentLiveTime == null
-            && (pacman1Dir != Direction.NONE || pacman2Dir != Direction.NONE)) {
+            if (config.isCoop()) {
+                config.getPacman2().updatePacMan(this, deltaTns);
+            }
+            if (currentLiveTime == null && hasStarted) {
                 currentLiveTime = 0.0;
                 config.activateGhost();
+                Music.playLoopingBgMusic("siren_1");
             } else if (currentLiveTime != null) {
                 updateGhost(deltaTns);
                 currentLiveTime += deltaTns / NANOSECONDS;
@@ -81,7 +83,11 @@ public final class MazeState {
      */
     public void updateGhost(final long deltaTns) {
         for (Ghost ghost : config.getGhostList()) {
-            ghost.update(this, deltaTns);
+            if (ghost.isPlayer()) {
+                ghost.updatePlayerGhost(this, deltaTns);
+                continue;
+            }
+            ghost.updateGhost(this, deltaTns);
         }
         energizedCheck();
     }
@@ -90,12 +96,24 @@ public final class MazeState {
      * Méthode qui actualise l'état actuel du jeu en fonction de si pacman est énergisé.
      */
     public void energizedCheck() {
-        if (config.getPacman().isEnergized() && ghostState != GhostState.FRIGHTENED) {
+        if (config.getPacman().isEnergized() && gameState != GameState.FRIGHTENED) {
             Music.playSound("energizer");
             Music.playLoopingBgMusic("energized");
-            ghostState = GhostState.FRIGHTENED;
-        } else if (!config.getPacman().isEnergized() && ghostState == GhostState.FRIGHTENED) {
-            Music.stopBackgroundMusic();
+            for (Ghost ghost : config.getGhostList()) {
+                if (ghost.getGhostState() == GhostState.NORMAL) {
+                    ghost.setGhostState(GhostState.FRIGHTENED);
+                    ghost.setDirection(ghost.getDirection().getOpposite());
+                }
+            }
+            gameState = GameState.FRIGHTENED;
+        } else if (!config.getPacman().isEnergized() && gameState == GameState.FRIGHTENED) {
+            for (Ghost ghost : config.getGhostList()) {
+                if (ghost.getGhostState() == GhostState.FRIGHTENED)  {
+                    ghost.setGhostState(GhostState.NORMAL);
+                }
+            }
+            gameState = getCurrentState();
+            Music.playLoopingBgMusic("siren_1");
         }
     }
 
@@ -120,11 +138,12 @@ public final class MazeState {
             && Math.abs(ghostPos.y() - pacmanPos.y()) <= collisionRange
             || Math.abs(ghostPos.x() - pacman2Pos.x()) <= collisionRange
             && Math.abs(ghostPos.y() - pacman2Pos.y()) <= collisionRange) {
-                if (!ghost.isEaten() && config.getPacman().isEnergized()) {
+                if (ghost.getGhostState() == GhostState.FRIGHTENED
+                        && config.getPacman().isEnergized()) {
                     addScore(eatScore);
-                    ghost.setEaten(true);
-                    ghost.setTarget(ghost.getEatenTarget());
-                } else if (!ghost.isEaten()) {
+                    ghost.setGhostState(GhostState.EATEN);
+                    ghost.setTarget(config.getGhostSpawnEntrance());
+                } else if (ghost.getGhostState() == GhostState.NORMAL) {
                     playerLost();
                     return;
                 }
@@ -136,20 +155,20 @@ public final class MazeState {
      * Renvoie {@link GhostState#SCATTER} ou {@link GhostState#CHASE} en fonction du temps de jeu.
      * @return {@link GhostState#SCATTER} ou {@link GhostState#CHASE}
      */
-    public GhostState getCurrentState() {
+    public GameState getCurrentState() {
         double time = totalTime + currentLiveTime;
         final int[] stateSwap = config.getGhostStateSwap();
         for (int i = 0; i < stateSwap.length; i++) {
             time -= stateSwap[i];
             if (time < 0) {
                 if (i % 2 == 0) {
-                    return GhostState.SCATTER;
+                    return GameState.SCATTER;
                 } else {
                     break;
                 }
             }
         }
-        return GhostState.CHASE;
+        return GameState.CHASE;
     }
 
     /**
@@ -171,8 +190,8 @@ public final class MazeState {
         lives--;
         totalTime += currentLiveTime;
         currentLiveTime = null;
+        Music.stopBackgroundMusic();
         if (lives == 0) {
-            Music.stopBackgroundMusic();
             Music.playSound("gameOver");
         } else {
             Music.playSound("fail");
@@ -199,7 +218,7 @@ public final class MazeState {
     private void resetCritter(final Critter critter) {
         if (critter instanceof Ghost) {
             ((Ghost) critter).setPos(((Ghost) critter).getSpawnPos());
-            ((Ghost) critter).setEaten(false);
+            ((Ghost) critter).setGhostState(GhostState.NORMAL);
             if (((Ghost) critter).isPlayer()) {
                 ((Ghost) critter).getDirectionBuffer().setBufferDirection(Direction.NONE);
                 critter.setDirection(Direction.NONE);
@@ -231,8 +250,16 @@ public final class MazeState {
         return lives;
     }
 
-    public GhostState getGhostState() {
-        return ghostState;
+    public GameState getGameState() {
+        return gameState;
+    }
+
+    public double getTotalTime() {
+        return totalTime;
+    }
+
+    public Double getCurrentLiveTime() {
+        return currentLiveTime;
     }
 
     public int getScore() {
@@ -243,8 +270,8 @@ public final class MazeState {
         return eatenPacgomme;
     }
 
-    public void setGhostState(final GhostState ghostState) {
-        this.ghostState = ghostState;
+    public void setGameState(final GameState gameState) {
+        this.gameState = gameState;
     }
 
     /**

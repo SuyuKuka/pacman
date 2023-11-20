@@ -80,7 +80,7 @@ public final class InGameGui {
         this.mode = mode;
         addPauseHandlers();
         setPaused(false);
-        Music.playSound("start", () -> Music.playLoopingBgMusic("siren_1"));
+        Music.playSound("start");
     }
 
     /**

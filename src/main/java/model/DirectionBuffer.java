@@ -40,7 +40,7 @@ public final class DirectionBuffer {
         for (IntCoordinates c: neighbours) {
             Cell cell = config.getCell(c);
             if (cell.hasWall()
-            || critter instanceof PacMan && cell.initialContent() == Content.SPAWN) {
+            || critter instanceof PacMan && cell.getContent() == Content.SPAWN) {
                 return false;
             }
         }
