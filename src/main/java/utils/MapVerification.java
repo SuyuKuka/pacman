@@ -18,12 +18,12 @@ public final class MapVerification {
     public static void tunnelFinder(final Cell[][] c) {
         for (int i = 1; i < c.length - 1; i++) {
             boolean isTunnel = c[i - 1][0].hasWall() && c[i + 1][0].hasWall();
-            if (c[i][0].initialContent() == Content.DOT && isTunnel) {
+            if (c[i][0].getContent() == Content.DOT && isTunnel) {
                 c[i][0] = new Cell(false, false, false, false, Content.TUNNEL, false);
                 c[i][c[0].length - 1] = new Cell(false, false, false, false, Content.TUNNEL, false);
                 for (int j = 1; j < c[i].length; j++) {
                     isTunnel = c[i - 1][j].hasWall() && c[i + 1][j].hasWall();
-                    if (c[i][j].initialContent() == Content.DOT && isTunnel) {
+                    if (c[i][j].getContent() == Content.DOT && isTunnel) {
                         c[i][j] = new Cell(false, false, false, false, Content.TUNNEL, false);
                         c[i][c[0].length - j - 1] = new Cell(f, f, f, f, Content.TUNNEL, f);
                     } else {
@@ -40,13 +40,12 @@ public final class MapVerification {
      * @return {@code boolean}
      */
     public static boolean isAValidWall(final Cell c) {
-        if (c.initialContent() == Content.DOT
-            || c.initialContent() == Content.ENERGIZER
-            || c.initialContent() == Content.TUNNEL) {
+        if (c.getContent() == Content.DOT
+            || c.getContent() == Content.ENERGIZER
+            || c.getContent() == Content.TUNNEL) {
             return true;
         }
-        if (!c.northWall() && !c.eastWall() && !c.southWall()
-            && !c.westWall() && c.initialContent() == Content.NOTHING) {
+        if (!c.hasWall() && c.getContent() == Content.NOTHING) {
             return true;
         }
         return false;

@@ -4,6 +4,7 @@ import javafx.scene.Node;
 import javafx.scene.image.ImageView;
 import model.Ghost;
 import model.PacMan;
+import model.Ghost.GhostState;
 import utils.Resources;
 
 public final class CritterGraphicsFactory {
@@ -178,7 +179,7 @@ public final class CritterGraphicsFactory {
      * @return {@code String} du nom de l'image
      */
     private String getGhostImageName(final Ghost ghost) {
-        if (ghost.isEaten()) {
+        if (ghost.getGhostState() == GhostState.EATEN) {
             return "ghost_eaten";
         }
 

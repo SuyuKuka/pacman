@@ -3,7 +3,7 @@ package model;
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
 import gui.GraphicsBuffer;
-import model.MazeState.GhostState;
+import model.MazeState.GameState;
 
 import static model.Direction.NORTH;
 import static model.Direction.EAST;
@@ -20,10 +20,11 @@ import config.MazeConfig;
 import config.Cell.Content;
 
 public final class Ghost extends Critter {
-    /** Vitesse du fantôme loesqu'il est dans un Tunnel. */
+
+    /** Vitesse du fantôme lorsqu'il est dans un tunnel. */
     private static final int TUNNEL_SPEED = 3;
     /** Vitesse du fantôme lorsqu'il à été mangé par {@link PacMan}. */
-    private static final int EATEN_SPEED = 12;
+    private static final int EATEN_SPEED = 20;
 
     /** Types de fantômes disponibles. (BLINKY, PINKY, INKY et CLYDE).
      * Chaque fantôme a un comportement différent lors du jeu.
@@ -39,8 +40,23 @@ public final class Ghost extends Critter {
         CLYDE
     }
 
+    /** Etat que peut prendre un {@link Ghost} au cours d'une partie. (NORMAL, FRIGTHENED, EATEN) */
+    public enum GhostState {
+        /** Etat de base/normal. */
+        NORMAL,
+        /** Etat apeuré, il prend des directions aléatoires et change de couleur.*/
+        FRIGHTENED,
+        /** Etat mangé, il se rend vers le spawn. */
+        EATEN
+    }
+
+    // region Variables
+
     /** Type du fantôme actuel. */
     private final GhostType ghostType;
+    /** Etat du fantôme actuel. */
+    private GhostState ghostState = GhostState.NORMAL;
+
     /** Coordonnées cible du {@link Ghost}. */
     private RealCoordinates target;
     /** {@link PacMan} attaché au {@link Ghost}. */
@@ -54,12 +70,15 @@ public final class Ghost extends Critter {
     */
     private final Ghost inkyLinkedGhost;
 
-    private boolean eaten = false;
     private boolean activated = false;
 
     /** Buffer utilisé pour le mode versus en multijoueur. */
     private DirectionBuffer directionBuffer = null;
     private GraphicsBuffer graphicsBuffer = new GraphicsBuffer();
+
+    // endregion Variables
+
+    // region Constructeurs
 
     /**
      * Constructeur spécial pour créer un {@link GhostType#INKY}.
@@ -101,22 +120,21 @@ public final class Ghost extends Critter {
         this(ghostType, null, pacman, pacman2, spawnPos, eatenTarget, scatterTarget);
     }
 
+    // endregion Constructeurs
+
     /**
      * Fonction générale qui actualise tous les paramètres d'un {@link Ghost}.
      * @param state {@link MazeState}
      * @param deltaTns Tick de temps.
      */
-    public void update(final MazeState state, final long deltaTns) {
-        if (isPlayer()) {
-            updatePlayerGhost(state, deltaTns);
-        } else {
-            boolean hasDirectionReversed = updateState(state);
-            updateTarget(state);
-            if (!hasDirectionReversed) {
-                updateDirection(state);
-            }
-            updatePosition(state, deltaTns);
+    public void updateGhost(final MazeState state, final long deltaTns) {
+        boolean hasDirectionReversed = updateState(state);
+        updateTarget(state);
+        if (!hasDirectionReversed) {
+            updateDirection(state);
         }
+        updatePosition(deltaTns, state.getConfig());
+        updateSpeed(state);
     }
 
     /**
@@ -128,38 +146,28 @@ public final class Ghost extends Critter {
         if (directionBuffer.isBufferDirectionValid(this, deltaTns, state.getConfig())) {
             setDirection(directionBuffer.getBufferDirection());
         }
-        boolean precision = isInSpawn(state.getConfig());
+        updatePosition(deltaTns, state.getConfig());
         updateSpeed(state);
-        updatePosition(deltaTns, state.getConfig(), precision);
         directionBuffer.updateDirectionBufferTime(deltaTns);
-        updateState(state);
     }
+
+    //region State
 
     /**
      * Actualise les paramètres du {@link Ghost} en fonction de l'état du {@link MazeState}.
-     * La fonction renvoie true si elle a déjà changé la direction des {@link Ghost}.
+     * La fonction renvoie true si elle a déjà changé la direction du {@link Ghost}.
      * @param state
      * @return {@code boolean}
      */
     public boolean updateState(final MazeState state) {
-        // Retire l'état mangé et sa vitesse si il est arrivé a destination.
-        if (eaten && getPos().equals(eatenTarget)) {
-            setSpeed(getNormalSpeed());
-            eaten = false;
+        if (getPos().equals(eatenTarget) && activated) {
+            ghostState = GhostState.NORMAL;
         }
-
-        if (isPlayer()) {
-            return false;
-        }
-
-        if (pacman.isEnergized() && state.getGhostState() != GhostState.FRIGHTENED) {
-            setDirection(getDirection().getOpposite());
-            return true;
-        }
+        // Vérifie si les conditions d'activation des fantômes INKY et CLYDE sont remplies.
         if (!activated) {
             switch (ghostType) {
                 case INKY:
-                    final int inkyThreshold = state.getConfig().getTotalPacGomme() / 15;
+                    final int inkyThreshold = state.getConfig().getTotalPacGomme() / 10;
                     if (state.getEatenPacgomme() >= inkyThreshold) {
                         activated = true;
                     }
@@ -174,70 +182,44 @@ public final class Ghost extends Critter {
                     break;
             }
         }
-        GhostState ghostState = state.getGhostState();
-        if (ghostState != GhostState.FRIGHTENED && ghostState != state.getCurrentState()) {
-            state.setGhostState(state.getCurrentState());
+        // Quand l'état actuel du jeu change, tous les fantômes doivent faire un 180°.
+        GameState gameState = state.getGameState();
+        if (gameState != GameState.FRIGHTENED && gameState != state.getCurrentState()) {
+            state.setGameState(state.getCurrentState());
             setDirection(getDirection().getOpposite());
             return true;
         }
         return false;
     }
 
+    //endregion State
+
+    //region Target
+
     /**
      * Actualise la cible du {@link Ghost}.
      * @param state
      */
     public void updateTarget(final MazeState state) {
-        if (eaten) {
-            if (!target.equals(eatenTarget)) {
+        if (ghostState == GhostState.EATEN) {
+            RealCoordinates spawnEntrance = state.getConfig().getGhostSpawnEntrance();
+
+            // Si mangé, alors fixe sa cible à l'entrée du spawn des fantômes.
+            if (!target.equals(spawnEntrance) && !isInSpawn(state.getConfig())) {
+                target = spawnEntrance;
+
+            // Si il se trouve à l'entrée du spawn, alors fixe sa cible en eatenTarget.
+            } else if (!target.equals(eatenTarget) && isInSpawn(state.getConfig())) {
                 target = eatenTarget;
             }
-        } else if (state.getCurrentState() == GhostState.SCATTER && !target.equals(scatterTarget)) {
+
+        // Si l'état actuel du jeu est "SCATTER", alors fixe sa cible en scatterTarget.
+        } else if (state.getCurrentState() == GameState.SCATTER && !target.equals(scatterTarget)) {
             target = scatterTarget;
-        } else if (state.getCurrentState() == GhostState.CHASE) {
+
+        // Si l'état actuel du jeu est "CHASE", alors fixe sa cible en chaseTarget.
+        } else if (state.getCurrentState() == GameState.CHASE) {
             target = calcChaseTarget();
-        }
-    }
-
-    /**
-     * Actualise la direction du {@link Ghost}.
-     * @param state
-     */
-    public void updateDirection(final MazeState state) {
-        if (state.getCurrentState() == GhostState.FRIGHTENED && activated && !eaten) {
-            setDirection(getRandomDirection(state));
-        } else if (isInSpawn(state.getConfig()) && !eaten) {
-            setDirection(exitSpawnDirection(state.getConfig()));
-        } else {
-            setDirection(directionClosestToTarget(state));
-        }
-    }
-
-    /**
-     * Actualise la position du {@link Ghost}.
-     * @param state
-     * @param deltaTns
-     */
-    public void updatePosition(final MazeState state, final long deltaTns) {
-        updateSpeed(state);
-        if (activated) {
-            boolean precision = isInSpawn(state.getConfig());
-            setCalibratedPos(getPos(), nextPos(deltaTns), state.getConfig(), precision);
-        }
-    }
-
-    /**
-     * Actualise la vitesse du {@link Ghost}.
-     * @param state
-     */
-    public void updateSpeed(final MazeState state) {
-        if (isInTunnel(state.getConfig())) {
-            setSpeed(TUNNEL_SPEED);
-        } else if (!isInTunnel(state.getConfig())) {
-            setSpeed(getNormalSpeed());
-        }
-        if (eaten) {
-            setSpeed(EATEN_SPEED);
         }
     }
 
@@ -259,7 +241,6 @@ public final class Ghost extends Critter {
             default:
                 break;
         }
-        // sécurité
         return pacman.getPos();
     }
 
@@ -278,8 +259,7 @@ public final class Ghost extends Critter {
      */
     public RealCoordinates calcPinkyChaseTarget() {
         final int distance = 4;
-        RealCoordinates targetCell = RealCoordinates.
-            directionToUnit(pacman.getLastDirection()).times(distance);
+        RealCoordinates targetCell = pacman.getLastDirection().directionToUnit().times(distance);
         if (pacman.getLastDirection() == NORTH) {
             targetCell = targetCell.plus(new RealCoordinates(-distance, 0));
         }
@@ -296,7 +276,7 @@ public final class Ghost extends Critter {
         final int distance = 2;
         RealCoordinates blinkyPos = inkyLinkedGhost.getPos();
         RealCoordinates pacTPos = pacman.getPos().
-        plus(RealCoordinates.directionToUnit(pacman.getLastDirection()).times(distance));
+        plus(pacman.getLastDirection().directionToUnit().times(distance));
         if (pacman.getLastDirection() == NORTH) {
             pacTPos = pacTPos.plus(new RealCoordinates(-distance, 0));
         }
@@ -318,71 +298,90 @@ public final class Ghost extends Critter {
         return pacman.getPos();
     }
 
+    //endregion Target
+
+    //region Direction
     /**
-     * La méthode renvoie {@code true} si le fantôme est dans un tunnel.
-     * @param config {@link MazeConfig}
-     * @return {@code true} si dans un tunnel
+     * Actualise la direction du {@link Ghost}.
+     * @param state
      */
-    public boolean isInTunnel(final MazeConfig config) {
-        return config.getCell(getPos().toIntCoordinates()).initialContent() == Content.TUNNEL;
+    public void updateDirection(final MazeState state) {
+        MazeConfig config = state.getConfig();
+
+        // Si le fantôme est dans l'état normal et se trouve dans le spawn,
+        // alors le fantôme doit sortir du spawn en prenant un chemin prédéfini.
+        if (ghostState != GhostState.EATEN && isInSpawn(config)) {
+            setDirection(getDirectionToExitSpawn(config));
+            return;
+        }
+
+        // Si le fantôme est activé et apeuré et qu'il n'a pas encore été mangé,
+        // alors le fantôme doit prendre des directions aléatoires.
+        if (activated && ghostState == GhostState.FRIGHTENED) {
+            setDirection(getRandomDirection(config));
+            return;
+        }
+
+        // Si le fantôme est dans l'état mangé et se trouve à l'entrée du spawn ou est dans le spawn
+        // alors le fantôme doit aller vers sa cible en prenant un chemin prédéfini.
+        if (ghostState == GhostState.EATEN && getPos().equals(config.getGhostSpawnEntrance())
+                || isInSpawn(config)) {
+            setDirection(getDirectionToEatenTarget(config));
+            return;
+        }
+
+        // Sinon, prend la direction du chemin le plus court vers sa cible.
+        setDirection(getDirectionClosestToTarget(config));
     }
 
     /**
      * La méthode retourne une liste contenant les directions possibles qu'un
      * fantôme peut emprunter à une intersection.
-     * @param state {@link MazeState}
+     * @param config
      * @return Une {@code List<Direction>} contenant les directions possibles.
      */
-    public List<Direction> possibleDirections(final MazeState state) {
-        if (isInTunnel(state.getConfig())) {
+    public List<Direction> possibleDirections(final MazeConfig config) {
+        if (isInTunnel(config)) {
             return Arrays.asList(getDirection());
         }
         List<Direction> directions = new ArrayList<>(Arrays.asList(NORTH, WEST, SOUTH, EAST));
         directions.remove(getDirection().getOpposite());
-        if (getPos().x() != Math.floor(getPos().x())) {
+        RealCoordinates curPos = getPos();
+        // Cas où le fantôme se trouve sur les cellules dites "murs invisibles".
+        if (config.getCell(curPos.toIntCoordinates()).isRestricted()) {
+            directions.remove(NORTH);
+        }
+        if (curPos.x() != Math.floor(curPos.x())) {
             directions.remove(NORTH);
             directions.remove(SOUTH);
-        }
-        if (getPos().y() != Math.floor(getPos().y())) {
+        } else if (curPos.y() != Math.floor(curPos.y())) {
             directions.remove(EAST);
             directions.remove(WEST);
-        }
-        // Cas où le fantôme se trouve sur les cellules dites "murs invisibles".
-        if (state.getConfig().getCell(getPos().toIntCoordinates()).restricted()) {
-            directions.remove(NORTH);
-        }
-
-        if (directions.size() == 1) {
-            return directions;
-        }
-
-        List<Direction> possibleDirections = new ArrayList<>();
-        for (Direction direction : directions) {
-            RealCoordinates pos = RealCoordinates.directionToUnit(direction).plus(this.getPos());
-            if (pos.x() >= 0 && pos.x() < state.getConfig().getGrid()[0].length) {
-                final int posY = (int) Math.round(pos.y());
-                final int posX = (int) Math.round(pos.x());
-                Cell targetCell = state.getConfig().getGrid()[posY][posX];
-                if (targetCell.initialContent() == Content.SPAWN && activated && !eaten) {
-                    continue;
-                }
-                if (!targetCell.hasWall()) {
-                    possibleDirections.add(direction);
+        } else {
+            // Cas où le fantôme est au milieu d'une case, alors retire toutes les cases du spawn
+            // et celles qui ont un mur.
+            List<Direction> possibleDirections = new ArrayList<>();
+            for (Direction dir : directions) {
+                IntCoordinates adjCoords = curPos.plus(dir.directionToUnit()).toIntCoordinates();
+                Cell cell = config.getCell(adjCoords);
+                if (!cell.hasWall() && cell.getContent() != Cell.Content.SPAWN) {
+                    possibleDirections.add(dir);
                 }
             }
+            directions = possibleDirections;
         }
-        return possibleDirections;
+        return directions;
     }
 
     /**
      * La méthode renvoie la {@code Direction} la plus proche de sa cible en
      * utilisant la méthode {@code possibleDirections()}.
-     * @param state {@link MazeState}
+     * @param config
      * @return La {@code Direction} la plus proche du target.
      */
-    public Direction directionClosestToTarget(final MazeState state) {
+    public Direction getDirectionClosestToTarget(final MazeConfig config) {
         // Directions possibles qu'il peut prendre (la direction derrière lui n'est pas incluse).
-        List<Direction> possibleDir = possibleDirections(state);
+        List<Direction> possibleDir = possibleDirections(config);
 
         // Si le fantôme se trouve dans un cul-de-sac, il se retourne (toujours possible)
         if (possibleDir.isEmpty()) {
@@ -395,11 +394,10 @@ public final class Ghost extends Critter {
 
         // Prend la direction où la distance est la plus petite.
         double[] deltaDist = new double[possibleDir.size()];
-        double min = getDistance(getPos().plus(
-            RealCoordinates.directionToUnit(possibleDir.get(0))), target);
+        double min = getDistance(getPos().plus(possibleDir.get(0).directionToUnit()), target);
         int indice = 0;
         for (int i = 1; i < possibleDir.size(); i++) {
-            final RealCoordinates possiblePos = RealCoordinates.directionToUnit(possibleDir.get(i));
+            final RealCoordinates possiblePos = possibleDir.get(i).directionToUnit();
             deltaDist[i] = getDistance(getPos().plus(possiblePos), target);
             if (deltaDist[i] < min) {
                 min = deltaDist[i];
@@ -414,11 +412,11 @@ public final class Ghost extends Critter {
      * fantôme et des probabilités de chaque direction.
      * Les probabilités sont basées sur le jeu original : 16.3% Nord, 25.2% Est,
      * 28.5% Sud, 30.0% Ouest.
-     * @param state {@link MazeState}
+     * @param config {@link MazeConfig}
      * @return {@link Direction}
      */
-    public Direction getRandomDirection(final MazeState state) {
-        List<Direction> possibles = possibleDirections(state);
+    public Direction getRandomDirection(final MazeConfig config) {
+        List<Direction> possibles = possibleDirections(config);
         if (possibles.size() == 1) {
             return possibles.get(0);
         }
@@ -451,6 +449,115 @@ public final class Ghost extends Critter {
     }
 
     /**
+     * Méthode qui renvoie la {@link Direction} que doit prendre le {@link Ghost}
+     * pour retourner sur sa cellule de "reset/eatenTarget".
+     * @param config
+     * @return {@link Direction}
+     */
+    public Direction getDirectionToEatenTarget(final MazeConfig config) {
+        RealCoordinates pos = getPos();
+        if (pos.y() == eatenTarget.y()) {
+            if (pos.x() < eatenTarget.x()) {
+                return EAST;
+            }
+            return WEST;
+        }
+        return SOUTH;
+    }
+
+    /**
+     * Méthode qui indique la trajectoire à prendre pour un fantôme pour sortir du spawn.
+     * @param config
+     * @return {@code boolean}
+     */
+    public Direction getDirectionToExitSpawn(final MazeConfig config) {
+        RealCoordinates entrance = config.getGhostSpawnEntrance();
+        RealCoordinates pos = getPos();
+        if (pos.x() == entrance.x()) {
+            return NORTH;
+        } else if (pos.x() < entrance.x()) {
+            return EAST;
+        }
+        return WEST;
+    }
+
+    //endregion Direction
+
+    //region Position
+
+    /**
+     * Méthode qui actualise la position d'un fantôme.
+     * @param deltaTns
+     * @param config
+     */
+    public void updatePosition(final long deltaTns, final MazeConfig config) {
+        if (activated) {
+            RealCoordinates pos = getPos();
+            RealCoordinates nextPos = nextPos(deltaTns);
+            final int width = config.getWidth();
+            final int height = config.getHeight();
+            if (pos.equals(nextPos)) {
+                return;
+            } else if (pos.haveSameNeighbours(nextPos)) {
+                nextPos = pos.centeredPos(nextPos, true, config).warp(width, height);
+            } else {
+                nextPos = furthestFreeCell(nextPos, config).warp(width, height);
+            }
+            setPos(nextPos.warp(width, height));
+        }
+    }
+
+    /**
+     * Méthode qui est appelée lorsqu'un fantôme a une très grande vitesse.
+     * On doit alors vérifier qu'entre sa position actuelle et sa prochaine position qu'il n'y
+     * ait pas de murs entre ces 2 positions.
+     * @param end
+     * @param config
+     * @return {@link RealCoordinates}
+     */
+    public RealCoordinates furthestFreeCell(final RealCoordinates end, final MazeConfig config) {
+        RealCoordinates pos = getPos();
+        final Direction dir = pos.getDirectionTo(end);
+        RealCoordinates tmpPos = pos;
+        while (dir == tmpPos.getDirectionTo(end)) {
+            // Cas où on trouve un mur
+            if (config.getCell(tmpPos.plus(dir.directionToUnit()).toIntCoordinates()).hasWall()) {
+                return pos.roundFromDirection(getDirection());
+            } else {
+                tmpPos = tmpPos.plus(dir.directionToUnit());
+            }
+        }
+        // Cas où aucun mur n'a été trouvé, renvoie nextPos
+        return pos.centeredPos(end, true, config);
+    }
+
+    //endregion Position
+
+    /**
+     * Actualise la vitesse du {@link Ghost}.
+     * @param state
+     */
+    public void updateSpeed(final MazeState state) {
+        MazeConfig config = state.getConfig();
+        if (getSpeed() != TUNNEL_SPEED && isInTunnel(config)) {
+            setSpeed(TUNNEL_SPEED);
+        } else if (getSpeed() != EATEN_SPEED && ghostState == GhostState.EATEN) {
+            setSpeed(EATEN_SPEED);
+        } else if (getSpeed() != getNormalSpeed()) {
+            setSpeed(getNormalSpeed());
+        }
+    }
+
+    /**
+     * La méthode renvoie {@code true} si le fantôme est dans un tunnel.
+     * @param config {@link MazeConfig}
+     * @return {@code true} si dans un tunnel
+     */
+    public boolean isInTunnel(final MazeConfig config) {
+        return config.getCell(getPos().toIntCoordinates()).getContent() == Content.TUNNEL;
+    }
+
+    /**
      * Méthode qui renvoie vraie si le {@link RealCoordinates}
      * donné se trouve dans le spawn des {@link Ghost}.
      * @param config {@link MazeConfig}
@@ -459,28 +566,11 @@ public final class Ghost extends Critter {
     public boolean isInSpawn(final MazeConfig config) {
         Set<IntCoordinates> neighbours = getPos().intNeighbours();
         for (var cell : neighbours) {
-            if (config.getCell(cell).initialContent() == Content.SPAWN) {
+            if (config.getCell(cell).getContent() == Content.SPAWN) {
                 return true;
             }
         }
         return false;
-    }
-
-    /**
-     * Méthode qui indique la trajectoire à prendre pour un fantôme pour sortir du spawn.
-     * @param config
-     * @return {@code boolean}
-     */
-    public Direction exitSpawnDirection(final MazeConfig config) {
-        RealCoordinates pos1 = config.getGhostSpawnPos()[0];
-        RealCoordinates pos2 = config.getGhostSpawnPos()[1];
-        double spawnXCenter = (pos1.x() + pos2.x()) / 2;
-        if (getPos().x() < spawnXCenter) {
-            return EAST;
-        } else if (getPos().x() > spawnXCenter) {
-            return WEST;
-        }
-        return NORTH;
     }
 
     /**
@@ -526,14 +616,6 @@ public final class Ghost extends Critter {
         return scatterTarget;
     }
 
-    public boolean isEaten() {
-        return eaten;
-    }
-
-    public void setEaten(final boolean eaten) {
-        this.eaten = eaten;
-    }
-
     public boolean isActivated() {
         return activated;
     }
@@ -556,5 +638,13 @@ public final class Ghost extends Critter {
 
     public GraphicsBuffer getGraphicsBuffer() {
         return graphicsBuffer;
+    }
+
+    public void setGhostState(final GhostState ghostState) {
+        this.ghostState = ghostState;
+    }
+
+    public GhostState getGhostState() {
+        return ghostState;
     }
 }

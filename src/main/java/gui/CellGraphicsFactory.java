@@ -48,17 +48,15 @@ public class CellGraphicsFactory {
         var dot = new Circle();
         group.getChildren().add(dot);
         dot.setRadius(
-            switch (cell.initialContent()) {
+            switch (cell.getContent()) {
             case DOT -> scale / dotScale;
             case ENERGIZER -> scale / energizerScale;
-            case NOTHING -> 0;
-            case SPAWN -> 0;
-            case TUNNEL -> 0;
+            default -> 0;
         });
         dot.setCenterX(scale / 2);
         dot.setCenterY(scale / 2);
         dot.setFill(Color.YELLOW);
-        if (cell.northWall()) {
+        if (cell.getNorthWall()) {
             var nWall = new Rectangle();
             nWall.setHeight(scale / wallScale);
             nWall.setWidth(scale);
@@ -67,7 +65,7 @@ public class CellGraphicsFactory {
             nWall.setFill(Color.BLUE);
             group.getChildren().add(nWall);
         }
-        if (cell.eastWall()) {
+        if (cell.getEastWall()) {
             var nWall = new Rectangle();
             nWall.setHeight(scale);
             nWall.setWidth(scale / wallScale);
@@ -76,7 +74,7 @@ public class CellGraphicsFactory {
             nWall.setFill(Color.BLUE);
             group.getChildren().add(nWall);
         }
-        if (cell.southWall()) {
+        if (cell.getSouthWall()) {
             var nWall = new Rectangle();
             nWall.setHeight(scale / wallScale);
             nWall.setWidth(scale);
@@ -85,7 +83,7 @@ public class CellGraphicsFactory {
             nWall.setFill(Color.BLUE);
             group.getChildren().add(nWall);
         }
-        if (cell.westWall()) {
+        if (cell.getWestWall()) {
             var nWall = new Rectangle();
             nWall.setHeight(scale);
             nWall.setWidth(scale / wallScale);

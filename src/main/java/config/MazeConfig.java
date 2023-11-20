@@ -50,6 +50,7 @@ public final class MazeConfig {
     private int totalPacGomme = 0;
     /**Les coordonnées du sommet haut-gauche et bas-droite du spawn des {@link model.Ghost}.*/
     private final RealCoordinates[] ghostSpawnPos = new RealCoordinates[2];
+    private final RealCoordinates ghostSpawnEntrance;
     private final List<Ghost> ghostList = new ArrayList<>();
     private final PacMan pacman;
     /** Pac-Man 2 en Coop.*/
@@ -65,7 +66,7 @@ public final class MazeConfig {
         grid = getJSONMaze(configPath);
         for (int i = 0; i < getHeight(); i++) {
             for (int j = 0; j < getWidth(); j++) {
-                totalPacGomme += grid[i][j].initialContent() == Content.DOT ? 1 : 0;
+                totalPacGomme += grid[i][j].getContent() == Content.DOT ? 1 : 0;
             }
         }
         ghostStateSwap = getStateSwap(configPath);
@@ -76,7 +77,10 @@ public final class MazeConfig {
         final int ghostSpawnX = getWidth() / 2 - 4;
         final int ghostSpawnY = getHeight() / 2 - 3;
         ghostSpawnPos[0] = new RealCoordinates(ghostSpawnX, ghostSpawnY);
-        ghostSpawnPos[1] = new RealCoordinates((double) ghostSpawnX + 7, (double) ghostSpawnY + 4);
+        ghostSpawnPos[1] = new RealCoordinates(ghostSpawnX + 7, ghostSpawnY + 4);
+        final double entranceY = -1;
+        final double entranceX = 3.5;
+        ghostSpawnEntrance = ghostSpawnPos[0].plus(new RealCoordinates(entranceX, entranceY));
 
         pacman.setSpawnPos(critterSpawnOrTargetPos(null, false, "critterSpawn", configPath));
         pacman.setPos(pacman.getSpawnPos());
@@ -392,6 +396,10 @@ public final class MazeConfig {
 
     public RealCoordinates[] getGhostSpawnPos() {
         return ghostSpawnPos;
+    }
+
+    public RealCoordinates getGhostSpawnEntrance() {
+        return ghostSpawnEntrance;
     }
 
     public PacMan getPacman() {

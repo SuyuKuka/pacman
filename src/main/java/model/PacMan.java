@@ -2,15 +2,16 @@ package model;
 
 
 import config.Cell;
-import config.Cell.Content;
+import config.MazeConfig;
 
 import geometry.IntCoordinates;
 import gui.GraphicsBuffer;
+import geometry.RealCoordinates;
 import utils.Music;
 
 public final class PacMan extends Critter {
 
-    private static final int ENERGIZED_SPEED = 9;
+    private static final double ENERGIZED_SPEED_MULTIPLER = 1.7;
     public static final double MAX_ENERGIZED_TIME = 6;
 
     /** Dernière {@link Direction} de {@link PacMan} qui n'est pas {@link Direction#NONE}. */
@@ -26,14 +27,14 @@ public final class PacMan extends Critter {
      * @param state
      * @param deltaTns
      */
-    public void update(final MazeState state, final long deltaTns) {
+    public void updatePacMan(final MazeState state, final long deltaTns) {
         updateLastDirection();
-        eat(state);
+        eat(getPos(), true, state);
         if (directionBuffer.isBufferDirectionValid(this, deltaTns, state.getConfig())) {
             setDirection(directionBuffer.getBufferDirection());
         }
+        updatePosition(deltaTns, state);
         updateSpeed();
-        updatePosition(deltaTns, state.getConfig(), false);
         directionBuffer.updateDirectionBufferTime(deltaTns);
         if (this != state.getConfig().getPacman2()) {
             updateEnergizedTime(state, deltaTns);
@@ -52,61 +53,96 @@ public final class PacMan extends Critter {
     /**
      * Met à jour l'état de PacMan s'il mange un energizer. <br><br>
      * Augmente le score du jeu s'il mange un dot.
+     * @param pacPos
+     * @param sound
      * @param state
+     * @return Renvoei true si PacMan a mangé quelque chose.
      */
-    public void eat(final MazeState state) {
-        if (!eatDot(state)) {
-            eatEnergizer(state);
-        }
-    }
-
-    /**
-     * Renvoie true si PacMan mange un dot et augmente le score.
-     * @param state
-     * @return {@code boolean}
-     */
-    public boolean eatDot(final MazeState state) {
-        IntCoordinates pacPos = getPos().toIntCoordinates();
-        if (state.getConfig().getCell(pacPos).initialContent() == Cell.Content.DOT) {
-            Music.playSound("eat");
-            boolean restricted = state.getConfig().getGrid()[pacPos.y()][pacPos.x()].restricted();
-            state.getConfig().getGrid()[pacPos.y()][pacPos.x()] =
-                new Cell(false, false, false, false, Content.NOTHING, restricted);
-            final int dotScore = 10;
-            state.addScore(dotScore);
+    public boolean eat(final RealCoordinates pacPos, final boolean sound, final MazeState state) {
+        IntCoordinates pos = pacPos.toIntCoordinates();
+        Cell c = state.getConfig().getCell(pos);
+        if (c.getContent() == Cell.Content.DOT || c.getContent() == Cell.Content.ENERGIZER) {
+            if (c.getContent() == Cell.Content.DOT) {
+                final int dotScore = 10;
+                state.addScore(dotScore);
+            } else {
+                Music.playLoopingBgMusic("energized");
+                energizedTimer = 0;
+                if (state.getConfig().isCoop()) {
+                    state.getConfig().getPacman().setEnergized(true);
+                    state.getConfig().getPacman2().setEnergized(true);
+                } else {
+                    energized = true;
+                }
+            }
+            c.setContent(Cell.Content.NOTHING);
+            if (sound) {
+                Music.playSound("eat");
+            }
             return true;
         }
         return false;
     }
 
+    //region Position
     /**
-     * Rend PacMan énergisé s'il a mangé un énergiseur.
+     * Méthode qui actualise la position de PacMan.
+     * @param deltaTns
      * @param state
      */
-    public void eatEnergizer(final MazeState state) {
-        IntCoordinates pacPos = getPos().toIntCoordinates();
-        if (state.getConfig().getCell(pacPos).initialContent() == Cell.Content.ENERGIZER) {
-            Music.playSound("eat");
-            Music.playLoopingBgMusic("energized");
-            boolean restricted = state.getConfig().getGrid()[pacPos.y()][pacPos.x()].restricted();
-            state.getConfig().getGrid()[pacPos.y()][pacPos.x()] =
-                new Cell(false, false, false, false, Content.NOTHING, restricted);
-            setEnergizedTimer(energized ? energizedTimer : 0);
-            if (state.getConfig().isCoop()) {
-                state.getConfig().getPacman().setEnergized(true);
-                state.getConfig().getPacman2().setEnergized(true);
+    public void updatePosition(final long deltaTns, final MazeState state) {
+        RealCoordinates pos = getPos();
+        RealCoordinates nextPos = nextPos(deltaTns);
+        final int width = state.getConfig().getWidth();
+        final int height = state.getConfig().getHeight();
+        if (pos.equals(nextPos)) {
+            return;
+        } else if (pos.haveSameNeighbours(nextPos)) {
+            nextPos = pos.centeredPos(nextPos, false, state.getConfig()).warp(width, height);
+        } else {
+            nextPos = furthestFreeCell(nextPos, state).warp(width, height);
+        }
+        setPos(nextPos.warp(width, height));
+    }
+
+    /**
+     * Méthode qui est appelée lorsque PacMan a une très grande vitesse.
+     * On doit alors vérifier qu'entre sa position actuelle et sa prochaine position qu'il n'y
+     * ait pas de murs entre ces 2 positions.
+     * @param end
+     * @param state
+     * @return {@link RealCoordinates} de la cellule la plus lointaine qui ne contient pas de mur.
+     */
+    public RealCoordinates furthestFreeCell(final RealCoordinates end, final MazeState state) {
+        final RealCoordinates pos = getPos();
+        final Direction dir = pos.getDirectionTo(end);
+        final MazeConfig config = state.getConfig();
+        RealCoordinates tmpPos = pos;
+        boolean hasEaten = false;
+        while (dir == tmpPos.getDirectionTo(end)) {
+            // Cas où on trouve un mur
+            if (config.getCell(tmpPos.plus(dir.directionToUnit()).toIntCoordinates()).hasWall()) {
+                setDirection(Direction.NONE);
+                return tmpPos.roundFromDirection(Direction.NONE);
             } else {
-                energized = true;
+                if (eat(tmpPos, !hasEaten, state) || !hasEaten) {
+                    hasEaten = true;
+                }
+                tmpPos = tmpPos.plus(dir.directionToUnit());
             }
         }
+        // Cas où aucun mur n'a été trouvé, renvoie nextPos
+        return pos.centeredPos(end, false, config);
     }
+
+    //endregion Position
 
     /**
      * Méthode qui met à jour la vitesse de PacMan en fonction de s'il est énergisé ou non.
      */
     public void updateSpeed() {
-        if (energized) {
-            setSpeed(ENERGIZED_SPEED);
+        if (energized && getSpeed() != getNormalSpeed() * ENERGIZED_SPEED_MULTIPLER) {
+            setSpeed(ENERGIZED_SPEED_MULTIPLER * getNormalSpeed());
         } else {
             setSpeed(getNormalSpeed());
         }
@@ -146,8 +182,8 @@ public final class PacMan extends Critter {
         setPos(getSpawnPos());
     }
 
-    public static int getEnergizedSpeed() {
-        return ENERGIZED_SPEED;
+    public static double getEnergizedSpeedMultiplier() {
+        return ENERGIZED_SPEED_MULTIPLER;
     }
 
     public Direction getLastDirection() {
