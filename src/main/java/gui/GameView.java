@@ -1,11 +1,12 @@
 package gui;
 
 import geometry.IntCoordinates;
+import geometry.RealCoordinates;
 import javafx.animation.AnimationTimer;
 import javafx.scene.layout.Pane;
-
 import model.Ghost;
 import model.MazeState;
+import model.PacMan;
 import utils.FpsAndThreads;
 
 import java.util.ArrayList;
@@ -22,8 +23,9 @@ public final class GameView {
     private List<GraphicsUpdater> graphicsUpdaters;
     /** Largeur additionnelle pour l'affichage des infos à droite. */
     private static final double RIGHT_WIDTH = 300;
-    /** Dernier tick avant pause. */
-    private long lastTick;
+    /** Nombre de pixels représentant une unité de la map. */
+    private static final double SCALE = 18;
+    private InGameGui inGameGui;
 
     private GameView() {
     }
@@ -39,25 +41,32 @@ public final class GameView {
     /**
      * @param maze  le "modèle" de cette vue
      * (le labyrinthe et tout ce qui s'y trouve)
+     * @param newInGameGui {@code InGameGui}courant
      * @param root  le nœud racine dans la scène JavaFX dans lequel
      * le jeu sera affiché
-     * @param scale le nombre de pixels représentant une unité du labyrinthe
      */
     public void setGameView(
-        final MazeState maze, final Pane root, final double scale
-        ) {
-        INSTANCE.instMaze = maze;
-        INSTANCE.gameRoot = root;
+        final MazeState maze, final InGameGui newInGameGui, final Pane root) {
+        instMaze = maze;
+        inGameGui = newInGameGui;
+        gameRoot = root;
+
         // pixels per cell
-        root.setMinWidth(maze.getWidth() * scale + RIGHT_WIDTH);
-        root.setMinHeight(maze.getHeight() * scale);
+        root.setMinWidth(maze.getWidth() * SCALE + RIGHT_WIDTH);
+        root.setMinHeight(maze.getHeight() * SCALE);
         root.setStyle("-fx-background-color: #000000");
-        var critterFactory = new CritterGraphicsFactory(scale);
-        var cellFactory = new CellGraphicsFactory(scale);
+
+        var critterFactory = new CritterGraphicsFactory(SCALE);
+        var cellFactory = new CellGraphicsFactory(SCALE);
         graphicsUpdaters = new ArrayList<>();
-        for (var critter : maze.getCritters()) {
-            addGraphics(critterFactory.makeGraphics(critter));
+        for (var critter : maze.getConfig().getCritters()) {
+            if (critter instanceof PacMan) {
+                addGraphics(critterFactory.makePacGraphics((PacMan) critter, maze));
+            } else {
+                addGraphics(critterFactory.makeGhostGraphics((Ghost) critter));
+            }
         }
+
         for (int x = 0; x < maze.getWidth(); x++) {
             for (int y = 0; y < maze.getHeight(); y++) {
                 addGraphics(
@@ -65,8 +74,9 @@ public final class GameView {
                 );
             }
         }
-        InGameGui.INSTANCE.displayLives(maze);
-        InGameGui.INSTANCE.displayScore(maze);
+
+        inGameGui.displayLives(maze);
+        inGameGui.displayScore(maze);
     }
 
     /**
@@ -81,17 +91,17 @@ public final class GameView {
             @Override
             public void handle(final long now) {
                 // Ignore le premier tick
-                if (last == 0 || InGameGui.INSTANCE.isPaused()) {
+                if (last == 0 || InGameGui.isPaused()) {
                     last = now;
                     return;
                 }
                 var deltaT = now - last;
                 instMaze.update(deltaT);
-                InGameGui.INSTANCE.updateScore(instMaze);
-                InGameGui.INSTANCE.updateLives(instMaze);
+                inGameGui.updateScore(instMaze);
+                inGameGui.updateLives(instMaze);
 
                 // Changer les boolean pour afficher les infos respectifs
-                tests(deltaT, false, false, false, null);
+                tests(deltaT, false, false, null);
 
                 for (var updater : graphicsUpdaters) {
                     updater.update();
@@ -115,28 +125,22 @@ public final class GameView {
      * @param deltaT Durée depuis le dernier tick
      * @param showFps {@code true}affiche les FPS
      * @param showThreads {@code true}affiche les threads
-     * @param showTarget {@code true}affiche le target
-     * @param ghost Nom du{@code Ghost}
+     * @param ghostTarget Nom du{@code Ghost}
      */
     public void tests(
-        final long deltaT,
-        final boolean showFps, final boolean showThreads,
-        final boolean showTarget, final Ghost ghost
-        ) {
+        final long deltaT, final boolean showFps,
+        final boolean showThreads, final Ghost ghostTarget) {
         if (showFps) {
             FpsAndThreads.updateFps(deltaT);
         }
         if (showThreads) {
             FpsAndThreads.updateThread(deltaT);
         }
-        if (showTarget) {
-            final double scale = 30;
-            var cellFactory = new CellGraphicsFactory(scale);
-            if (ghost.getTarget() != null) {
-                int xTarg = (int) (ghost.getTarget().x());
-                int yTarg = (int) (ghost.getTarget().y());
-                IntCoordinates targetPos = new IntCoordinates(xTarg, yTarg);
-                addGraphics(cellFactory.showTarget(targetPos));
+        if (ghostTarget != null) {
+            var cellFactory = new CellGraphicsFactory(SCALE);
+            if (ghostTarget.getTarget() != null) {
+                RealCoordinates target = ghostTarget.getTarget();
+                addGraphics(cellFactory.showTarget(target));
             }
         }
     }

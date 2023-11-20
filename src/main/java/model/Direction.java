@@ -1,6 +1,7 @@
 package model;
 
 import config.Cell;
+import geometry.RealCoordinates;
 
 public enum Direction {
     /** Directions possibles. */
@@ -15,13 +16,13 @@ public enum Direction {
     public boolean wall(final Cell c) {
         switch (this) {
             case NORTH:
-                return c.northWall();
+                return c.getNorthWall();
             case EAST:
-                return c.eastWall();
+                return c.getEastWall();
             case SOUTH:
-                return c.southWall();
+                return c.getSouthWall();
             case WEST:
-                return c.westWall();
+                return c.getWestWall();
             default:
                 break;
         }
@@ -29,7 +30,7 @@ public enum Direction {
     }
 
     /**
-     * Renvoie la direction opposé.
+     * Renvoie la {@link Direction} opposée à celle appelée.
      * @return {@link Direction}
      */
     public Direction getOpposite() {
@@ -46,5 +47,26 @@ public enum Direction {
                 break;
         }
         return NONE;
+    }
+
+    /**
+     * Renvoie une unité de {@link RealCoordinates}
+     * en fonction de la {@link Direction}.
+     * @return {@code RealCoordinates}
+     */
+    public RealCoordinates directionToUnit() {
+        switch (this) {
+            case NORTH:
+                return RealCoordinates.NORTH_UNIT;
+            case EAST:
+                return RealCoordinates.EAST_UNIT;
+            case SOUTH:
+                return RealCoordinates.SOUTH_UNIT;
+            case WEST:
+                return RealCoordinates.WEST_UNIT;
+            default:
+                break;
+        }
+        return RealCoordinates.ZERO;
     }
 }
