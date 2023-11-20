@@ -36,7 +36,7 @@ public final class PacMan extends Critter {
         updatePosition(deltaTns, state.getConfig(), false);
         directionBuffer.updateDirectionBufferTime(deltaTns);
         if (this != state.getConfig().getPacman2()) {
-            updateEnergizedTime(deltaTns);
+            updateEnergizedTime(state, deltaTns);
         }
     }
 
@@ -116,15 +116,19 @@ public final class PacMan extends Critter {
      * Incrémente {@link #energizedTime} à chaque tick.
      * {@link #energizedTimer} est réinitialisé s'il dépasse
      * {@link #MAX_ENERGIZED_TIME}.
+     * @param state {@link MazeState}
      * @param deltaTns Durée d'un tick
      */
-    public void updateEnergizedTime(final long deltaTns) {
+    public void updateEnergizedTime(final MazeState state, final long deltaTns) {
         if (isEnergized()) {
             final double nanoseconds = Math.pow(10, 9);
             setEnergizedTimer(energizedTimer + deltaTns / nanoseconds);
             if (energizedTimer >= MAX_ENERGIZED_TIME) {
                 setEnergizedTimer(0);
                 energized = false;
+                if (state.getConfig().isCoop()) {
+                    state.getConfig().getPacman2().setEnergized(false);
+                }
             }
         }
     }

@@ -109,6 +109,11 @@ public final class CritterGraphicsFactory {
 
                 ghost.getGraphicsBuffer().setUpdateBuffer(graphicsBuffer);
                 ghost.getGraphicsBuffer().setAlternateBuffer(alternateBuffer);
+
+                if (!ghost.getPacman().isEnergized() && ghost.getGraphicsBuffer().isAlternate()) {
+                    ghost.getGraphicsBuffer().setAlternate(false);
+                }
+
                 if (ghost.getGraphicsBuffer().getUpdateBuffer() >= 1) {
                     ghost.getGraphicsBuffer().setUpdateBuffer(0);
 
