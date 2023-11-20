@@ -236,7 +236,7 @@ public final class InGameGui {
         HBox option1 = Menu.createHBox(textSpacing, Pos.CENTER, select1, restart);
 
         Text select2 = Menu.createText(">", textSize);
-        Text quitter = Menu.createText("Quit", textSize);
+        Text quitter = Menu.createText("Menu", textSize);
         HBox option2 = Menu.createHBox(
             textSpacing, Pos.CENTER, select2, quitter
         );
@@ -374,7 +374,7 @@ public final class InGameGui {
         HBox option1 = Menu.createHBox(textSpacing, Pos.CENTER, select1, restart);
 
         Text select2 = Menu.createText(">", textSize);
-        Text quitter = Menu.createText("Quit", textSize);
+        Text quitter = Menu.createText("Menu", textSize);
         HBox option2 = Menu.createHBox(
             textSpacing, Pos.CENTER, select2, quitter
         );
