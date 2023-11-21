@@ -14,13 +14,18 @@ import java.net.URL;
 public final class Music {
     /** {@code Clip}de musique/son. */
     private static Clip bgMusicClip = null;
+    private static boolean isLooping = false;
     private static float currentVolume = 1.0f;
+    private static long pausePosition;
 
     private Music() {
     }
 
     public static float getVolume() {
         return currentVolume;
+    }
+    public static boolean isPlaying() {
+        return bgMusicClip != null && bgMusicClip.isRunning();
     }
 
     /**
@@ -33,7 +38,7 @@ public final class Music {
         }
         currentVolume = volume;
 
-        if (bgMusicClip != null && bgMusicClip.isRunning()) {
+        if (isPlaying()) {
             FloatControl volumeControl =
                 (FloatControl) bgMusicClip.getControl(FloatControl.Type.MASTER_GAIN);
             final float dB = (float) (Math.log(currentVolume) / Math.log(10.0) * 20.0);
@@ -108,6 +113,7 @@ public final class Music {
      */
     public static void playLoopingBgMusic(final String soundFileName) {
         stopBackgroundMusic();
+        isLooping = true;
         try {
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
                 new URL(Resources.getFile(soundFileName))
@@ -125,9 +131,34 @@ public final class Music {
 
     /** Arrête la musique de fond actuelle. */
     public static void stopBackgroundMusic() {
-        if (bgMusicClip != null && bgMusicClip.isRunning()) {
+        if (isPlaying()) {
             bgMusicClip.stop();
             bgMusicClip.close();
+            isLooping = false;
+        }
+    }
+
+    /**
+     * Met en pause la lecture de la musique.
+     */
+    public static void pause() {
+        if (isPlaying()) {
+            pausePosition = bgMusicClip.getMicrosecondPosition();
+            bgMusicClip.stop();
+        }
+    }
+
+    /**
+     * Reprend la lecture de la musique.
+     */
+    public static void resume() {
+        if (bgMusicClip != null && !isPlaying()) {
+            bgMusicClip.setMicrosecondPosition(pausePosition);
+            if (isLooping) {
+                bgMusicClip.loop(Clip.LOOP_CONTINUOUSLY);
+            } else {
+                bgMusicClip.start();
+            }
         }
     }
 }

@@ -346,10 +346,12 @@ public final class InGameGui {
         if (pause) {
             setPaused(true);
             showPauseMenu();
+            Music.pause();
         } else {
             setPaused(false);
             pausePane.getChildren().clear();
             ((Pane) gameScene.getRoot()).getChildren().remove(pausePane);
+            Music.resume();
         }
     }
 
@@ -403,6 +405,8 @@ public final class InGameGui {
         }
         pausePane.getChildren().addAll(dimBackground, pauseMenu);
         ((Pane) gameScene.getRoot()).getChildren().add(pausePane);
+
+        Music.pause();
     }
 
     private void addPauseHandlers() {
@@ -419,9 +423,10 @@ public final class InGameGui {
             }
         };
 
-        pauseOptions.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent ->
-            pause(false)
-        );
+        pauseOptions.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
+            pause(false);
+            Music.resume();
+        });
         pauseOptions.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, restart);
         pauseOptions.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
             Menu menu = new Menu();
@@ -447,6 +452,7 @@ public final class InGameGui {
                 switch (Menu.getSelected()) {
                     case 0:
                         pause(false);
+                        Music.resume();
                         break;
 
                     case 1:
