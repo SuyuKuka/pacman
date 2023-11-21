@@ -119,6 +119,14 @@ public final class GameView {
         }
     }
 
+    /** Remets à{@code null} les variables. */
+    public void resetInstance() {
+        instMaze = null;
+        gameRoot = null;
+        animationTimer = null;
+        graphicsUpdaters = null;
+    }
+
     /**
      * Méthode permettant d'obtenir les FPS, les threads et d'afficher
      * les targets d'un fantôme spécifique.

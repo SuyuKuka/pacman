@@ -4,6 +4,7 @@ import gui.InGameGui;
 import javafx.scene.input.KeyEvent;
 import model.Direction;
 import model.Ghost;
+import utils.Music;
 
 public final class GhostController extends Controller implements KeyHandlers {
     private Ghost playerGhost;
@@ -19,7 +20,7 @@ public final class GhostController extends Controller implements KeyHandlers {
 
     @Override
         public void keyPressedHandler(final KeyEvent event) {
-            if (InGameGui.isPaused()) {
+            if (InGameGui.isPaused() || Music.isStartBgmPlaying()) {
                 return;
             }
 

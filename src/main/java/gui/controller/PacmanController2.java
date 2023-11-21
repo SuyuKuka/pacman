@@ -2,6 +2,7 @@ package gui.controller;
 
 import model.Direction;
 import model.PacMan;
+import utils.Music;
 import gui.InGameGui;
 import javafx.scene.input.KeyEvent;
 
@@ -19,7 +20,7 @@ public final class PacmanController2 extends Controller implements KeyHandlers {
 
         @Override
         public void keyPressedHandler(final KeyEvent event) {
-            if (InGameGui.isPaused()) {
+            if (InGameGui.isPaused() || Music.isStartBgmPlaying()) {
                 return;
             }
 

@@ -5,8 +5,7 @@ import java.util.ArrayList;
 import gui.menu.Menu;
 import gui.menu.Multiplayer;
 import gui.menu.Solo;
-import gui.menu.Menu.KeySelector;
-import gui.menu.Menu.MouseSelector;
+import gui.menu.Selector;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -80,6 +79,7 @@ public final class InGameGui {
         this.mode = mode;
         addPauseHandlers();
         setPaused(false);
+        Music.setBgMusicClip(null);
         Music.playSound("start");
     }
 
@@ -132,7 +132,7 @@ public final class InGameGui {
     public void updateScore(final MazeState state) {
         // Affiche le score
         scoreText.setText("Score: " + state.getScore());
-        // Total : 150 pac-gommes en classique
+        // Total : 244 pac-gommes en classique
         if (!end && state.getEatenPacgomme() >= state.getConfig().getTotalPacGomme()) {
             end = true;
             state.playerWin();
@@ -220,42 +220,31 @@ public final class InGameGui {
         String title = won ? "You Win !" : "GameOver";
         if (won) {
             Music.stopBackgroundMusic();
-            Music.playSound("gameWin");
+            Music.playSound("start");
         }
         Text gameover = Menu.createText(title, titleSize);
         Text score = Menu.createText("Score : " + state.getScore(), scoreSize);
 
         Text select0 = Menu.createText(">", textSize);
-        Text continuer = Menu.createText("Continue", textSize);
-        HBox option0 = Menu.createHBox(
-            textSpacing, Pos.CENTER, select0, continuer
-        );
+        Text restart = Menu.createText("Restart", textSize);
+        HBox option0 = Menu.createHBox(textSpacing, Pos.CENTER, select0, restart);
 
         Text select1 = Menu.createText(">", textSize);
-        Text restart = Menu.createText("Restart", textSize);
-        HBox option1 = Menu.createHBox(textSpacing, Pos.CENTER, select1, restart);
-
-        Text select2 = Menu.createText(">", textSize);
         Text menu = Menu.createText("Menu", textSize);
-        HBox option2 = Menu.createHBox(
-            textSpacing, Pos.CENTER, select2, menu
+        HBox option1 = Menu.createHBox(
+            textSpacing, Pos.CENTER, select1, menu
         );
 
         endGameSelects.add(0, select0);
         endGameSelects.add(1, select1);
-        endGameSelects.add(2, select2);
 
-        endgameOptions.add(0, continuer);
-        endgameOptions.add(1, restart);
-        endgameOptions.add(2, menu);
+        endgameOptions.add(0, restart);
+        endgameOptions.add(1, menu);
 
         VBox titleBox = Menu.createVBox(0, Pos.CENTER, gameover, score);
-        VBox optionBox = Menu.createVBox(
-            optionSpacing, Pos.CENTER, option0, option1, option2
-        );
-        return Menu.createVBox(
-            mainBoxSpacing, Pos.CENTER, titleBox, optionBox
-        );
+        VBox optionBox = Menu.createVBox(optionSpacing, Pos.CENTER, option0, option1);
+
+        return Menu.createVBox(mainBoxSpacing, Pos.CENTER, titleBox, optionBox);
     }
 
     /**
@@ -271,16 +260,10 @@ public final class InGameGui {
     }
 
     private void addEndHandlers() {
-        EventHandler<MouseEvent> next = new EventHandler<>() {
-            @Override
-            public void handle(final MouseEvent mouseEvent) {
-                //TODO
-            }
-        };
         EventHandler<MouseEvent> restart = new EventHandler<>() {
             @Override
             public void handle(final MouseEvent mouseEvent) {
-                endgameOptions.get(1).removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
+                endgameOptions.get(0).removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
                 if (mode.equals("Solo")) {
                     Solo.startLevel(primaryStage, currentLevel);
                 } else {
@@ -288,35 +271,18 @@ public final class InGameGui {
                 }
             }
         };
-        endgameOptions.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, next);
-        endgameOptions.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, restart);
-        endgameOptions.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-            Menu menu = new Menu();
-            Menu.setMusicStarted(false);
-            menu.start(primaryStage);
-        });
-
-        KeySelector keySel = new KeySelector(
-            endGameSelects, primaryStage, false
+                endgameOptions.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, restart);
+        endgameOptions.get(1).addEventHandler(
+            MouseEvent.MOUSE_CLICKED, mouseEvent -> Menu.toMenu(primaryStage)
         );
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySel::handle);
 
-        int select = 0;
-        for (Text text : endgameOptions) {
-            MouseSelector m = new MouseSelector(
-                endGameSelects, select++
-            );
-            text.setOnMouseEntered(m::handle);
-        }
+        new Selector(endGameSelects, endgameOptions, primaryStage, gameScene, false);
+
 
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
                 switch (Menu.getSelected()) {
                     case 0:
-                        // Continue sur le prochain niveau
-                        break;
-
-                    case 1:
                         if (mode.equals("Solo")) {
                             Solo.startLevel(primaryStage, currentLevel);
                         } else {
@@ -324,10 +290,8 @@ public final class InGameGui {
                         }
                         break;
 
-                    case 2:
-                        Menu menu = new Menu();
-                        Menu.setMusicStarted(false);
-                        menu.start(primaryStage);
+                    case 1:
+                        Menu.toMenu(primaryStage);
                         break;
 
                     default:
@@ -400,9 +364,7 @@ public final class InGameGui {
     }
 
     private void showPauseMenu() {
-        if (dimBackground == null) {
-            setDimBackground();
-        }
+        setDimBackground();
         pausePane.getChildren().addAll(dimBackground, pauseMenu);
         ((Pane) gameScene.getRoot()).getChildren().add(pausePane);
 
@@ -414,7 +376,7 @@ public final class InGameGui {
             @Override
             public void handle(final MouseEvent mouseEvent) {
                 pauseOptions.get(1).removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
-                setPaused(false);
+                pause(false);
                 if (mode.equals("Solo")) {
                     Solo.startLevel(primaryStage, currentLevel);
                 } else {
@@ -428,35 +390,22 @@ public final class InGameGui {
             Music.resume();
         });
         pauseOptions.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, restart);
-        pauseOptions.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-            Menu menu = new Menu();
-            Menu.setMusicStarted(false);
-            menu.start(primaryStage);
-        });
-
-        KeySelector keySel = new KeySelector(
-            pauseSelects, primaryStage, true
+        pauseOptions.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED,
+            mouseEvent -> Menu.toMenu(primaryStage)
         );
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySel::handle);
 
-        int select = 0;
-        for (Text text : pauseOptions) {
-            MouseSelector m = new MouseSelector(
-                pauseSelects, select++
-            );
-            text.setOnMouseEntered(m::handle);
-        }
+        new Selector(pauseSelects, pauseOptions, primaryStage, gameScene, true);
+
 
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
-            if (keyEvent.getCode() == KeyCode.ENTER) {
+            if (paused && keyEvent.getCode() == KeyCode.ENTER) {
+                pause(false);
                 switch (Menu.getSelected()) {
                     case 0:
-                        pause(false);
                         Music.resume();
                         break;
 
                     case 1:
-                        setPaused(false);
                         if (mode.equals("Solo")) {
                             Solo.startLevel(primaryStage, currentLevel);
                         } else {
@@ -465,9 +414,7 @@ public final class InGameGui {
                         break;
 
                     case 2:
-                        Menu quitGame = new Menu();
-                        Menu.setMusicStarted(false);
-                        quitGame.start(primaryStage);
+                        Menu.toMenu(primaryStage);
                         break;
 
                     default:

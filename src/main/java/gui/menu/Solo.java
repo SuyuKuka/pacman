@@ -70,53 +70,29 @@ public final class Solo extends Menu {
         Text select0 = createText(">", fontSize.getValue().intValue());
         Text classique = createText("Classique", fontSize.getValue().intValue());
 
-        Text select1 = createText(">", fontSize.getValue().intValue());
-        Text facile = createText("Facile", fontSize.getValue().intValue());
-
-        Text select2 = createText(">", fontSize.getValue().intValue());
-        Text moyen = createText("Moyen", fontSize.getValue().intValue());
-
-        Text select3 = createText(">", fontSize.getValue().intValue());
-        Text difficile = createText("Difficile", fontSize.getValue().intValue());
-
-        Text select4 = createText(">", fontSize.getValue().intValue());
-        Text impossible = createText("Impossible", fontSize.getValue().intValue());
-
         Text selectBack = createText(">", fontSize.getValue().intValue());
         Text backText = createText("Back", fontSize.getValue().intValue());
 
         //CHECKSTYLE:OFF
         options.add(0, createHBox(spacingSize, Pos.CENTER, select0, classique));
-        options.add(1, createHBox(spacingSize, Pos.CENTER, select1, facile));
-        options.add(2, createHBox(spacingSize, Pos.CENTER, select2, moyen));
-        options.add(3, createHBox(spacingSize, Pos.CENTER, select3, difficile));
-        options.add(4, createHBox(spacingSize, Pos.CENTER, select4, impossible));
-        options.add(5, createHBox(spacingSize, Pos.BOTTOM_LEFT, selectBack, backText));
+        options.add(1, createHBox(spacingSize, Pos.BOTTOM_LEFT, selectBack, backText));
 
         VBox optionBox = createVBox(
             spacingSize, Pos.CENTER,
-            options.get(0), options.get(1), options.get(2), options.get(3), options.get(4)
+            options.get(0)
         );
 
         selects.add(0, select0);
-        selects.add(1, select1);
-        selects.add(2, select2);
-        selects.add(3, select3);
-        selects.add(4, select4);
-        selects.add(5, selectBack);
+        selects.add(1, selectBack);
 
         choices.add(0, classique);
-        choices.add(1, facile);
-        choices.add(2, moyen);
-        choices.add(3, difficile);
-        choices.add(4, impossible);
-        choices.add(5, backText);
+        choices.add(1, backText);
 
         bindTextSizeToScene(gameScene);
 
         rootPane.setTop(title);
         rootPane.setCenter(optionBox);
-        rootPane.setBottom(options.get(5));
+        rootPane.setBottom(options.get(1));
         BorderPane.setMargin(title, new Insets(100, 0, 0, 0));
         //CHECKSTYLE:ON
     }
@@ -128,34 +104,19 @@ public final class Solo extends Menu {
             MouseEvent.MOUSE_CLICKED, keyEvent -> startLevel(primaryStage, 0)
         );
         options.get(1).addEventHandler(
-            MouseEvent.MOUSE_CLICKED, keyEvent -> startLevel(primaryStage, 1)
-        );
-        options.get(2).addEventHandler(
-            MouseEvent.MOUSE_CLICKED, keyEvent -> startLevel(primaryStage, 2)
-        );
-        options.get(3).addEventHandler(
-            MouseEvent.MOUSE_CLICKED, keyEvent -> startLevel(primaryStage, 3)
-        );
-        options.get(4).addEventHandler(
-            MouseEvent.MOUSE_CLICKED, keyEvent -> startLevel(primaryStage, 4)
-        );
-        options.get(5).addEventHandler(
-            MouseEvent.MOUSE_CLICKED, keyEvent -> {
-                Menu menu = new Menu();
-                menu.start(primaryStage);
-            }
+            MouseEvent.MOUSE_CLICKED,
+            keyEvent -> Menu.toMenu(primaryStage)
         );
         //CHECKSTYLE:ON
 
         EventHandler<KeyEvent> enterPressed = new EventHandler<KeyEvent>() {
             @Override
             public void handle(final KeyEvent keyEvent) {
-                final int back = 5;
+                final int back = 1;
                 if (keyEvent.getCode() == KeyCode.ENTER) {
                     gameScene.removeEventHandler(KeyEvent.KEY_PRESSED, this);
                     if (Menu.getSelected() == back) {
-                        Menu menu = new Menu();
-                        menu.start(primaryStage);
+                        Menu.toMenu(primaryStage);
                     } else {
                         startLevel(primaryStage, getSelected());
                     }
@@ -164,14 +125,7 @@ public final class Solo extends Menu {
         };
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, enterPressed);
 
-        KeySelector keySel = new KeySelector(selects, primaryStage, false);
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySel::handle);
-
-        int select = 0;
-        for (Text text : choices) {
-            MouseSelector m = new MouseSelector(selects, select++);
-            text.setOnMouseEntered(m::handle);
-        }
+        new Selector(selects, choices, primaryStage, gameScene, false);
     }
 
     @Override
@@ -217,28 +171,8 @@ public final class Solo extends Menu {
 
         MazeState maze;
         final int classique = 0;
-        final int facile = 1;
-        final int moyen = 2;
-        final int difficile = 3;
-        final int impossible = 4;
         switch (level) {
             case classique:
-                maze = new MazeState(MazeConfig.classicalConfig(false, false));
-                break;
-
-            case facile: // TODO : Autres niveaux à faire
-                maze = new MazeState(MazeConfig.classicalConfig(false, false));
-                break;
-
-            case moyen:
-                maze = new MazeState(MazeConfig.classicalConfig(false, false));
-                break;
-
-            case difficile:
-                maze = new MazeState(MazeConfig.classicalConfig(false, false));
-                break;
-
-            case impossible:
                 maze = new MazeState(MazeConfig.classicalConfig(false, false));
                 break;
 

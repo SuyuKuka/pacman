@@ -180,8 +180,9 @@ public final class MazeState {
      */
     public void addScore(final int increment) {
         final int dotEatenScore = 10;
+        final int energizerScore = 50;
         score += increment;
-        if (increment == dotEatenScore) {
+        if (increment == dotEatenScore || increment == energizerScore) {
             eatenPacgomme++;
         }
     }
