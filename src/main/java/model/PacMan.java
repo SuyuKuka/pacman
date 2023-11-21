@@ -68,6 +68,8 @@ public final class PacMan extends Critter {
                 final int dotScore = 10;
                 state.addScore(dotScore);
             } else {
+                final int energizerScore = 50;
+                state.addScore(energizerScore);
                 Music.playLoopingBgMusic("energized");
                 energizedTimer = 0;
                 if (state.getConfig().isCoop()) {
