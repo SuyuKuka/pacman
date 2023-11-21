@@ -126,7 +126,7 @@ public final class CritterGraphicsFactory {
                 if (ghost.getGraphicsBuffer().getUpdateBuffer() >= 1) {
                     ghost.getGraphicsBuffer().setUpdateBuffer(0);
 
-                    if (PacMan.MAX_ENERGIZED_TIME - PacMan.getEnergizedTimer() < 2
+                    if (PacMan.getEnergizedDuration() - PacMan.getEnergizedTimer() < 2
                     && alternateBuffer >= 1) {
                         ghost.getGraphicsBuffer().setAlternateBuffer(0);
                         ghost.getGraphicsBuffer().setAlternate(

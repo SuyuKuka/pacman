@@ -88,7 +88,9 @@ public final class MazeConfig {
             pacman2.setSpawnPos(critterSpawnOrTargetPos(null, true, "critterSpawn", configPath));
             pacman2.setPos(pacman2.getSpawnPos());
             pacman2.setImage("pacman_rainbow_3");
+            PacMan.setEnergizedDuration(PacMan.getMaxEnergizedTime() - 2);
         } else {
+            PacMan.setEnergizedDuration(PacMan.getMaxEnergizedTime());
             pacman2 = null;
         }
 
