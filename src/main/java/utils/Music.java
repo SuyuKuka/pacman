@@ -61,7 +61,7 @@ public final class Music {
             );
             Clip sound = AudioSystem.getClip();
             sound.addLineListener(event -> {
-                if(LineEvent.Type.STOP.equals(event.getType())) {
+                if (LineEvent.Type.STOP.equals(event.getType())) {
                     sound.close();
                 }
             });
