@@ -132,6 +132,8 @@ public final class CritterGraphicsFactory {
                         ghost.getGraphicsBuffer().setAlternate(
                             !ghost.getGraphicsBuffer().isAlternate()
                         );
+                    } else if (PacMan.getEnergizedTimer() < 1) {
+                        ghost.getGraphicsBuffer().setAlternate(false);
                     }
 
                     String newImage = getGhostImageName(ghost, image);

@@ -201,10 +201,9 @@ public final class Multiplayer extends Menu {
         options.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseClick0);
         // TODO : Niveau coop
         options.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseClick1);
-        options.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-            Menu menu = new Menu();
-            menu.start(primaryStage);
-        });
+        options.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED,
+            mouseEvent -> Menu.toMenu(primaryStage)
+        );
 
         EventHandler<KeyEvent> enterPressed = new EventHandler<KeyEvent>() {
             @Override
@@ -212,8 +211,7 @@ public final class Multiplayer extends Menu {
                 if (event.getCode() == KeyCode.ENTER) {
                     gameScene.removeEventHandler(KeyEvent.KEY_PRESSED, this);
                     if (Menu.getSelected() == 2) {
-                        Menu menu = new Menu();
-                        menu.start(primaryStage);
+                        Menu.toMenu(primaryStage);
                     } else {
                         startLevel(primaryStage, Menu.getSelected());
                     }
@@ -222,14 +220,7 @@ public final class Multiplayer extends Menu {
         };
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, enterPressed);
 
-        KeySelector keySel = new KeySelector(selects, primaryStage, false);
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySel::handle);
-
-        int select = 0;
-        for (Text text : choices) {
-            MouseSelector m = new MouseSelector(selects, select++);
-            text.setOnMouseEntered(m::handle);
-        }
+        new Selector(selects, choices, primaryStage, gameScene, false);
     }
 
     @Override

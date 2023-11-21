@@ -1,13 +1,12 @@
 package gui.menu;
 
 import java.util.ArrayList;
-import java.util.List;
 
+import gui.GameView;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -45,9 +44,6 @@ public class Menu extends Application {
     private ArrayList<Text> selects = new ArrayList<>();
     private ArrayList<Text> choices = new ArrayList<>();
 
-    /** Variable pour suivre si la musique a déjà été démarrée. */
-    private static boolean musicStarted = false;
-
     /**
      * Méthode appelée à la fin de l'intro ou lorsqu'on revient
      * au menu principal.
@@ -76,10 +72,7 @@ public class Menu extends Application {
         primaryStage.show();
 
         // Musique de fond jouée en boucle
-        if (!musicStarted) {
-            Music.playLoopingBgMusic("bgm");
-            setMusicStarted(true);
-        }
+        Music.playLoopingBgMusic("bgm");
     }
 
     /** Permet d'avoir le background.
@@ -201,15 +194,12 @@ public class Menu extends Application {
         Multiplayer multiMenu = new Multiplayer();
         Settings settMenu = new Settings();
 
-        options.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-            soloMenu.start(primaryStage);
-        });
-        options.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-            multiMenu.start(primaryStage);
-        });
-        options.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-            settMenu.start(primaryStage);
-        });
+        options.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED,
+            mouseEvent -> soloMenu.start(primaryStage));
+        options.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED,
+            mouseEvent -> multiMenu.start(primaryStage));
+        options.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED,
+            mouseEvent -> settMenu.start(primaryStage));
         //CHECKSTYLE:OFF
         options.get(3).addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
             primaryStage.close();
@@ -247,16 +237,18 @@ public class Menu extends Application {
             }
         });
 
-        KeySelector keySel = new KeySelector(
-            selects, primaryStage, false
-        );
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySel::handle);
+        new Selector(selects, choices, primaryStage, gameScene, false);
+    }
 
-        int select = 0;
-        for (Text text : choices) {
-            MouseSelector m = new MouseSelector(selects, select++);
-            text.setOnMouseEntered(m::handle);
-        }
+    /**
+     * Affiche le menu suite à l'appel de la méthode.
+     * @param primaryStage
+     */
+    public static void toMenu(final Stage primaryStage) {
+        GameView.INSTANCE.stopAnimation();
+        GameView.INSTANCE.resetInstance();
+        Menu menu = new Menu();
+        menu.start(primaryStage);
     }
 
     /**
@@ -316,109 +308,5 @@ public class Menu extends Application {
 
     protected static void setSelected(final int selected) {
         Menu.selected = selected;
-    }
-
-    public static void setMusicStarted(final boolean musicStarted) {
-        Menu.musicStarted = musicStarted;
-    }
-
-    public static class KeySelector implements EventHandler<KeyEvent> {
-        /** Les ">". */
-        private ArrayList<Text> selects;
-        /** Le{@code Stage} principal.*/
-        private Stage primaryStage;
-        /** Plus grand indice de choix. */
-        private int maxChoice;
-        /**
-         * {@code true}si l'{@code EventHandler}est pour
-         * le menu pause.
-         */
-        private boolean isPauseMenu;
-
-        /**
-         * Constructeur KeySelector.
-         * @param newSelects
-         * @param newPrimaryStage
-         * @param pauseMenu
-         */
-        public KeySelector(
-            final List<Text> newSelects,
-            final Stage newPrimaryStage,
-            final boolean pauseMenu
-            ) {
-            selects = new ArrayList<>(newSelects);
-            primaryStage = newPrimaryStage;
-            isPauseMenu = pauseMenu;
-
-            setSelected(0);
-            maxChoice = selects.size() - 1;
-
-            for (int i = 1; i <= maxChoice; i++) {
-                selects.get(i).setVisible(false);
-            }
-        }
-
-
-        /**
-         * Lorsque la flèche du haut ou bas est appuyée,
-         * le ">" actuel est mis en invisible et le prochain est révélé.
-         * Si on appuie sur échap, on revient au menu principal.
-         */
-        @Override
-        public void handle(final KeyEvent keyEvent) {
-            if (isPauseMenu && !gui.InGameGui.isPaused()) {
-                return;
-            }
-
-            if (keyEvent.getCode() == KeyCode.UP) {
-                // Flèche vers le haut
-                selects.get(selected).setVisible(false);
-                setSelected(selected - 1);
-                if (selected < 0) {
-                    setSelected(maxChoice);
-                }
-                selects.get(selected).setVisible(true);
-            } else if (keyEvent.getCode() == KeyCode.DOWN) {
-                // Flèche vers le bas
-                selects.get(selected).setVisible(false);
-                setSelected(selected + 1);
-                if (selected > maxChoice) {
-                    setSelected(0);
-                }
-                selects.get(selected).setVisible(true);
-            } else if (keyEvent.getCode() == KeyCode.ESCAPE && !isPauseMenu) {
-                Menu menu = new Menu();
-                menu.start(primaryStage);
-            }
-        }
-    }
-
-    public static class MouseSelector implements EventHandler<MouseEvent> {
-        /** Les ">". */
-        private ArrayList<Text> selects;
-        /** L'indice du choix. */
-        private int select;
-
-        /**
-         * Constructeur MouseSelector.
-         * @param newSelects
-         * @param newSelect
-         */
-        public MouseSelector(final List<Text> newSelects, final int newSelect) {
-            selects = new ArrayList<>(newSelects);
-            select = newSelect;
-        }
-
-        /**
-         * Affiche ">" lorsqu'on survole la souris sur une option.
-         */
-        @Override
-        public void handle(final MouseEvent mouseEvent) {
-            for (int i = 0; i < selects.size(); i++) {
-                selects.get(i).setVisible(false);
-            }
-            setSelected(select);
-            selects.get(selected).setVisible(true);
-        }
     }
 }

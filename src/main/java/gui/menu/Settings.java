@@ -100,29 +100,17 @@ public final class Settings extends Menu {
 
     @Override
     protected void addEventHandlers(final Stage primaryStage, final Scene gameScene) {
-        options.get(0).setOnMouseClicked(event -> {
-            Menu menu = new Menu();
-            menu.start(primaryStage);
-        });
+        options.get(0).setOnMouseClicked(
+            event -> Menu.toMenu(primaryStage)
+        );
 
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
-                Menu menu = new Menu();
-                menu.start(primaryStage);
+                Menu.toMenu(primaryStage);
             }
         });
 
-        KeySelector keySel = new KeySelector(selects, primaryStage, false);
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySel::handle);
-
-        int select = 0;
-        for (Text text : choices) {
-            if (text.equals(choices.get(0))) {
-                continue;
-            }
-            MouseSelector m = new MouseSelector(selects, select++);
-            text.setOnMouseEntered(m::handle);
-        }
+        new Selector(selects, choices, primaryStage, gameScene, false);
     }
 
     @Override
