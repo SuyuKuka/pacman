@@ -143,6 +143,9 @@ public final class Ghost extends Critter {
      * @param deltaTns Tick de temps.
      */
     public void updatePlayerGhost(final MazeState state, final long deltaTns) {
+        if (isInSpawn(state.getConfig())) {
+            ghostState = GhostState.NORMAL;
+        }
         if (directionBuffer.isBufferDirectionValid(this, deltaTns, state.getConfig())) {
             setDirection(directionBuffer.getBufferDirection());
         }
