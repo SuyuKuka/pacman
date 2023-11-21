@@ -47,7 +47,7 @@ public final class MazeConfig {
     private final Cell[][] grid;
     private final int[] ghostStateSwap;
 
-    private int totalPacGomme = 0;
+    private final int totalPacGomme;
     /**Les coordonnées du sommet haut-gauche et bas-droite du spawn des {@link model.Ghost}.*/
     private final RealCoordinates[] ghostSpawnPos = new RealCoordinates[2];
     private final RealCoordinates ghostSpawnEntrance;
@@ -64,12 +64,8 @@ public final class MazeConfig {
      */
     public MazeConfig(final boolean versus, final boolean coop, final String configPath) {
         grid = getJSONMaze(configPath);
-        for (int i = 0; i < getHeight(); i++) {
-            for (int j = 0; j < getWidth(); j++) {
-                totalPacGomme += grid[i][j].getContent() == Content.DOT ? 1 : 0;
-            }
-        }
         ghostStateSwap = getStateSwap(configPath);
+        totalPacGomme = countPacGomme();
         MapVerification.tunnelFinder(grid);
         MapVerification.removeUnnecessaryWall(grid);
         //CHECKSTYLE:OFF
@@ -347,6 +343,22 @@ public final class MazeConfig {
      */
     public static MazeConfig classicalConfig(final boolean versus, final boolean coop) {
         return new MazeConfig(versus, coop, "src/main/java/config/Level1.json");
+    }
+
+    /**
+     * Renvoie le nombre total de PacGomme.
+     * @return {@code int}
+     */
+    public int countPacGomme() {
+        int count = 0;
+        for (int i = 0; i < getHeight(); i++) {
+            for (int j = 0; j < getWidth(); j++) {
+                final boolean hasDot = grid[i][j].getContent() == Content.DOT;
+                final boolean hasEnergizer = grid[i][j].getContent() == Content.ENERGIZER;
+                count += hasDot || hasEnergizer ? 1 : 0;
+            }
+        }
+        return count;
     }
 
     /**
