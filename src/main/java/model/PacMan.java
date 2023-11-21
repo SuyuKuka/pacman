@@ -12,7 +12,9 @@ import utils.Music;
 public final class PacMan extends Critter {
 
     private static final double ENERGIZED_SPEED_MULTIPLER = 1.7;
-    public static final double MAX_ENERGIZED_TIME = 6;
+    private static final double MAX_ENERGIZED_TIME = 6;
+
+    private static double energizedDuration = 0;
 
     /** Dernière {@link Direction} de {@link PacMan} qui n'est pas {@link Direction#NONE}. */
     private Direction lastDirection = Direction.NONE;
@@ -163,7 +165,7 @@ public final class PacMan extends Critter {
         if (isEnergized()) {
             final double nanoseconds = Math.pow(10, 9);
             setEnergizedTimer(energizedTimer + deltaTns / nanoseconds);
-            if (energizedTimer >= MAX_ENERGIZED_TIME) {
+            if (energizedTimer >= energizedDuration) {
                 setEnergizedTimer(0);
                 energized = false;
                 if (state.getConfig().isCoop()) {
@@ -216,6 +218,14 @@ public final class PacMan extends Critter {
 
     public static double getEnergizedTimer() {
         return energizedTimer;
+    }
+
+    public static double getEnergizedDuration() {
+        return energizedDuration;
+    }
+
+    public static void setEnergizedDuration(final double energizedDuration) {
+        PacMan.energizedDuration = energizedDuration;
     }
 
     public DirectionBuffer getDirectionBuffer() {
