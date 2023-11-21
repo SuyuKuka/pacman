@@ -60,6 +60,11 @@ public final class Music {
                 new URL(Resources.getFile(soundFileName))
             );
             Clip sound = AudioSystem.getClip();
+            sound.addLineListener(event -> {
+                if(LineEvent.Type.STOP.equals(event.getType())) {
+                    sound.close();
+                }
+            });
             sound.open(audioInputStream);
 
             setClipVolume(sound);
