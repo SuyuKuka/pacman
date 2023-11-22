@@ -11,6 +11,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Slider;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
@@ -19,33 +20,42 @@ import javafx.stage.Stage;
 import utils.Music;
 
 public final class Settings extends Menu {
-    private BorderPane rootPane = new BorderPane();
-
+    private BorderPane settingsPane;
+    private Scene settingsScene;
     private DoubleProperty fontSize = new SimpleDoubleProperty(INITIAL_TEXT_SIZE);
     private Text titleText;
     private ArrayList<HBox> options = new ArrayList<>();
     private ArrayList<Text> selects = new ArrayList<>();
     private ArrayList<Text> choices = new ArrayList<>();
 
+    public static final Settings INSTANCE = new Settings();
+
+    private Settings() {
+    }
+
     @Override
     public void start(final Stage primaryStage) {
-        Scene gameScene = new Scene(
-            rootPane,
-            primaryStage.getScene() == null
-            ? primaryStage.getWidth() : primaryStage.getScene().getWidth(),
-            primaryStage.getScene() == null
-            ? primaryStage.getHeight() : primaryStage.getScene().getHeight()
+        settingsPane = new BorderPane();
+        settingsScene = new Scene(
+            settingsPane,
+            primaryStage.getScene().getWidth(),
+            primaryStage.getScene().getHeight()
         );
-        rootPane.prefWidthProperty().bind(gameScene.widthProperty());
-        rootPane.prefHeightProperty().bind(gameScene.heightProperty());
-        rootPane.setBackground(getBackground(primaryStage));
+        settingsScene.setFill(Color.BLACK);
 
-        addMainBox(gameScene);
-        addEventHandlers(primaryStage, gameScene);
+        settingsPane.prefWidthProperty().bind(Menu.getMainStage().getScene().widthProperty());
+        settingsPane.prefHeightProperty().bind(Menu.getMainStage().getScene().heightProperty());
+        settingsPane.setBackground(getBackground());
 
-        gameScene.setFill(Color.BLACK);
-        primaryStage.setScene(gameScene);
-        primaryStage.show();
+        addMainBox(settingsScene);
+        addEventHandlers(settingsScene);
+    }
+
+    /**
+     * Affiche le menu Settings.
+     */
+    public void toSettings() {
+        Menu.getMainStage().setScene(settingsScene);
     }
 
     @Override
@@ -81,36 +91,39 @@ public final class Settings extends Menu {
         Text selectback = createText(">", fontSize.getValue().intValue());
         Text back = createText("Back", fontSize.getValue().intValue());
 
-        options.add(0, createHBox(spacingSize, Pos.BOTTOM_LEFT, selectback, back));
+        if (options.isEmpty() && selects.isEmpty() && choices.isEmpty()) {
+            options.add(0, createHBox(spacingSize, Pos.BOTTOM_LEFT, selectback, back));
 
-        selects.add(0, selectback);
+            selects.add(0, selectback);
 
-        choices.add(0, volumeText);
-        choices.add(1, back);
+            choices.add(0, volumeText);
+            choices.add(1, back);
+        }
 
         bindTextSizeToScene(gameScene);
 
-        rootPane.setTop(title);
-        rootPane.setCenter(volumeBox);
-        rootPane.setBottom(options.get(0));
+        settingsPane.setTop(title);
+        settingsPane.setCenter(volumeBox);
+        settingsPane.setBottom(options.get(0));
         //CHECKSTYLE:OFF
         BorderPane.setMargin(title, new Insets(100, 0, 0, 0));
         //CHECKSTYLE:ON
     }
 
     @Override
-    protected void addEventHandlers(final Stage primaryStage, final Scene gameScene) {
-        options.get(0).setOnMouseClicked(
-            event -> Menu.toMenu(primaryStage)
-        );
-
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
-            if (keyEvent.getCode() == KeyCode.ENTER) {
-                Menu.toMenu(primaryStage);
-            }
+    protected void addEventHandlers(final Scene gameScene) {
+        Selector selector = new Selector(selects, choices, gameScene, false);
+        options.get(0).addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
+            Menu.toMenu();
+            selector.getKeySelector().resetSelect();
         });
 
-        new Selector(selects, choices, primaryStage, gameScene, false);
+        gameScene.addEventHandler(KeyEvent.KEY_RELEASED, keyEvent -> {
+            if (keyEvent.getCode() == KeyCode.ENTER) {
+                Menu.toMenu();
+            }
+            selector.getKeySelector().resetSelect();
+        });
     }
 
     @Override

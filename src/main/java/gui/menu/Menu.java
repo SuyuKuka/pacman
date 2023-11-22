@@ -31,10 +31,17 @@ import utils.Music;
 import utils.Resources;
 
 public class Menu extends Application {
+    /** Stage. */
+    private static Stage mainStage;
+
+    /** Root pane. */
+    private BorderPane rootPane;
+
+    private BorderPane menuPane;
+    private Scene menuScene;
+
     /** Entier indiquant l'option choisie dans les menus. */
     private static int selected = 0;
-    /** Créer un rootPane général pour le background. */
-    private BorderPane rootPane = new BorderPane();
 
     protected static final int INITIAL_TEXT_SIZE = 45;
 
@@ -44,42 +51,63 @@ public class Menu extends Application {
     private ArrayList<Text> selects = new ArrayList<>();
     private ArrayList<Text> choices = new ArrayList<>();
 
+    public static final Menu INSTANCE = new Menu();
+
+    protected Menu() {
+    }
+
     /**
      * Méthode appelée à la fin de l'intro ou lorsqu'on revient
      * au menu principal.
      */
     @Override
     public void start(final Stage primaryStage) {
+        setMainStage(primaryStage);
         primaryStage.setTitle("Mac-Pan-Pac-Man");
         primaryStage.getIcons().add(Resources.getImage("pacman"));
+        menuPane = new BorderPane();
 
-        Scene gameScene = new Scene(
-            rootPane,
-            primaryStage.getScene() == null
-            ? primaryStage.getWidth() : primaryStage.getScene().getWidth(),
-            primaryStage.getScene() == null
-            ? primaryStage.getHeight() : primaryStage.getScene().getHeight()
+        menuScene = new Scene(
+            menuPane,
+            primaryStage.getScene().getWidth(),
+            primaryStage.getScene().getHeight()
         );
-        rootPane.prefWidthProperty().bind(gameScene.widthProperty());
-        rootPane.prefHeightProperty().bind(gameScene.heightProperty());
-        rootPane.setBackground(getBackground(primaryStage));
+        menuScene.setFill(Color.BLACK);
 
-        addMainBox(gameScene);
-        addEventHandlers(primaryStage, gameScene);
+        menuPane.prefWidthProperty().bind(menuScene.widthProperty());
+        menuPane.prefHeightProperty().bind(menuScene.heightProperty());
+        menuPane.setBackground(getBackground());
 
-        gameScene.setFill(Color.BLACK);
-        primaryStage.setScene(gameScene);
+        addMainBox(menuScene);
+        addEventHandlers(menuScene);
+
+        primaryStage.setScene(menuScene);
         primaryStage.show();
+
+        Solo.INSTANCE.start(primaryStage);
+        Multiplayer.INSTANCE.start(primaryStage);
+        Settings.INSTANCE.start(primaryStage);
+
+        // Musique de fond jouée en boucle
+        Music.playLoopingBgMusic("bgm");
+    }
+
+    /**
+     * Affiche le menu suite à l'appel de la méthode.
+     */
+    public static void toMenu() {
+        GameView.INSTANCE.stopAnimation();
+        GameView.INSTANCE.resetInstance();
+        mainStage.setScene(INSTANCE.menuScene);
 
         // Musique de fond jouée en boucle
         Music.playLoopingBgMusic("bgm");
     }
 
     /** Permet d'avoir le background.
-     * @param primaryStage
      * @return {@code background}
      */
-    protected static Background getBackground(final Stage primaryStage) {
+    protected static Background getBackground() {
         Image image = Resources.getImage("background");
 
         BackgroundImage backgroundImage = new BackgroundImage(
@@ -88,8 +116,8 @@ public class Menu extends Application {
             BackgroundRepeat.NO_REPEAT,
             BackgroundPosition.CENTER,
             new BackgroundSize(
-                primaryStage.getWidth(),
-                primaryStage.getHeight(),
+                mainStage.getWidth(),
+                mainStage.getHeight(),
                 false,
                 false,
                 true,
@@ -99,7 +127,7 @@ public class Menu extends Application {
     }
 
     /**
-     * Ajoute la {@link #mainBox} à la scène{@code gameScene}.
+     * Ajoute les options à la scène{@code gameScene}.
      * @param gameScene
      */
     protected void addMainBox(final Scene gameScene) {
@@ -121,19 +149,21 @@ public class Menu extends Application {
         Text select3 = createText(">", fontSize.getValue().intValue());
         Text quit = createText("Quit", fontSize.getValue().intValue());
 
-        options.add(0, createHBox(
-            spacingSize, Pos.CENTER, select0, solo
-        ));
-        options.add(1, createHBox(
-            spacingSize, Pos.CENTER, select1, multiplayer
-        ));
-        options.add(2, createHBox(
-            spacingSize, Pos.CENTER, select2, settings
-        ));
-        //CHECKSTYLE:OFF
-        options.add(3, createHBox(
-            spacingSize, Pos.CENTER, select3, quit
-        ));
+        if (options.isEmpty()) {
+            options.add(0, createHBox(
+                spacingSize, Pos.CENTER, select0, solo
+            ));
+            options.add(1, createHBox(
+                spacingSize, Pos.CENTER, select1, multiplayer
+            ));
+            options.add(2, createHBox(
+                spacingSize, Pos.CENTER, select2, settings
+            ));
+            //CHECKSTYLE:OFF
+            options.add(3, createHBox(
+                spacingSize, Pos.CENTER, select3, quit
+            ));
+        }
 
         VBox optionBox = createVBox(
             spacingSize,
@@ -141,20 +171,22 @@ public class Menu extends Application {
             options.get(0), options.get(1), options.get(2), options.get(3)
         );
 
-        selects.add(0, select0);
-        selects.add(1, select1);
-        selects.add(2, select2);
-        selects.add(3, select3);
+        if (selects.isEmpty() && choices.isEmpty()) {
+            selects.add(0, select0);
+            selects.add(1, select1);
+            selects.add(2, select2);
+            selects.add(3, select3);
 
-        choices.add(0, solo);
-        choices.add(1, multiplayer);
-        choices.add(2, settings);
-        choices.add(3, quit);
+            choices.add(0, solo);
+            choices.add(1, multiplayer);
+            choices.add(2, settings);
+            choices.add(3, quit);
+        }
 
         bindTextSizeToScene(gameScene);
 
-        rootPane.setTop(titleBox);
-        rootPane.setCenter(optionBox);
+        menuPane.setTop(titleBox);
+        menuPane.setCenter(optionBox);
         //CHECKSTYLE:OFF
         BorderPane.setMargin(titleBox, new Insets(100, 0, 0, 0));
         //CHECKSTYLE:ON
@@ -186,28 +218,31 @@ public class Menu extends Application {
 
     /**
      * Ajoute les différents{@code EventHandler}(souris, clavier).
-     * @param primaryStage
      * @param gameScene
      */
-    protected void addEventHandlers(final Stage primaryStage, final Scene gameScene) {
-        Solo soloMenu = new Solo();
-        Multiplayer multiMenu = new Multiplayer();
-        Settings settMenu = new Settings();
+    protected void addEventHandlers(final Scene gameScene) {
+        Selector selector = new Selector(selects, choices, gameScene, false);
 
-        options.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED,
-            mouseEvent -> soloMenu.start(primaryStage));
-        options.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED,
-            mouseEvent -> multiMenu.start(primaryStage));
-        options.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED,
-            mouseEvent -> settMenu.start(primaryStage));
+        options.get(0).addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
+            Solo.INSTANCE.toSolo();
+            selector.getKeySelector().resetSelect();
+        });
+        options.get(1).addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
+            Multiplayer.INSTANCE.toMulti();
+            selector.getKeySelector().resetSelect();
+        });
+        options.get(2).addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
+            Settings.INSTANCE.toSettings();
+            selector.getKeySelector().resetSelect();
+        });
         //CHECKSTYLE:OFF
-        options.get(3).addEventHandler(MouseEvent.MOUSE_CLICKED, keyEvent -> {
-            primaryStage.close();
+        options.get(3).addEventHandler(MouseEvent.MOUSE_RELEASED, keyEvent -> {
+            mainStage.close();
             System.exit(0);
         });
         //CHECKSTYLE:ON
 
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
+        gameScene.addEventHandler(KeyEvent.KEY_RELEASED, keyEvent -> {
             final int soloCase = 0;
             final int multiplayerCase = 1;
             final int settingsCase = 2;
@@ -215,40 +250,28 @@ public class Menu extends Application {
             if (keyEvent.getCode() == KeyCode.ENTER) {
                 switch (selected) {
                     case soloCase:
-                        soloMenu.start(primaryStage);
+                        Solo.INSTANCE.toSolo();
                         break;
 
                     case multiplayerCase:
-                        multiMenu.start(primaryStage);
+                        Multiplayer.INSTANCE.toMulti();
                         break;
 
                     case settingsCase:
-                        settMenu.start(primaryStage);
+                        Settings.INSTANCE.toSettings();
                         break;
 
                     case quitCase:
-                        primaryStage.close();
+                        mainStage.close();
                         System.exit(0);
                         break;
 
                     default:
                         break;
                 }
+                selector.getKeySelector().resetSelect();
             }
         });
-
-        new Selector(selects, choices, primaryStage, gameScene, false);
-    }
-
-    /**
-     * Affiche le menu suite à l'appel de la méthode.
-     * @param primaryStage
-     */
-    public static void toMenu(final Stage primaryStage) {
-        GameView.INSTANCE.stopAnimation();
-        GameView.INSTANCE.resetInstance();
-        Menu menu = new Menu();
-        menu.start(primaryStage);
     }
 
     /**
@@ -306,7 +329,23 @@ public class Menu extends Application {
         return selected;
     }
 
-    protected static void setSelected(final int selected) {
+    public static void setSelected(final int selected) {
         Menu.selected = selected;
+    }
+
+    public final BorderPane getRootPane() {
+        return rootPane;
+    }
+
+    public final void setRootPane(final BorderPane rootPane) {
+        this.rootPane = rootPane;
+    }
+
+    public static Stage getMainStage() {
+        return mainStage;
+    }
+
+    public static void setMainStage(final Stage mainStage) {
+        Menu.mainStage = mainStage;
     }
 }
