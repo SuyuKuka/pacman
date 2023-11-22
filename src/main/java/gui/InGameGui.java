@@ -6,7 +6,6 @@ import gui.menu.Menu;
 import gui.menu.Multiplayer;
 import gui.menu.Solo;
 import gui.menu.Selector;
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -20,7 +19,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import model.MazeState;
@@ -28,8 +26,6 @@ import utils.Resources;
 import utils.Music;
 
 public final class InGameGui {
-    /** Le stage. */
-    private Stage primaryStage;
     /** La{@code Scene}actuelle. */
     private Scene gameScene;
     /** Le{@code StackPane}racine de tous les{@code Pane}. */
@@ -67,14 +63,14 @@ public final class InGameGui {
 
     private String mode;
 
+    private Selector selector;
+
     /**
      * Constructeur{@code InGameGui}.
-     * @param stage
      * @param scene
      * @param mode
      */
-    public InGameGui(final Stage stage, final Scene scene, final String mode) {
-        primaryStage = stage;
+    public InGameGui(final Scene scene, final String mode) {
         gameScene = scene;
         this.mode = mode;
         addPauseHandlers();
@@ -91,8 +87,8 @@ public final class InGameGui {
         final int heightDiff = 40;
         final double opacity = 0.6;
         dimBackground = new Rectangle(
-            0, 0, primaryStage.getWidth(),
-            primaryStage.getHeight() - heightDiff
+            0, 0, Menu.getMainStage().getWidth(),
+            Menu.getMainStage().getHeight() - heightDiff
         );
         dimBackground.setFill(Color.GRAY);
         dimBackground.setOpacity(opacity);
@@ -260,43 +256,40 @@ public final class InGameGui {
     }
 
     private void addEndHandlers() {
-        EventHandler<MouseEvent> restart = new EventHandler<>() {
-            @Override
-            public void handle(final MouseEvent mouseEvent) {
-                endgameOptions.get(0).removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
-                if (mode.equals("Solo")) {
-                    Solo.startLevel(primaryStage, currentLevel);
-                } else {
-                    Multiplayer.startLevel(primaryStage, currentLevel);
-                }
+        selector = new Selector(endGameSelects, endgameOptions, gameScene, false);
+
+        endgameOptions.get(0).addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
+            if (mode.equals("Solo")) {
+                Solo.startLevel(currentLevel);
+            } else {
+                Multiplayer.startLevel(currentLevel);
             }
-        };
-                endgameOptions.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, restart);
-        endgameOptions.get(1).addEventHandler(
-            MouseEvent.MOUSE_CLICKED, mouseEvent -> Menu.toMenu(primaryStage)
-        );
+            selector.getKeySelector().resetSelect();
+        });
+        endgameOptions.get(1).addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
+            Menu.toMenu();
+            selector.getKeySelector().resetSelect();
+        });
 
-        new Selector(endGameSelects, endgameOptions, primaryStage, gameScene, false);
-
-
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
+        gameScene.addEventHandler(KeyEvent.KEY_RELEASED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
                 switch (Menu.getSelected()) {
                     case 0:
                         if (mode.equals("Solo")) {
-                            Solo.startLevel(primaryStage, currentLevel);
+                            Solo.startLevel(currentLevel);
                         } else {
-                            Multiplayer.startLevel(primaryStage, currentLevel);
+                            Multiplayer.startLevel(currentLevel);
                         }
                         break;
 
                     case 1:
-                        Menu.toMenu(primaryStage);
+                        Menu.toMenu();
                         break;
 
                     default:
                         break;
                 }
+                selector.getKeySelector().resetSelect();
             }
         });
     }
@@ -372,32 +365,28 @@ public final class InGameGui {
     }
 
     private void addPauseHandlers() {
-        EventHandler<MouseEvent> restart = new EventHandler<>() {
-            @Override
-            public void handle(final MouseEvent mouseEvent) {
-                pauseOptions.get(1).removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
-                pause(false);
-                if (mode.equals("Solo")) {
-                    Solo.startLevel(primaryStage, currentLevel);
-                } else {
-                    Multiplayer.startLevel(primaryStage, currentLevel);
-                }
-            }
-        };
+        selector = new Selector(pauseSelects, pauseOptions, gameScene, true);
 
-        pauseOptions.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
+        pauseOptions.get(0).addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
             pause(false);
             Music.resume();
+            selector.getKeySelector().resetSelect();
         });
-        pauseOptions.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, restart);
-        pauseOptions.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED,
-            mouseEvent -> Menu.toMenu(primaryStage)
-        );
+        pauseOptions.get(1).addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
+            pause(false);
+            if (mode.equals("Solo")) {
+                Solo.startLevel(currentLevel);
+            } else {
+                Multiplayer.startLevel(currentLevel);
+            }
+            selector.getKeySelector().resetSelect();
+        });
+        pauseOptions.get(2).addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
+            Menu.toMenu();
+            selector.getKeySelector().resetSelect();
+        });
 
-        new Selector(pauseSelects, pauseOptions, primaryStage, gameScene, true);
-
-
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keyEvent -> {
+        gameScene.addEventHandler(KeyEvent.KEY_RELEASED, keyEvent -> {
             if (paused && keyEvent.getCode() == KeyCode.ENTER) {
                 pause(false);
                 switch (Menu.getSelected()) {
@@ -407,19 +396,20 @@ public final class InGameGui {
 
                     case 1:
                         if (mode.equals("Solo")) {
-                            Solo.startLevel(primaryStage, currentLevel);
+                            Solo.startLevel(currentLevel);
                         } else {
-                            Multiplayer.startLevel(primaryStage, currentLevel);
+                            Multiplayer.startLevel(currentLevel);
                         }
                         break;
 
                     case 2:
-                        Menu.toMenu(primaryStage);
+                        Menu.toMenu();
                         break;
 
                     default:
                         break;
                 }
+                selector.getKeySelector().resetSelect();
             }
         });
     }

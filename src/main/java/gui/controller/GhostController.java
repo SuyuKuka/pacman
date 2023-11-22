@@ -19,27 +19,22 @@ public final class GhostController extends Controller implements KeyHandlers {
     }
 
     @Override
-        public void keyPressedHandler(final KeyEvent event) {
-            if (InGameGui.isPaused() || Music.isStartBgmPlaying()) {
-                return;
+    public void keyPressedHandler(final KeyEvent event) {
+        if (InGameGui.isPaused() || Music.isStartBgmPlaying()) {
+            return;
+        }
+
+        playerGhost.getDirectionBuffer().setBufferDirection(
+            switch (event.getCode()) {
+                case Z -> Direction.NORTH;
+                case W -> Direction.NORTH;
+                case D -> Direction.EAST;
+                case S -> Direction.SOUTH;
+                case Q -> Direction.WEST;
+                case A -> Direction.WEST;
+                default -> playerGhost.getDirectionBuffer().getBufferDirection();
             }
-
-            playerGhost.getDirectionBuffer().setBufferDirection(
-                switch (event.getCode()) {
-                    case Z -> Direction.NORTH;
-                    case W -> Direction.NORTH;
-                    case D -> Direction.EAST;
-                    case S -> Direction.SOUTH;
-                    case Q -> Direction.WEST;
-                    case A -> Direction.WEST;
-                    default -> playerGhost.getDirectionBuffer().getBufferDirection();
-                }
-            );
-            playerGhost.getDirectionBuffer().setDirectionBufferTimer(0);
-        }
-
-        @Override
-        public void keyReleasedHandler(final KeyEvent event) {
-            playerGhost.getDirectionBuffer().setDirectionBufferTimer(0);
-        }
+        );
+        playerGhost.getDirectionBuffer().setDirectionBufferTimer(0);
+    }
 }

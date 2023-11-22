@@ -13,7 +13,6 @@ import gui.controller.PacmanController2;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -34,43 +33,50 @@ import model.Ghost.GhostType;
 import utils.Music;
 
 public final class Multiplayer extends Menu {
-    /** Initialise un rootPane pour Multiplayer. */
-    private BorderPane rootPane = new BorderPane();
-
+    private BorderPane multiPane;
+    private Scene multiScene;
     private DoubleProperty fontSize = new SimpleDoubleProperty(INITIAL_TEXT_SIZE);
     private Text titleText;
     private ArrayList<HBox> options = new ArrayList<>();
     private ArrayList<Text> selects = new ArrayList<>();
     private ArrayList<Text> choices = new ArrayList<>();
 
+    public static final Multiplayer INSTANCE = new Multiplayer();
+
+    private Multiplayer() {
+    }
+
     @Override
     public void start(final Stage primaryStage) {
-        Scene gameScene = new Scene(
-            rootPane,
-            primaryStage.getScene() == null
-            ? primaryStage.getWidth() : primaryStage.getScene().getWidth(),
-            primaryStage.getScene() == null
-            ? primaryStage.getHeight() : primaryStage.getScene().getHeight()
+        multiPane = new BorderPane();
+        multiScene = new Scene(
+            multiPane,
+            primaryStage.getScene().getWidth(),
+            primaryStage.getScene().getHeight()
         );
-        rootPane.prefWidthProperty().bind(gameScene.widthProperty());
-        rootPane.prefHeightProperty().bind(gameScene.heightProperty());
-        rootPane.setBackground(getBackground(primaryStage));
+        multiScene.setFill(Color.BLACK);
 
-        addMainBox(gameScene);
-        addEventHandlers(primaryStage, gameScene);
+        multiPane.prefWidthProperty().bind(Menu.getMainStage().getScene().widthProperty());
+        multiPane.prefHeightProperty().bind(Menu.getMainStage().getScene().heightProperty());
+        multiPane.setBackground(getBackground());
 
-        gameScene.setFill(Color.BLACK);
-        primaryStage.setScene(gameScene);
-        primaryStage.show();
+        addMainBox(multiScene);
+        addEventHandlers(multiScene);
+    }
+
+    /**
+     * Affiche le menu Multiplayer.
+     */
+    public void toMulti() {
+        Menu.getMainStage().setScene(multiScene);
     }
 
     /**
      * Méthode permettant de lancer un niveau, le niveau lancé dépend de
      * la variable statique {@code selected} de la classe {@code Menu}.
-     * @param primaryStage
      * @param mode
      */
-    public static void startLevel(final Stage primaryStage, final int mode) {
+    public static void startLevel(final int mode) {
         InGameGui.setCurrentLevel(mode);
         Music.stopBackgroundMusic();
 
@@ -78,10 +84,8 @@ public final class Multiplayer extends Menu {
 
         Scene gameScene = new Scene(
             pane,
-            primaryStage.getScene() == null
-            ? primaryStage.getWidth() : primaryStage.getScene().getWidth(),
-            primaryStage.getScene() == null
-            ? primaryStage.getHeight() : primaryStage.getScene().getHeight()
+            Menu.getMainStage().getScene().getWidth(),
+            Menu.getMainStage().getScene().getHeight()
         );
 
         MazeState maze;
@@ -100,36 +104,28 @@ public final class Multiplayer extends Menu {
                 break;
         }
 
-        primaryStage.setScene(gameScene);
-        InGameGui inGameGui = new InGameGui(primaryStage, gameScene, "Multi");
+        InGameGui inGameGui = new InGameGui(gameScene, "Multi");
 
         Controller.setInGameGui(inGameGui);
         var pacmanController = new PacmanController(maze.getConfig().getPacman());
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, pacmanController::keyPressedHandler);
-        gameScene.addEventHandler(KeyEvent.KEY_RELEASED, pacmanController::keyReleasedHandler);
 
         if (mode == versus) {
             List<Ghost> blinkys = maze.getConfig().getGhostKind(GhostType.BLINKY);
             Ghost playerGhost = blinkys.get(0);
             playerGhost.setDirectionBuffer(new DirectionBuffer());
-            var playerGhostController = new GhostController(playerGhost);
+            var ghostController = new GhostController(playerGhost);
 
-            gameScene.addEventHandler(
-                KeyEvent.KEY_PRESSED, playerGhostController::keyPressedHandler
-            );
-            gameScene.addEventHandler(
-                KeyEvent.KEY_RELEASED, playerGhostController::keyReleasedHandler
-            );
+            gameScene.addEventHandler(KeyEvent.KEY_PRESSED, ghostController::keyPressedHandler);
         } else if (mode == coop) {
             var pacmanController2 = new PacmanController2(maze.getConfig().getPacman2());
             gameScene.addEventHandler(KeyEvent.KEY_PRESSED, pacmanController2::keyPressedHandler);
-            gameScene.addEventHandler(KeyEvent.KEY_RELEASED, pacmanController2::keyReleasedHandler);
         }
 
         GameView.INSTANCE.setGameView(maze, inGameGui, pane);
         GameView.INSTANCE.stopAnimation();
-        primaryStage.show();
         GameView.INSTANCE.animate();
+        Menu.getMainStage().setScene(gameScene);
     }
 
     @Override
@@ -149,78 +145,70 @@ public final class Multiplayer extends Menu {
         Text selectBack = createText(">", fontSize.getValue().intValue());
         Text back = createText("Back", fontSize.getValue().intValue());
 
-        options.add(0, createHBox(
-            spacingSize, Pos.CENTER, select0, versus
-        ));
-        options.add(1, createHBox(
-            spacingSize, Pos.CENTER, select1, coop
-        ));
-        options.add(2, createHBox(
-            spacingSize, Pos.BOTTOM_LEFT, selectBack, back
-        ));
+        if (options.isEmpty()) {
+            options.add(0, createHBox(
+                spacingSize, Pos.CENTER, select0, versus
+            ));
+            options.add(1, createHBox(
+                spacingSize, Pos.CENTER, select1, coop
+            ));
+            options.add(2, createHBox(
+                spacingSize, Pos.BOTTOM_LEFT, selectBack, back
+            ));
+        }
 
         VBox optionBox = createVBox(
             spacingSize, Pos.CENTER, options.get(0), options.get(1)
         );
 
-        selects.add(0, select0);
-        selects.add(1, select1);
-        selects.add(2, selectBack);
+        if (selects.isEmpty() && choices.isEmpty()) {
+            selects.add(0, select0);
+            selects.add(1, select1);
+            selects.add(2, selectBack);
 
-        choices.add(0, versus);
-        choices.add(1, coop);
-        choices.add(2, back);
+            choices.add(0, versus);
+            choices.add(1, coop);
+            choices.add(2, back);
+        }
 
         bindTextSizeToScene(gameScene);
 
-        rootPane.setTop(title);
-        rootPane.setCenter(optionBox);
-        rootPane.setBottom(options.get(2));
+        multiPane.setTop(title);
+        multiPane.setCenter(optionBox);
+        multiPane.setBottom(options.get(2));
         //CHECKSTYLE:OFF
         BorderPane.setMargin(title, new Insets(100, 0, 0, 0));
         //CHECKSTYLE:ON
     }
 
     @Override
-    protected void addEventHandlers(final Stage primaryStage, final Scene gameScene) {
-        EventHandler<MouseEvent> mouseClick0 = new EventHandler<>() {
-            @Override
-            public void handle(final MouseEvent mouseEvent) {
-                options.get(0).removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
-                startLevel(primaryStage, 0);
-            }
-        };
-        EventHandler<MouseEvent> mouseClick1 = new EventHandler<>() {
-            @Override
-            public void handle(final MouseEvent mouseEvent) {
-                options.get(1).removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
-                startLevel(primaryStage, 1);
-            }
-        };
+    protected void addEventHandlers(final Scene gameScene) {
+        Selector selector = new Selector(selects, choices, gameScene, false);
 
-        options.get(0).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseClick0);
+        options.get(0).addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
+            startLevel(0);
+            selector.getKeySelector().resetSelect();
+        });
         // TODO : Niveau coop
-        options.get(1).addEventHandler(MouseEvent.MOUSE_CLICKED, mouseClick1);
-        options.get(2).addEventHandler(MouseEvent.MOUSE_CLICKED,
-            mouseEvent -> Menu.toMenu(primaryStage)
-        );
+        options.get(1).addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
+            startLevel(1);
+            selector.getKeySelector().resetSelect();
+        });
+        options.get(2).addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
+            Menu.toMenu();
+            selector.getKeySelector().resetSelect();
+        });
 
-        EventHandler<KeyEvent> enterPressed = new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(final KeyEvent event) {
-                if (event.getCode() == KeyCode.ENTER) {
-                    gameScene.removeEventHandler(KeyEvent.KEY_PRESSED, this);
-                    if (Menu.getSelected() == 2) {
-                        Menu.toMenu(primaryStage);
-                    } else {
-                        startLevel(primaryStage, Menu.getSelected());
-                    }
+        gameScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                if (Menu.getSelected() == 2) {
+                    Menu.toMenu();
+                } else {
+                    startLevel(Menu.getSelected());
                 }
+                selector.getKeySelector().resetSelect();
             }
-        };
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, enterPressed);
-
-        new Selector(selects, choices, primaryStage, gameScene, false);
+        });
     }
 
     @Override

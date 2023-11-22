@@ -10,46 +10,42 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.text.Text;
-import javafx.stage.Stage;
 
-public class Selector {
-    private int selected;
-    private Scene gamScene;
+public final class Selector {
+    /** Indice de l'option actuellement choisi. */
+    private int currentlySelected;
     private KeySelector keySelector;
-    private ArrayList<MouseSelector> mouseSelectors = new ArrayList<>();
 
     /**
      * Constructeur Selector.
      * Initialise le{@code KeySelector}et le{@code MouseSelector}.
      * @param selects Les ">"
      * @param choices
-     * @param primaryStage
      * @param gameScene
      * @param pauseMenu {@code true}si c'est pour le menu pause
      */
     public Selector(
     final List<Text> selects,
     final List<Text> choices,
-    final Stage primaryStage,
     final Scene gameScene,
     final boolean pauseMenu) {
-        selected = 0;
-        this.gamScene = gameScene;
-        keySelector = new KeySelector(selects, primaryStage, pauseMenu);
-        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySelector);
+        currentlySelected = 0;
+        keySelector = new KeySelector(selects, pauseMenu);
+        gameScene.addEventHandler(KeyEvent.KEY_RELEASED, keySelector);
         int index = 0;
         for (Text text : choices) {
             MouseSelector m = new MouseSelector(selects, index++);
-            text.setOnMouseEntered(m);
-            mouseSelectors.add(m);
+            text.addEventHandler(MouseEvent.MOUSE_ENTERED, m);
         }
     }
 
-    public class KeySelector implements EventHandler<KeyEvent> {
+    public KeySelector getKeySelector() {
+        return keySelector;
+    }
+
+    public final class KeySelector implements EventHandler<KeyEvent> {
         /** Les ">". */
         private ArrayList<Text> selects;
-        /** Le{@code Stage} principal.*/
-        private Stage primaryStage;
         /** Plus grand indice de choix. */
         private int maxChoice;
         /**
@@ -61,19 +57,15 @@ public class Selector {
         /**
          * Constructeur KeySelector.
          * @param newSelects
-         * @param newPrimaryStage
          * @param pauseMenu
          */
         public KeySelector(
             final List<Text> newSelects,
-            final Stage newPrimaryStage,
             final boolean pauseMenu
             ) {
             selects = new ArrayList<>(newSelects);
-            primaryStage = newPrimaryStage;
             isPauseMenu = pauseMenu;
 
-            Menu.setSelected(0);
             maxChoice = selects.size() - 1;
 
             for (int i = 1; i <= maxChoice; i++) {
@@ -89,41 +81,50 @@ public class Selector {
          */
         @Override
         public void handle(final KeyEvent keyEvent) {
-            if (isPauseMenu && !gui.InGameGui.isPaused()) {
+            if (isPauseMenu && !InGameGui.isPaused()) {
                 return;
             }
-
             if (keyEvent.getCode() == KeyCode.UP) {
                 // Flèche vers le haut
-                selects.get(selected).setVisible(false);
-                selected--;
-                if (selected < 0) {
-                    selected = maxChoice;
+                selects.get(Menu.getSelected()).setVisible(false);
+                currentlySelected = Menu.getSelected() - 1;
+                if (currentlySelected < 0) {
+                    currentlySelected = maxChoice;
                     Menu.setSelected(maxChoice);
                 } else {
-                    Menu.setSelected(selected);
+                    Menu.setSelected(currentlySelected);
                 }
                 selects.get(Menu.getSelected()).setVisible(true);
             } else if (keyEvent.getCode() == KeyCode.DOWN) {
                 // Flèche vers le bas
-                selects.get(selected).setVisible(false);
-                selected++;
-                if (selected > maxChoice) {
-                    selected = 0;
+                selects.get(Menu.getSelected()).setVisible(false);
+                currentlySelected = Menu.getSelected() + 1;
+                if (currentlySelected > maxChoice) {
+                    currentlySelected = 0;
                     Menu.setSelected(0);
                 } else {
-                    Menu.setSelected(selected);
+                    Menu.setSelected(currentlySelected);
                 }
                 selects.get(Menu.getSelected()).setVisible(true);
-            } else if (keyEvent.getCode() == KeyCode.ESCAPE && !isPauseMenu) {
-                Menu.toMenu(primaryStage);
-            } else if (keyEvent.getCode() == KeyCode.ENTER && !InGameGui.isPaused()) {
-                gamScene.removeEventHandler(KeyEvent.KEY_PRESSED, this);
+            } else if (keyEvent.getCode() == KeyCode.ESCAPE && !InGameGui.isPaused()) {
+                resetSelect();
+                Menu.toMenu();
             }
+        }
+
+        /**
+         * Réinitialise les ">".
+         */
+        public void resetSelect() {
+            Menu.setSelected(0);
+            for (int i = 1; i <= maxChoice; i++) {
+                selects.get(i).setVisible(false);
+            }
+            selects.get(0).setVisible(true);
         }
     }
 
-    public class MouseSelector implements EventHandler<MouseEvent> {
+    public final class MouseSelector implements EventHandler<MouseEvent> {
         /** Les ">". */
         private ArrayList<Text> selects;
         /** L'indice du choix. */
@@ -148,11 +149,8 @@ public class Selector {
                 selects.get(i).setVisible(false);
             }
             Menu.setSelected(select);
-            selected = select;
-            selects.get(selected).setVisible(true);
-            if (mouseEvent.getEventType() == MouseEvent.MOUSE_CLICKED) {
-                gamScene.removeEventHandler(MouseEvent.MOUSE_CLICKED, this);
-            }
+            currentlySelected = select;
+            selects.get(currentlySelected).setVisible(true);
         }
     }
 }

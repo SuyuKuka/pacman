@@ -102,6 +102,9 @@ public final class MazeState {
             for (Ghost ghost : config.getGhostList()) {
                 if (ghost.getGhostState() == GhostState.NORMAL) {
                     ghost.setGhostState(GhostState.FRIGHTENED);
+                    if (ghost.isPlayer()) {
+                        continue;
+                    }
                     ghost.setDirection(ghost.getDirection().getOpposite());
                 }
             }

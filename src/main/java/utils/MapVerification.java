@@ -6,7 +6,7 @@ import config.Cell.Content;
 
 public final class MapVerification {
 // CHECKSTYLE:OFF
-    public final static boolean f = false;
+    public static final boolean F = false;
 
     private MapVerification() {
     }
@@ -25,7 +25,7 @@ public final class MapVerification {
                     isTunnel = c[i - 1][j].hasWall() && c[i + 1][j].hasWall();
                     if (c[i][j].getContent() == Content.DOT && isTunnel) {
                         c[i][j] = new Cell(false, false, false, false, Content.TUNNEL, false);
-                        c[i][c[0].length - j - 1] = new Cell(f, f, f, f, Content.TUNNEL, f);
+                        c[i][c[0].length - j - 1] = new Cell(F, F, F, F, Content.TUNNEL, F);
                     } else {
                         break;
                     }
@@ -45,10 +45,7 @@ public final class MapVerification {
             || c.getContent() == Content.TUNNEL) {
             return true;
         }
-        if (!c.hasWall() && c.getContent() == Content.NOTHING) {
-            return true;
-        }
-        return false;
+        return !c.hasWall() && c.getContent() == Content.NOTHING;
     }
 
     /**
@@ -83,7 +80,7 @@ public final class MapVerification {
                     wall[1] = (j == posXMaze || isAValidWall(grid[i][j + 1]));
                     wall[2] = (i == grid.length - posYMaze || isAValidWall(grid[i + 1][j]));
                     wall[3] = (j == 0 || isAValidWall(grid[i][j - 1]));
-                    copy[i][j] = new Cell(wall[0], wall[1], wall[2], wall[3], Content.NOTHING, f);
+                    copy[i][j] = new Cell(wall[0], wall[1], wall[2], wall[3], Content.NOTHING, F);
                 } else {
                     copy[i][j] = grid[i][j];
                 }
@@ -91,9 +88,7 @@ public final class MapVerification {
         }
 
         for (int i = 0; i < copy.length; i++) {
-            for (int j = 0; j < copy[i].length; j++) {
-                grid[i][j] = copy[i][j];
-            }
+            grid[i] = Arrays.copyOf(copy[i], copy[i].length);
         }
     }
     //CHECKSTYLE:ON
