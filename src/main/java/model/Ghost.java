@@ -502,7 +502,7 @@ public final class Ghost extends Critter {
             if (pos.equals(nextPos)) {
                 return;
             } else if (pos.haveSameNeighbours(nextPos)) {
-                nextPos = pos.centeredPos(nextPos, true, config).warp(width, height);
+                nextPos = pos.adjustNextPos(nextPos, true).warp(width, height);
             } else {
                 nextPos = furthestFreeCell(nextPos, config).warp(width, height);
             }
@@ -531,7 +531,7 @@ public final class Ghost extends Critter {
             }
         }
         // Cas où aucun mur n'a été trouvé, renvoie nextPos
-        return pos.centeredPos(end, true, config);
+        return pos.adjustNextPos(end, true);
     }
 
     //endregion Position

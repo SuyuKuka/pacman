@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import config.MazeConfig;
 import model.Direction;
 
 public record RealCoordinates(double x, double y) {
@@ -130,44 +129,62 @@ public record RealCoordinates(double x, double y) {
     }
 
     /**
-     * Méthode qui permet d'obtenir exactement le centre d'une case
-     * si on la traverse (entre{@code this}et{@code end}). <br><br>
-     * Sinon, renvoie la coordonnée de destination initiale.
-     * @param end Le RealCoordinates destination
-     * @param precision {@code boolean}
-     * @param config
-     * @return Retourne un {@link RealCoordinates} qui prend soit
-     * les coordonnées exacte du centre d'une case traversée,
-     * soit la valeur{@code end}.
+     * Méthode qui renvoie un {@link RealCoordinates} où ses coordonnées on été ajustée à l'unité ou
+     * par 0.5. Cette méthode est utile pour le calcul de la prochaine position pour les
+     * {@link Critters} (Le centre d'une case est toujours une valeur entière et
+     * la position entre 2 cases est toujours une valeur qui se finit par 0.5).
+     * <p> Exemple : Si this.x = 1.9 et end.x = 2.4, alors adjustPosition() = 2
+     * <p> Exemple : Si this.x = 2.3 et end.x = 2.7, alors adjustPosition() = 2.5
+     * @param end
+     * @param precision Vrai n'avoir que les coordonnées ajustées par 1.
+     * Faux pour toutes les coordonnées ajustée par 0.5.
+     * @return
      */
-    public RealCoordinates centeredPos(final RealCoordinates end, final boolean precision,
-        final MazeConfig config) {
+    public RealCoordinates adjustNextPos(final RealCoordinates end, final boolean precision) {
         //CHECKSTYLE:OFF
         final Direction d = this.getDirectionTo(end);
         final double value = precision ? 0.5 : 1;
         switch (d) {
-        case NORTH:
-            if (y % value != 0 && end.y() % value > this.y() % value) {
-                return new RealCoordinates(x, y - doubleMod(y, value));
-            }
-            break;
-        case EAST:
-            if (end.x() % value < this.x() % value) {
-                return new RealCoordinates((x - x % value) + value, y);
-            }
-            break;
-        case SOUTH:
-            if (y % value != 0 && end.y() % value < this.y() % value) {
-                return new RealCoordinates(x, (y - y % value) + value);
-            }
-            break;
-        case WEST:
-            if (x % value != 0 && end.x() % value > this.x() % value) {
-                return new RealCoordinates(x - doubleMod(x, value), y);
-            }
-            break;
-        default:
-            break;
+            case NORTH: {
+                    if (y % value == 0) {
+                        break;
+                    }
+                    int curY = (int) (y / value);
+                    int nextY = (int) (end.y / value);
+                    if (curY > nextY) {
+                        return new RealCoordinates(x, value + end.y - end.y % value);
+                    }
+                }
+                break;
+            case EAST: {
+                    int curX = (int) (x / value);
+                    int nextX = (int) (end.x / value);
+                    if (curX < nextX && end.x % value < value / 2) {
+                        return new RealCoordinates(end.x - end.x % value, y);
+                    }
+                }
+                break;
+            case SOUTH: {
+                    int curY = (int) (y / value);
+                    int nextY = (int) (end.y / value);
+                    if (curY < nextY && end.y % value < value / 2) {
+                        return new RealCoordinates(x, end.y - end.y % value);
+                    }
+                }
+                break;
+            case WEST: {
+                    if (x % value == 0) {
+                        break;
+                    }
+                    int curX = (int) (x / value);
+                    int nextX = (int) (end.x / value);
+                    if (curX > nextX) {
+                        return new RealCoordinates(value + end.x - end.x % value, y);
+                    }
+                }
+                break;
+            default:
+                break;
         }
         return end;
         //CHECKSTYLE:ON
