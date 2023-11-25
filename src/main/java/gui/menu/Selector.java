@@ -128,16 +128,16 @@ public final class Selector {
         /** Les ">". */
         private ArrayList<Text> selects;
         /** L'indice du choix. */
-        private int select;
+        private int selectKey;
 
         /**
          * Constructeur MouseSelector.
          * @param newSelects
-         * @param newSelect
+         * @param key
          */
-        public MouseSelector(final List<Text> newSelects, final int newSelect) {
+        public MouseSelector(final List<Text> newSelects, final int key) {
             selects = new ArrayList<>(newSelects);
-            select = newSelect;
+            selectKey = key;
         }
 
         /**
@@ -148,9 +148,9 @@ public final class Selector {
             for (int i = 0; i < selects.size(); i++) {
                 selects.get(i).setVisible(false);
             }
-            Menu.setSelected(select);
-            currentlySelected = select;
-            selects.get(currentlySelected).setVisible(true);
+            Menu.setSelected(selectKey);
+            currentlySelected = selectKey;
+            selects.get(selectKey).setVisible(true);
         }
     }
 }

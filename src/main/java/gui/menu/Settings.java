@@ -96,8 +96,7 @@ public final class Settings extends Menu {
 
             selects.add(0, selectback);
 
-            choices.add(0, volumeText);
-            choices.add(1, back);
+            choices.add(0, back);
         }
 
         bindTextSizeToScene(gameScene);
