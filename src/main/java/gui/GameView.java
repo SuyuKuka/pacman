@@ -2,11 +2,11 @@ package gui;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
-import gui.menu.Menu;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import model.Ghost;
 import model.MazeState;
 import model.PacMan;
@@ -19,15 +19,13 @@ public final class GameView {
     /** La carte qui sera affichée. */
     private MazeState instMaze;
     /** {@code HBox}contenant la map et le score / vie. */
-    private HBox gameBox;
+    private HBox mainBox;
     /** Map node. */
-    private GridPane gameRoot;
+    private GridPane mapPane;
     /** L'AnimationTimer qui appelle les fonctions d'update. */
     private AnimationTimer animationTimer;
     /** Liste d'éléments à update. */
     private List<GraphicsUpdater> graphicsUpdaters;
-    /** Largeur additionnelle pour l'affichage des infos à droite. */
-    private static final double RIGHT_WIDTH = 300;
     /** Nombre de pixels représentant une unité de la map. */
     private static final double SCALE = 18;
     private InGameGui inGameGui;
@@ -39,13 +37,19 @@ public final class GameView {
     public static final GameView INSTANCE = new GameView();
 
     private void addGraphics(final GraphicsUpdater updater, final int x, final int y) {
-        gameRoot.add(updater.getNode(), x, y);
+        mapPane.add(updater.getNode(), x, y);
+        graphicsUpdaters.add(updater);
+    }
+
+    private void addCritterGraphics(final GraphicsUpdater updater) {
+        HBox box = new HBox(updater.getNode());
+        box.setAlignment(Pos.CENTER);
+        mapPane.add(box, 0, 0);
         graphicsUpdaters.add(updater);
     }
 
     /**
-     * @param maze  le "modèle" de cette vue
-     * (le labyrinthe et tout ce qui s'y trouve)
+     * @param maze  le "modèle" de cette vue (le labyrinthe et tout ce qui s'y trouve)
      * @param newInGameGui {@code InGameGui}courant
      * @param box  le nœud racine dans la scène JavaFX dans lequel
      * le jeu sera affiché
@@ -54,25 +58,25 @@ public final class GameView {
         final MazeState maze, final InGameGui newInGameGui, final HBox box) {
         instMaze = maze;
         inGameGui = newInGameGui;
-        gameBox = box;
+        mainBox = box;
+        mapPane = new GridPane();
 
-        gameRoot = new GridPane();
-        box.setAlignment(Pos.CENTER);
-        box.getChildren().add(gameRoot);
+        VBox mapBox = new VBox();
+        mapBox.setAlignment(Pos.CENTER);
+        mapBox.getChildren().add(mapPane);
 
-        box.setStyle("-fx-background-color: #336699");
-        gameRoot.setMaxHeight(300);
-        gameRoot.setMaxWidth(300);
-        gameRoot.setStyle("-fx-background-color: #226699");
+        mainBox.setAlignment(Pos.CENTER);
+        mainBox.getChildren().addAll(mapBox);
+        mainBox.setStyle("-fx-background-color: #000000");
 
         var critterFactory = new CritterGraphicsFactory(SCALE);
         var cellFactory = new CellGraphicsFactory(SCALE);
         graphicsUpdaters = new ArrayList<>();
         for (var critter : maze.getConfig().getCritters()) {
             if (critter instanceof PacMan) {
-                addGraphics(critterFactory.makePacGraphics((PacMan) critter, maze), 0, 0);
+                addCritterGraphics(critterFactory.makePacGraphics((PacMan) critter, maze));
             } else {
-                addGraphics(critterFactory.makeGhostGraphics((Ghost) critter), 0, 0);
+                addCritterGraphics(critterFactory.makeGhostGraphics((Ghost) critter));
             }
         }
 
@@ -132,7 +136,8 @@ public final class GameView {
     /** Remets à{@code null} les variables. */
     public void resetInstance() {
         instMaze = null;
-        gameRoot = null;
+        mainBox = null;
+        mapPane = null;
         animationTimer = null;
         graphicsUpdaters = null;
     }

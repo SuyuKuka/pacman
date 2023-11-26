@@ -48,8 +48,8 @@ public final class CritterGraphicsFactory {
         return new GraphicsUpdater() {
             @Override
             public void update() {
-                image.setTranslateX((pacman.getPos().x() + (1 - SIZE) / 2) * scale);
-                image.setTranslateY((pacman.getPos().y() + (1 - SIZE) / 2) * scale);
+                image.setTranslateX(pacman.getPos().x() * scale);
+                image.setTranslateY(pacman.getPos().y() * scale);
 
                 double graphicsBuffer
                 = pacman.getGraphicsBuffer().getUpdateBuffer() + UPDATE_FREQUENCY;
@@ -108,8 +108,8 @@ public final class CritterGraphicsFactory {
         return new GraphicsUpdater() {
             @Override
             public void update() {
-                image.setTranslateX((ghost.getPos().x()) * scale);
-                image.setTranslateY((ghost.getPos().y()) * scale);
+                image.setTranslateX(ghost.getPos().x() * scale);
+                image.setTranslateY(ghost.getPos().y() * scale);
 
                 double graphicsBuffer
                 = ghost.getGraphicsBuffer().getUpdateBuffer() + UPDATE_FREQUENCY;
