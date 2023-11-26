@@ -108,8 +108,8 @@ public final class CritterGraphicsFactory {
         return new GraphicsUpdater() {
             @Override
             public void update() {
-                image.setTranslateX((ghost.getPos().x() + (1 - SIZE) / 2) * scale);
-                image.setTranslateY((ghost.getPos().y() + (1 - SIZE) / 2) * scale);
+                image.setTranslateX((ghost.getPos().x()) * scale);
+                image.setTranslateY((ghost.getPos().y()) * scale);
 
                 double graphicsBuffer
                 = ghost.getGraphicsBuffer().getUpdateBuffer() + UPDATE_FREQUENCY;

@@ -2,8 +2,11 @@ package gui;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
+import gui.menu.Menu;
 import javafx.animation.AnimationTimer;
-import javafx.scene.layout.Pane;
+import javafx.geometry.Pos;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import model.Ghost;
 import model.MazeState;
 import model.PacMan;
@@ -15,8 +18,10 @@ import java.util.List;
 public final class GameView {
     /** La carte qui sera affichée. */
     private MazeState instMaze;
-    /** Main node. */
-    private Pane gameRoot;
+    /** {@code HBox}contenant la map et le score / vie. */
+    private HBox gameBox;
+    /** Map node. */
+    private GridPane gameRoot;
     /** L'AnimationTimer qui appelle les fonctions d'update. */
     private AnimationTimer animationTimer;
     /** Liste d'éléments à update. */
@@ -33,8 +38,8 @@ public final class GameView {
     /** Implémentation en singleton. */
     public static final GameView INSTANCE = new GameView();
 
-    private void addGraphics(final GraphicsUpdater updater) {
-        gameRoot.getChildren().add(updater.getNode());
+    private void addGraphics(final GraphicsUpdater updater, final int x, final int y) {
+        gameRoot.add(updater.getNode(), x, y);
         graphicsUpdaters.add(updater);
     }
 
@@ -42,35 +47,40 @@ public final class GameView {
      * @param maze  le "modèle" de cette vue
      * (le labyrinthe et tout ce qui s'y trouve)
      * @param newInGameGui {@code InGameGui}courant
-     * @param root  le nœud racine dans la scène JavaFX dans lequel
+     * @param box  le nœud racine dans la scène JavaFX dans lequel
      * le jeu sera affiché
      */
     public void setGameView(
-        final MazeState maze, final InGameGui newInGameGui, final Pane root) {
+        final MazeState maze, final InGameGui newInGameGui, final HBox box) {
         instMaze = maze;
         inGameGui = newInGameGui;
-        gameRoot = root;
+        gameBox = box;
 
-        // pixels per cell
-        root.setMinWidth(maze.getWidth() * SCALE + RIGHT_WIDTH);
-        root.setMinHeight(maze.getHeight() * SCALE);
-        root.setStyle("-fx-background-color: #000000");
+        gameRoot = new GridPane();
+        box.setAlignment(Pos.CENTER);
+        box.getChildren().add(gameRoot);
+
+        box.setStyle("-fx-background-color: #336699");
+        gameRoot.setMaxHeight(300);
+        gameRoot.setMaxWidth(300);
+        gameRoot.setStyle("-fx-background-color: #226699");
 
         var critterFactory = new CritterGraphicsFactory(SCALE);
         var cellFactory = new CellGraphicsFactory(SCALE);
         graphicsUpdaters = new ArrayList<>();
         for (var critter : maze.getConfig().getCritters()) {
             if (critter instanceof PacMan) {
-                addGraphics(critterFactory.makePacGraphics((PacMan) critter, maze));
+                addGraphics(critterFactory.makePacGraphics((PacMan) critter, maze), 0, 0);
             } else {
-                addGraphics(critterFactory.makeGhostGraphics((Ghost) critter));
+                addGraphics(critterFactory.makeGhostGraphics((Ghost) critter), 0, 0);
             }
         }
 
         for (int x = 0; x < maze.getWidth(); x++) {
             for (int y = 0; y < maze.getHeight(); y++) {
                 addGraphics(
-                    cellFactory.makeGraphics(maze, new IntCoordinates(x, y))
+                    cellFactory.makeGraphics(maze, new IntCoordinates(x, y)),
+                    x, y
                 );
             }
         }
@@ -148,7 +158,7 @@ public final class GameView {
             var cellFactory = new CellGraphicsFactory(SCALE);
             if (ghostTarget.getTarget() != null) {
                 RealCoordinates target = ghostTarget.getTarget();
-                addGraphics(cellFactory.showTarget(target));
+                addGraphics(cellFactory.showTarget(target), 0, 0);
             }
         }
     }

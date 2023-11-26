@@ -20,8 +20,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -80,7 +80,7 @@ public final class Multiplayer extends Menu {
         InGameGui.setCurrentLevel(mode);
         Music.stopBackgroundMusic();
 
-        Pane pane = new Pane();
+        GridPane pane = new GridPane();
 
         Scene gameScene = new Scene(
             pane,
@@ -122,7 +122,7 @@ public final class Multiplayer extends Menu {
             gameScene.addEventHandler(KeyEvent.KEY_PRESSED, pacmanController2::keyPressedHandler);
         }
 
-        GameView.INSTANCE.setGameView(maze, inGameGui, pane);
+        GameView.INSTANCE.setGameView(maze, inGameGui, new HBox());
         GameView.INSTANCE.stopAnimation();
         GameView.INSTANCE.animate();
         Menu.getMainStage().setScene(gameScene);

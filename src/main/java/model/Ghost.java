@@ -329,7 +329,7 @@ public final class Ghost extends Critter {
         // alors le fantôme doit aller vers sa cible en prenant un chemin prédéfini.
         if (ghostState == GhostState.EATEN && getPos().equals(config.getGhostSpawnEntrance())
                 || isInSpawn(config)) {
-            setDirection(getDirectionToEatenTarget(config));
+            setDirection(getDirectionToEatenTarget());
             return;
         }
 
@@ -454,10 +454,9 @@ public final class Ghost extends Critter {
     /**
      * Méthode qui renvoie la {@link Direction} que doit prendre le {@link Ghost}
      * pour retourner sur sa cellule de "reset/eatenTarget".
-     * @param config
      * @return {@link Direction}
      */
-    public Direction getDirectionToEatenTarget(final MazeConfig config) {
+    public Direction getDirectionToEatenTarget() {
         RealCoordinates pos = getPos();
         if (pos.y() == eatenTarget.y()) {
             if (pos.x() < eatenTarget.x()) {

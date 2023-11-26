@@ -40,8 +40,6 @@ public class CellGraphicsFactory {
         final int translateScale = 9;
 
         var group = new Group();
-        group.setTranslateX(pos.x() * scale);
-        group.setTranslateY(pos.y() * scale);
 
         Cell cell = state.getConfig().getCell(pos);
 
@@ -53,7 +51,7 @@ public class CellGraphicsFactory {
             case ENERGIZER -> scale / energizerScale;
             default -> 0;
         });
-        dot.setCenterX(scale / 2);
+        dot.setCenterX(40);
         dot.setCenterY(scale / 2);
         dot.setFill(Color.YELLOW);
         if (cell.getNorthWall()) {

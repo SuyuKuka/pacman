@@ -79,14 +79,20 @@ public final class MazeConfig {
         final double entranceX = 3.5;
         ghostSpawnEntrance = ghostSpawnPos[0].plus(new RealCoordinates(entranceX, entranceY));
 
-        pacman.setSpawnPos(critterSpawnOrTargetPos(null, false, "critterSpawn", configPath));
-        pacman.setPos(pacman.getSpawnPos());
+        RealCoordinates pacSpawnPos = critterSpawnOrTargetPos(
+            null, false, "critterSpawn", configPath
+        );
+        pacman.setSpawnPos(pacSpawnPos);
+        pacman.setPos(pacSpawnPos);
 
         // Multijoueur Coop
         if (coop) {
             pacman2 = new PacMan();
-            pacman2.setSpawnPos(critterSpawnOrTargetPos(null, true, "critterSpawn", configPath));
-            pacman2.setPos(pacman2.getSpawnPos());
+            RealCoordinates pac2SpawnPos = critterSpawnOrTargetPos(
+                null, false, "critterSpawn", configPath
+            );
+            pacman2.setSpawnPos(pac2SpawnPos);
+            pacman2.setPos(pac2SpawnPos);
             pacman2.setImage("pacman_rainbow_3");
             PacMan.setEnergizedDuration(PacMan.getMaxEnergizedTime() - 2);
         } else {
