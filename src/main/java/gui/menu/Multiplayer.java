@@ -58,7 +58,7 @@ public final class Multiplayer extends Menu {
         );
         multiScene.setFill(Color.BLACK);
 
-        addMainBox(multiScene);
+        addMainBox();
         addEventHandlers(multiScene);
     }
 
@@ -71,6 +71,8 @@ public final class Multiplayer extends Menu {
             Menu.getMainStage().getScene().getHeight()
         );
         multiScene.setFill(Color.BLACK);
+
+        addEventHandlers(multiScene);
     }
 
     /**
@@ -141,7 +143,7 @@ public final class Multiplayer extends Menu {
     }
 
     @Override
-    protected void addMainBox(final Scene gameScene) {
+    protected void addMainBox() {
         final int titleSize = 100;
         final int spacingSize = 20;
 
@@ -183,7 +185,7 @@ public final class Multiplayer extends Menu {
             choices.add(2, back);
         }
 
-        bindTextSizeToScene(gameScene);
+        bindTextSizeToScene();
 
         multiPane.setTop(title);
         multiPane.setCenter(optionBox);
@@ -224,13 +226,13 @@ public final class Multiplayer extends Menu {
     }
 
     @Override
-    protected void bindTextSizeToScene(final Scene gameScene) {
+    protected void bindTextSizeToScene() {
         final int scale = 30;
         final int titleScale = 50;
         final String fxFontSize = "-fx-font-size: ";
 
         fontSize.bind(
-            gameScene.widthProperty().divide(scale).add(gameScene.heightProperty().divide(scale))
+            multiScene.widthProperty().divide(scale).add(multiScene.heightProperty().divide(scale))
         );
 
         titleText.styleProperty().bind(

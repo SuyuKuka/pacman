@@ -53,7 +53,7 @@ public final class Solo extends Menu {
         );
         soloScene.setFill(Color.BLACK);
 
-        addMainBox(soloScene);
+        addMainBox();
         addEventHandlers(soloScene);
     }
 
@@ -66,6 +66,8 @@ public final class Solo extends Menu {
             Menu.getMainStage().getScene().getHeight()
         );
         soloScene.setFill(Color.BLACK);
+
+        addEventHandlers(soloScene);
     }
 
     /**
@@ -77,7 +79,7 @@ public final class Solo extends Menu {
     }
 
     @Override
-    protected void addMainBox(final Scene gameScene) {
+    protected void addMainBox() {
         final int titleSize = 100;
         final int spacingSize = 20;
 
@@ -109,7 +111,7 @@ public final class Solo extends Menu {
             choices.add(1, backText);
         }
 
-        bindTextSizeToScene(gameScene);
+        bindTextSizeToScene();
 
         soloPane.setTop(title);
         soloPane.setCenter(optionBox);
@@ -145,13 +147,13 @@ public final class Solo extends Menu {
     }
 
     @Override
-    protected void bindTextSizeToScene(final Scene gameScene) {
+    protected void bindTextSizeToScene() {
         final int scale = 30;
         final int titleScale = 50;
         final String fxFontSize = "-fx-font-size: ";
 
         fontSize.bind(
-            gameScene.widthProperty().divide(scale).add(gameScene.heightProperty().divide(scale))
+            soloScene.widthProperty().divide(scale).add(soloScene.heightProperty().divide(scale))
         );
 
         titleText.styleProperty().bind(

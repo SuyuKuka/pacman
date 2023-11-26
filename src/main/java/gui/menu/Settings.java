@@ -45,7 +45,7 @@ public final class Settings extends Menu {
         );
         settingsScene.setFill(Color.BLACK);
 
-        addMainBox(settingsScene);
+        addMainBox();
         addEventHandlers(settingsScene);
     }
 
@@ -58,6 +58,8 @@ public final class Settings extends Menu {
             Menu.getMainStage().getScene().getHeight()
         );
         settingsScene.setFill(Color.BLACK);
+
+        addEventHandlers(settingsScene);
     }
 
     /**
@@ -69,7 +71,7 @@ public final class Settings extends Menu {
     }
 
     @Override
-    protected void addMainBox(final Scene gameScene) {
+    protected void addMainBox() {
         final int titleSize = 100;
         final int spacingSize = 20;
 
@@ -109,7 +111,7 @@ public final class Settings extends Menu {
             choices.add(0, back);
         }
 
-        bindTextSizeToScene(gameScene);
+        bindTextSizeToScene();
 
         settingsPane.setTop(title);
         settingsPane.setCenter(volumeBox);
@@ -136,13 +138,15 @@ public final class Settings extends Menu {
     }
 
     @Override
-    protected void bindTextSizeToScene(final Scene gameScene) {
+    protected void bindTextSizeToScene() {
         final int scale = 30;
         final int titleScale = 50;
         final String fxFontSize = "-fx-font-size: ";
 
         fontSize.bind(
-            gameScene.widthProperty().divide(scale).add(gameScene.heightProperty().divide(scale))
+            settingsScene.widthProperty().divide(scale).add(
+                settingsScene.heightProperty().divide(scale)
+            )
         );
 
         titleText.styleProperty().bind(

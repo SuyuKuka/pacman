@@ -76,7 +76,7 @@ public class Menu extends Application {
         );
         menuScene.setFill(Color.BLACK);
 
-        addMainBox(menuScene);
+        addMainBox();
         addEventHandlers(menuScene);
 
         primaryStage.setScene(menuScene);
@@ -102,6 +102,8 @@ public class Menu extends Application {
             mainStage.getScene().getHeight()
         );
         menuScene.setFill(Color.BLACK);
+
+        addEventHandlers(menuScene);
     }
 
     /**
@@ -143,9 +145,8 @@ public class Menu extends Application {
 
     /**
      * Ajoute les options à la scène{@code gameScene}.
-     * @param gameScene
      */
-    protected void addMainBox(final Scene gameScene) {
+    protected void addMainBox() {
         final int titleSize = 100;
         final int spacingSize = 20;
 
@@ -198,7 +199,7 @@ public class Menu extends Application {
             choices.add(3, quit);
         }
 
-        bindTextSizeToScene(gameScene);
+        bindTextSizeToScene();
 
         menuPane.setTop(titleBox);
         menuPane.setCenter(optionBox);
@@ -209,15 +210,14 @@ public class Menu extends Application {
 
     /**
      * Relie la taille du texte à la taille de la fenêtre.
-     * @param gameScene
      */
-    protected void bindTextSizeToScene(final Scene gameScene) {
+    protected void bindTextSizeToScene() {
         final int scale = 30;
         final int titleScale = 50;
         final String fxFontSize = "-fx-font-size: ";
 
         fontSize.bind(
-            gameScene.widthProperty().divide(scale).add(gameScene.heightProperty().divide(scale))
+            menuScene.widthProperty().divide(scale).add(menuScene.heightProperty().divide(scale))
         );
 
         titleText.styleProperty().bind(
