@@ -28,15 +28,13 @@ import utils.Music;
 public final class InGameGui {
     /** La{@code Scene}actuelle. */
     private Scene gameScene;
-    /** Le{@code StackPane}racine de tous les{@code Pane}. */
-    private StackPane scorePane = new StackPane();
     /** Le{@code StackPane}de fin de jeu. */
     private StackPane endGamePane = new StackPane();
     /** Le{@code StackPane}lorsque le jeu est en pause. */
     private StackPane pausePane = new StackPane();
 
     /** Arrière-plan assombri. */
-    private Rectangle dimBackground;
+    private Rectangle dimBackground = makeDimBackground();
     /** Menu de fin de jeu. */
     private VBox endGameMenu;
     /** Les ">" du menu de fin de jeu. */
@@ -52,6 +50,8 @@ public final class InGameGui {
 
     /** Indice du niveau choisi. */
     private static int currentLevel;
+    /** {@code VBox}contenant le score et les vies. */
+    private VBox infos;
     /** Le{@code Text}contenant le score. */
     private Text scoreText;
     /** Un tableau contenant les images des vies de Pac-Man. */
@@ -80,45 +80,65 @@ public final class InGameGui {
     }
 
     /**
-     * Set le fond assombri par rapport aux dimensions
-     * du {@link #primaryStage}.
+     * Retourne un fond assombri par rapport aux dimensions du {@link Menu#mainStage}.
+     * @return {@code Rectangle}fond assombri
      */
-    public void setDimBackground() {
+    public Rectangle makeDimBackground() {
         final int heightDiff = 40;
         final double opacity = 0.6;
-        dimBackground = new Rectangle(
+        Rectangle dimBg = new Rectangle(
             0, 0, Menu.getMainStage().getWidth(),
             Menu.getMainStage().getHeight() - heightDiff
         );
-        dimBackground.setFill(Color.GRAY);
-        dimBackground.setOpacity(opacity);
+        dimBg.widthProperty().bind(Menu.getMainStage().widthProperty());
+        dimBg.heightProperty().bind(Menu.getMainStage().heightProperty().add(-heightDiff));
+        dimBg.setFill(Color.GRAY);
+        dimBg.setOpacity(opacity);
+
+        return dimBg;
     }
 
     /**
-     * Méthode qui affiche la zone du score lors du démarrage de la partie.
-     * @param state Le {@link MazeState} actuel
+     * Méthode qui ajoute les infos dans la scène de jeu.
+     * @param state
      */
-    public void displayScore(final MazeState state) {
+    public void displayInfos(final MazeState state) {
+        StackPane rootPane = (StackPane) gameScene.getRoot();
+        HBox gameBox = (HBox) (rootPane.getChildren().get(0));
+
+        infos = new VBox();
+        infos.setAlignment(Pos.CENTER);
+        infos.setSpacing(rootPane.getHeight() / 2);
+        makeScoreDisplay();
+        makeLivesDisplay(state);
+
+        gameBox.getChildren().add(infos);
+    }
+
+    /**
+     * Méthode qui ajoute le texte avec le score dans {@link #infos}.
+     */
+    public void makeScoreDisplay() {
         // Création d'un texte
+        Text title = new Text();
         scoreText = new Text();
-        // Position du score
-        final int translateX = 30 / 2;
-        final int translateY1 = 30 / 6;
-        final int translateY2 = 50;
-        scoreText.setTranslateX(
-            (double) (state.getWidth() + state.getHeight()) * translateX
-        );
-        scoreText.setTranslateY(
-            (double) (state.getHeight() + state.getWidth())
-            * translateY1 - translateY2
-        );
+
         // Configuration du texte
-        final int fontSize = 24;
-        scoreText.setFont(Font.loadFont(Resources.getFile("slkscr"), fontSize));
+        final int titleSize = 50;
+        final int scoreSize = 40;
+        final int spacing = 10;
+
+        title.setText("Score");
+        title.setFont(Font.loadFont(Resources.getFile("small_pixel-7"), titleSize));
+        title.setFill(Color.WHITE);
+        scoreText.setFont(Font.loadFont(Resources.getFile("small_pixel-7"), scoreSize));
         scoreText.setFill(Color.WHITE);
-        // Met le groupe dans la scene
-        scorePane.getChildren().add(scoreText);
-        ((Pane) gameScene.getRoot()).getChildren().add(scorePane);
+
+        VBox score = new VBox(title, scoreText);
+        score.setAlignment(Pos.CENTER);
+        score.setSpacing(spacing);
+
+        infos.getChildren().add(score);
     }
 
     /**
@@ -127,7 +147,7 @@ public final class InGameGui {
      */
     public void updateScore(final MazeState state) {
         // Affiche le score
-        scoreText.setText("Score: " + state.getScore());
+        scoreText.setText(String.valueOf(state.getScore()));
         // Total : 244 pac-gommes en classique
         if (!end && state.getEatenPacgomme() >= state.getConfig().getTotalPacGomme()) {
             end = true;
@@ -140,45 +160,32 @@ public final class InGameGui {
 
     /**
      * Méthode qui initialise une image du tableau {@link #lives}.
-     * @param state Le {@link MazeState} actuel
      * @return {@code ImageView}
      */
-    private ImageView setLife(final MazeState state) {
+    private ImageView setLife() {
         ImageView imageView = new ImageView();
         Image image = Resources.getImage("pacman");
 
-        final int yScale1 = 30 / 2;
-        final int yScale2 = 50;
-        final double widthScale = 1.4;
         imageView.setImage(image);
-        imageView.setY(
-            (double) (state.getHeight() + state.getWidth()) * yScale1 - yScale2
-        );
-        imageView.setFitWidth(state.getWidth() * widthScale);
+        imageView.setFitWidth(30); // TODO: scale
         imageView.setPreserveRatio(true);
         return imageView;
     }
 
     /**
-     * Méthode affichant les vies de Pac-Man au démarrage d'une partie.
+     * Méthode qui ajoute les vies de Pac-Man dans {@link #infos}.
      * @param state Le {@link MazeState} actuel
      */
-    public void displayLives(final MazeState state) {
-        final double spacing = 1.9;
-        final int translateX = 30 / 2;
+    public void makeLivesDisplay(final MazeState state) {
+        HBox livesBox = new HBox();
+        livesBox.setAlignment(Pos.CENTER);
         lives = new ImageView[state.getLives()];
         for (int i = 0; i < lives.length; i++) {
-            ImageView life = setLife(state);
-            life.setX(
-                ((state.getWidth() + state.getHeight() + i * spacing)
-                * translateX)
-            );
+            ImageView life = setLife();
             lives[i] = life;
-            if (!((Pane) gameScene.getRoot()).getChildren()
-                .contains(lives[i])) {
-                ((Pane) gameScene.getRoot()).getChildren().add(lives[i]);
-            }
+            livesBox.getChildren().add(lives[i]);
         }
+        infos.getChildren().add(livesBox);
     }
 
     /**
@@ -248,11 +255,8 @@ public final class InGameGui {
      * affiche la fenêtre de fin de partie.
      */
     private void showEndGame() {
-        if (dimBackground == null) {
-            setDimBackground();
-        }
         endGamePane.getChildren().addAll(dimBackground, endGameMenu);
-        ((Pane) gameScene.getRoot()).getChildren().add(endGamePane);
+        ((StackPane) gameScene.getRoot()).getChildren().add(endGamePane);
     }
 
     private void addEndHandlers() {
@@ -267,7 +271,7 @@ public final class InGameGui {
             selector.getKeySelector().resetSelect();
         });
         endgameOptions.get(1).addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
-            Menu.toMenu();
+            Menu.INSTANCE.toMenu();
             selector.getKeySelector().resetSelect();
         });
 
@@ -283,7 +287,7 @@ public final class InGameGui {
                         break;
 
                     case 1:
-                        Menu.toMenu();
+                        Menu.INSTANCE.toMenu();
                         break;
 
                     default:
@@ -307,7 +311,7 @@ public final class InGameGui {
         } else {
             setPaused(false);
             pausePane.getChildren().clear();
-            ((Pane) gameScene.getRoot()).getChildren().remove(pausePane);
+            ((StackPane) gameScene.getRoot()).getChildren().remove(pausePane);
             Music.resume();
         }
     }
@@ -357,9 +361,8 @@ public final class InGameGui {
     }
 
     private void showPauseMenu() {
-        setDimBackground();
         pausePane.getChildren().addAll(dimBackground, pauseMenu);
-        ((Pane) gameScene.getRoot()).getChildren().add(pausePane);
+        ((StackPane) gameScene.getRoot()).getChildren().add(pausePane);
 
         Music.pause();
     }
@@ -382,7 +385,7 @@ public final class InGameGui {
             selector.getKeySelector().resetSelect();
         });
         pauseOptions.get(2).addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
-            Menu.toMenu();
+            Menu.INSTANCE.toMenu();
             selector.getKeySelector().resetSelect();
         });
 
@@ -403,7 +406,7 @@ public final class InGameGui {
                         break;
 
                     case 2:
-                        Menu.toMenu();
+                        Menu.INSTANCE.toMenu();
                         break;
 
                     default:

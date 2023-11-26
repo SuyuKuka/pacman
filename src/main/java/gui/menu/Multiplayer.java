@@ -20,8 +20,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -49,6 +49,8 @@ public final class Multiplayer extends Menu {
     @Override
     public void start(final Stage primaryStage) {
         multiPane = new BorderPane();
+        multiPane.setBackground(getBackground());
+
         multiScene = new Scene(
             multiPane,
             primaryStage.getScene().getWidth(),
@@ -56,18 +58,26 @@ public final class Multiplayer extends Menu {
         );
         multiScene.setFill(Color.BLACK);
 
-        multiPane.prefWidthProperty().bind(Menu.getMainStage().getScene().widthProperty());
-        multiPane.prefHeightProperty().bind(Menu.getMainStage().getScene().heightProperty());
-        multiPane.setBackground(getBackground());
-
         addMainBox(multiScene);
         addEventHandlers(multiScene);
+    }
+
+    @Override
+    public void setScene() {
+        multiScene.setRoot(new HBox());
+        multiScene = new Scene(
+            multiPane,
+            Menu.getMainStage().getScene().getWidth(),
+            Menu.getMainStage().getScene().getHeight()
+        );
+        multiScene.setFill(Color.BLACK);
     }
 
     /**
      * Affiche le menu Multiplayer.
      */
     public void toMulti() {
+        setScene();
         Menu.getMainStage().setScene(multiScene);
     }
 
@@ -80,10 +90,12 @@ public final class Multiplayer extends Menu {
         InGameGui.setCurrentLevel(mode);
         Music.stopBackgroundMusic();
 
-        GridPane pane = new GridPane();
+        StackPane root = new StackPane();
+        HBox box = new HBox();
+        root.getChildren().add(box);
 
         Scene gameScene = new Scene(
-            pane,
+            root,
             Menu.getMainStage().getScene().getWidth(),
             Menu.getMainStage().getScene().getHeight()
         );
@@ -104,6 +116,7 @@ public final class Multiplayer extends Menu {
                 break;
         }
 
+        Menu.getMainStage().setScene(gameScene);
         InGameGui inGameGui = new InGameGui(gameScene, "Multi");
 
         Controller.setInGameGui(inGameGui);
@@ -122,10 +135,9 @@ public final class Multiplayer extends Menu {
             gameScene.addEventHandler(KeyEvent.KEY_PRESSED, pacmanController2::keyPressedHandler);
         }
 
-        GameView.INSTANCE.setGameView(maze, inGameGui, new HBox());
+        GameView.INSTANCE.setGameView(maze, inGameGui, box);
         GameView.INSTANCE.stopAnimation();
         GameView.INSTANCE.animate();
-        Menu.getMainStage().setScene(gameScene);
     }
 
     @Override
@@ -195,14 +207,14 @@ public final class Multiplayer extends Menu {
             selector.getKeySelector().resetSelect();
         });
         options.get(2).addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
-            Menu.toMenu();
+            Menu.INSTANCE.toMenu();
             selector.getKeySelector().resetSelect();
         });
 
         gameScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
             if (event.getCode() == KeyCode.ENTER) {
                 if (Menu.getSelected() == 2) {
-                    Menu.toMenu();
+                    Menu.INSTANCE.toMenu();
                 } else {
                     startLevel(Menu.getSelected());
                 }

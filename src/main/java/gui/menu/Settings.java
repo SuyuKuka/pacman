@@ -36,6 +36,8 @@ public final class Settings extends Menu {
     @Override
     public void start(final Stage primaryStage) {
         settingsPane = new BorderPane();
+        settingsPane.setBackground(getBackground());
+
         settingsScene = new Scene(
             settingsPane,
             primaryStage.getScene().getWidth(),
@@ -43,18 +45,26 @@ public final class Settings extends Menu {
         );
         settingsScene.setFill(Color.BLACK);
 
-        settingsPane.prefWidthProperty().bind(Menu.getMainStage().getScene().widthProperty());
-        settingsPane.prefHeightProperty().bind(Menu.getMainStage().getScene().heightProperty());
-        settingsPane.setBackground(getBackground());
-
         addMainBox(settingsScene);
         addEventHandlers(settingsScene);
+    }
+
+    @Override
+    public void setScene() {
+        settingsScene.setRoot(new HBox());
+        settingsScene = new Scene(
+            settingsPane,
+            Menu.getMainStage().getScene().getWidth(),
+            Menu.getMainStage().getScene().getHeight()
+        );
+        settingsScene.setFill(Color.BLACK);
     }
 
     /**
      * Affiche le menu Settings.
      */
     public void toSettings() {
+        setScene();
         Menu.getMainStage().setScene(settingsScene);
     }
 
@@ -113,13 +123,13 @@ public final class Settings extends Menu {
     protected void addEventHandlers(final Scene gameScene) {
         Selector selector = new Selector(selects, choices, gameScene, false);
         options.get(0).addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
-            Menu.toMenu();
+            Menu.INSTANCE.toMenu();
             selector.getKeySelector().resetSelect();
         });
 
         gameScene.addEventHandler(KeyEvent.KEY_RELEASED, keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
-                Menu.toMenu();
+                Menu.INSTANCE.toMenu();
             }
             selector.getKeySelector().resetSelect();
         });

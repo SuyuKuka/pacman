@@ -65,7 +65,9 @@ public class Menu extends Application {
         setMainStage(primaryStage);
         primaryStage.setTitle("Mac-Pan-Pac-Man");
         primaryStage.getIcons().add(Resources.getImage("pacman"));
+
         menuPane = new BorderPane();
+        menuPane.setBackground(getBackground());
 
         menuScene = new Scene(
             menuPane,
@@ -73,10 +75,6 @@ public class Menu extends Application {
             primaryStage.getScene().getHeight()
         );
         menuScene.setFill(Color.BLACK);
-
-        menuPane.prefWidthProperty().bind(menuScene.widthProperty());
-        menuPane.prefHeightProperty().bind(menuScene.heightProperty());
-        menuPane.setBackground(getBackground());
 
         addMainBox(menuScene);
         addEventHandlers(menuScene);
@@ -93,15 +91,32 @@ public class Menu extends Application {
     }
 
     /**
+     * Initialise la scène en question et permet d'actualiser sa taille
+     * lorque la méthode est appelée.
+     */
+    public void setScene() {
+        menuScene.setRoot(new HBox());
+        menuScene = new Scene(
+            menuPane,
+            mainStage.getScene().getWidth(),
+            mainStage.getScene().getHeight()
+        );
+        menuScene.setFill(Color.BLACK);
+    }
+
+    /**
      * Affiche le menu suite à l'appel de la méthode.
      */
-    public static void toMenu() {
+    public void toMenu() {
         GameView.INSTANCE.stopAnimation();
         GameView.INSTANCE.resetInstance();
+        setScene();
         mainStage.setScene(INSTANCE.menuScene);
 
         // Musique de fond jouée en boucle
-        Music.playLoopingBgMusic("bgm");
+        if (!Music.isBgmPlaying()) {
+            Music.playLoopingBgMusic("bgm");
+        }
     }
 
     /** Permet d'avoir le background.

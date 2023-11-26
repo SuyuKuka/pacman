@@ -108,7 +108,7 @@ public final class Selector {
                 selects.get(Menu.getSelected()).setVisible(true);
             } else if (keyEvent.getCode() == KeyCode.ESCAPE && !InGameGui.isPaused()) {
                 resetSelect();
-                Menu.toMenu();
+                Menu.INSTANCE.toMenu();
             }
         }
 

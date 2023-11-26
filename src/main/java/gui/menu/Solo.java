@@ -11,6 +11,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -43,6 +44,8 @@ public final class Solo extends Menu {
     @Override
     public void start(final Stage primaryStage) {
         soloPane = new BorderPane();
+        soloPane.setBackground(getBackground());
+
         soloScene = new Scene(
             soloPane,
             primaryStage.getScene().getWidth(),
@@ -50,18 +53,26 @@ public final class Solo extends Menu {
         );
         soloScene.setFill(Color.BLACK);
 
-        soloPane.prefWidthProperty().bind(Menu.getMainStage().getScene().widthProperty());
-        soloPane.prefHeightProperty().bind(Menu.getMainStage().getScene().heightProperty());
-        soloPane.setBackground(getBackground());
-
         addMainBox(soloScene);
         addEventHandlers(soloScene);
+    }
+
+    @Override
+    public void setScene() {
+        soloScene.setRoot(new HBox());
+        soloScene = new Scene(
+            soloPane,
+            Menu.getMainStage().getScene().getWidth(),
+            Menu.getMainStage().getScene().getHeight()
+        );
+        soloScene.setFill(Color.BLACK);
     }
 
     /**
      * Affiche le menu Solo.
      */
     public void toSolo() {
+        setScene();
         Menu.getMainStage().setScene(soloScene);
     }
 
@@ -116,7 +127,7 @@ public final class Solo extends Menu {
             selector.getKeySelector().resetSelect();
         });
         options.get(1).addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
-            Menu.toMenu();
+            Menu.INSTANCE.toMenu();
             selector.getKeySelector().resetSelect();
         });
 
@@ -124,7 +135,7 @@ public final class Solo extends Menu {
             final int back = 1;
             if (keyEvent.getCode() == KeyCode.ENTER) {
                 if (Menu.getSelected() == back) {
-                    Menu.toMenu();
+                    Menu.INSTANCE.toMenu();
                 } else {
                     startLevel(getSelected());
                 }
@@ -163,10 +174,12 @@ public final class Solo extends Menu {
         InGameGui.setCurrentLevel(level);
         Music.stopBackgroundMusic();
 
+        StackPane root = new StackPane();
         HBox box = new HBox();
+        root.getChildren().add(box);
 
         Scene gameScene = new Scene(
-            box,
+            root,
             Menu.getMainStage().getScene().getWidth(),
             Menu.getMainStage().getScene().getHeight()
         );

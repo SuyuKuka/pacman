@@ -27,7 +27,7 @@ public final class GameView {
     /** Liste d'éléments à update. */
     private List<GraphicsUpdater> graphicsUpdaters;
     /** Nombre de pixels représentant une unité de la map. */
-    private static final double SCALE = 18;
+    private static double scale = 18;
     private InGameGui inGameGui;
 
     private GameView() {
@@ -66,11 +66,12 @@ public final class GameView {
         mapBox.getChildren().add(mapPane);
 
         mainBox.setAlignment(Pos.CENTER);
+        mainBox.setSpacing(100);
         mainBox.getChildren().addAll(mapBox);
         mainBox.setStyle("-fx-background-color: #000000");
 
-        var critterFactory = new CritterGraphicsFactory(SCALE);
-        var cellFactory = new CellGraphicsFactory(SCALE);
+        var critterFactory = new CritterGraphicsFactory(scale);
+        var cellFactory = new CellGraphicsFactory(scale);
         graphicsUpdaters = new ArrayList<>();
         for (var critter : maze.getConfig().getCritters()) {
             if (critter instanceof PacMan) {
@@ -89,8 +90,7 @@ public final class GameView {
             }
         }
 
-        inGameGui.displayLives(maze);
-        inGameGui.displayScore(maze);
+        inGameGui.displayInfos(maze);
     }
 
     /**
@@ -160,7 +160,7 @@ public final class GameView {
             FpsAndThreads.updateThread(deltaT);
         }
         if (ghostTarget != null) {
-            var cellFactory = new CellGraphicsFactory(SCALE);
+            var cellFactory = new CellGraphicsFactory(scale);
             if (ghostTarget.getTarget() != null) {
                 RealCoordinates target = ghostTarget.getTarget();
                 addGraphics(cellFactory.showTarget(target), 0, 0);

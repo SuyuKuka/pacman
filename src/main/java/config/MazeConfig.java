@@ -89,7 +89,7 @@ public final class MazeConfig {
         if (coop) {
             pacman2 = new PacMan();
             RealCoordinates pac2SpawnPos = critterSpawnOrTargetPos(
-                null, false, "critterSpawn", configPath
+                null, true, "critterSpawn", configPath
             );
             pacman2.setSpawnPos(pac2SpawnPos);
             pacman2.setPos(pac2SpawnPos);
