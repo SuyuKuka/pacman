@@ -31,7 +31,7 @@ public final class Selector {
     final boolean pauseMenu) {
         currentlySelected = 0;
         keySelector = new KeySelector(selects, pauseMenu);
-        gameScene.addEventHandler(KeyEvent.KEY_RELEASED, keySelector);
+        gameScene.setOnKeyPressed(keySelector);
         int index = 0;
         for (Text text : choices) {
             MouseSelector m = new MouseSelector(selects, index++);
@@ -108,7 +108,7 @@ public final class Selector {
                 selects.get(Menu.getSelected()).setVisible(true);
             } else if (keyEvent.getCode() == KeyCode.ESCAPE && !InGameGui.isPaused()) {
                 resetSelect();
-                Menu.toMenu();
+                Menu.INSTANCE.toMenu();
             }
         }
 

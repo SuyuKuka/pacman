@@ -68,58 +68,73 @@ public final class MazeConfig {
         totalPacGomme = countPacGomme();
         MapVerification.tunnelFinder(grid);
         MapVerification.removeUnnecessaryWall(grid);
+
         //CHECKSTYLE:OFF
-        pacman = new PacMan();
-        pacman.setImage("pacman_3");
         final int ghostSpawnX = getWidth() / 2 - 4;
         final int ghostSpawnY = getHeight() / 2 - 3;
         ghostSpawnPos[0] = new RealCoordinates(ghostSpawnX, ghostSpawnY);
-        ghostSpawnPos[1] = new RealCoordinates(ghostSpawnX + 7, ghostSpawnY + 4);
+        ghostSpawnPos[1] = new RealCoordinates((double) ghostSpawnX + 7, (double) ghostSpawnY + 4);
+
         final double entranceY = -1;
         final double entranceX = 3.5;
         ghostSpawnEntrance = ghostSpawnPos[0].plus(new RealCoordinates(entranceX, entranceY));
 
-        pacman.setSpawnPos(critterSpawnOrTargetPos(null, false, "critterSpawn", configPath));
-        pacman.setPos(pacman.getSpawnPos());
+        final String spawn = "critterSpawn";
+        final String eatenTarg = "eatenTarget";
+        final String target = "target";
+
+        pacman = new PacMan();
+        pacman.setImage("pacman_3");
+        RealCoordinates pacSpawnPos = critterSpawnOrTargetPos(
+            null, false, spawn, configPath
+        );
 
         // Multijoueur Coop
         if (coop) {
+            pacSpawnPos = pacSpawnPos.minus(new RealCoordinates(0.5, 0));
+
             pacman2 = new PacMan();
-            pacman2.setSpawnPos(critterSpawnOrTargetPos(null, true, "critterSpawn", configPath));
-            pacman2.setPos(pacman2.getSpawnPos());
             pacman2.setImage("pacman_rainbow_3");
+            RealCoordinates pac2SpawnPos = critterSpawnOrTargetPos(
+                null, true, spawn, configPath
+            );
+            pacman2.setPos(pac2SpawnPos);
+            pacman2.setSpawnPos(pac2SpawnPos);
             PacMan.setEnergizedDuration(PacMan.getMaxEnergizedTime() - 2);
         } else {
             PacMan.setEnergizedDuration(PacMan.getMaxEnergizedTime());
             pacman2 = null;
         }
 
+        pacman.setPos(pacSpawnPos);
+        pacman.setSpawnPos(pacSpawnPos);
+
         Ghost blinky = new Ghost(
             GhostType.BLINKY, pacman, pacman2,
             versus
             ? new RealCoordinates(13, 15)
-            : critterSpawnOrTargetPos(GhostType.BLINKY, false, "critterSpawn", configPath),
-            critterSpawnOrTargetPos(GhostType.BLINKY, false, "eatenTarget", configPath),
-            critterSpawnOrTargetPos(GhostType.BLINKY, false, "target", configPath)
+            : critterSpawnOrTargetPos(GhostType.BLINKY, false, spawn, configPath),
+            critterSpawnOrTargetPos(GhostType.BLINKY, false, eatenTarg, configPath),
+            critterSpawnOrTargetPos(GhostType.BLINKY, false, target, configPath)
         );
         Ghost inky = new Ghost(
             GhostType.INKY, blinky, pacman, pacman2,
-            critterSpawnOrTargetPos(GhostType.INKY, false, "critterSpawn", configPath),
-            critterSpawnOrTargetPos(GhostType.INKY, false, "eatenTarget", configPath),
-            critterSpawnOrTargetPos(GhostType.INKY, false, "target", configPath)
+            critterSpawnOrTargetPos(GhostType.INKY, false, spawn, configPath),
+            critterSpawnOrTargetPos(GhostType.INKY, false, eatenTarg, configPath),
+            critterSpawnOrTargetPos(GhostType.INKY, false, target, configPath)
         );
 
         Ghost pinky = new Ghost(
             GhostType.PINKY, pacman, pacman2,
-            critterSpawnOrTargetPos(GhostType.PINKY, false, "critterSpawn", configPath),
-            critterSpawnOrTargetPos(GhostType.PINKY, false, "eatenTarget", configPath),
-            critterSpawnOrTargetPos(GhostType.PINKY, false, "target", configPath)
+            critterSpawnOrTargetPos(GhostType.PINKY, false, spawn, configPath),
+            critterSpawnOrTargetPos(GhostType.PINKY, false, eatenTarg, configPath),
+            critterSpawnOrTargetPos(GhostType.PINKY, false, target, configPath)
         );
         Ghost clyde = new Ghost(
             GhostType.CLYDE, pacman, pacman2,
-            critterSpawnOrTargetPos(GhostType.CLYDE, false, "critterSpawn", configPath),
-            critterSpawnOrTargetPos(GhostType.CLYDE, false, "eatenTarget", configPath),
-            critterSpawnOrTargetPos(GhostType.CLYDE, false, "target", configPath)
+            critterSpawnOrTargetPos(GhostType.CLYDE, false, spawn, configPath),
+            critterSpawnOrTargetPos(GhostType.CLYDE, false, eatenTarg, configPath),
+            critterSpawnOrTargetPos(GhostType.CLYDE, false, target, configPath)
         );
         ghostList.addAll(Arrays.asList(blinky, inky, pinky, clyde));
         //CHECKSTYLE:ON

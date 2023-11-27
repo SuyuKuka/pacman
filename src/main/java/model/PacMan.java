@@ -73,7 +73,7 @@ public final class PacMan extends Critter {
                 final int energizerScore = 50;
                 state.addScore(energizerScore);
                 Music.playLoopingBgMusic("energized");
-                energizedTimer = 0;
+                setEnergizedTimer(0);
                 if (state.getConfig().isCoop()) {
                     state.getConfig().getPacman().setEnergized(true);
                     state.getConfig().getPacman2().setEnergized(true);
@@ -104,7 +104,7 @@ public final class PacMan extends Critter {
         if (pos.equals(nextPos)) {
             return;
         } else if (pos.haveSameNeighbours(nextPos)) {
-            nextPos = pos.centeredPos(nextPos, false, state.getConfig()).warp(width, height);
+            nextPos = pos.centeredPos(nextPos, false).warp(width, height);
         } else {
             nextPos = furthestFreeCell(nextPos, state).warp(width, height);
         }
@@ -138,7 +138,7 @@ public final class PacMan extends Critter {
             }
         }
         // Cas où aucun mur n'a été trouvé, renvoie nextPos
-        return pos.centeredPos(end, false, config);
+        return pos.centeredPos(end, false);
     }
 
     //endregion Position

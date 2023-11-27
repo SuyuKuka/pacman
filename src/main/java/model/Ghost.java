@@ -329,7 +329,7 @@ public final class Ghost extends Critter {
         // alors le fantôme doit aller vers sa cible en prenant un chemin prédéfini.
         if (ghostState == GhostState.EATEN && getPos().equals(config.getGhostSpawnEntrance())
                 || isInSpawn(config)) {
-            setDirection(getDirectionToEatenTarget(config));
+            setDirection(getDirectionToEatenTarget());
             return;
         }
 
@@ -427,21 +427,23 @@ public final class Ghost extends Critter {
         List<Double> dirProba = new ArrayList<>(Arrays.asList(16.3, 25.2, 28.5, 30.0));
         List<Direction> dirList = new ArrayList<>(Arrays.asList(NORTH, EAST, SOUTH, WEST));
 
-        for (int i = 0; i < dirList.size(); i++) {
-            if (!possibles.contains(dirList.get(i))) {
+        int i = 0;
+        while (i < dirList.size()) {
+            if (possibles.contains(dirList.get(i))) {
+                i++;
+            } else {
                 dirProba.set(
                     (i+1)%dirList.size(),
                     dirProba.get(i) + dirProba.get((i+1) % dirList.size())
                 );
                 dirList.remove(i);
                 dirProba.remove(i);
-                i--;
             }
         }
         double random = Math.random() * 100; // 0 à 100
         int j = 0;
-        for (int i = 0; i < dirProba.size(); i++) {
-            random -= dirProba.get(i);
+        for (int k = 0; k < dirProba.size(); k++) {
+            random -= dirProba.get(k);
             if (random <= 0) {
                 break;
             }
@@ -454,10 +456,9 @@ public final class Ghost extends Critter {
     /**
      * Méthode qui renvoie la {@link Direction} que doit prendre le {@link Ghost}
      * pour retourner sur sa cellule de "reset/eatenTarget".
-     * @param config
      * @return {@link Direction}
      */
-    public Direction getDirectionToEatenTarget(final MazeConfig config) {
+    public Direction getDirectionToEatenTarget() {
         RealCoordinates pos = getPos();
         if (pos.y() == eatenTarget.y()) {
             if (pos.x() < eatenTarget.x()) {
@@ -502,7 +503,7 @@ public final class Ghost extends Critter {
             if (pos.equals(nextPos)) {
                 return;
             } else if (pos.haveSameNeighbours(nextPos)) {
-                nextPos = pos.centeredPos(nextPos, true, config).warp(width, height);
+                nextPos = pos.centeredPos(nextPos, true).warp(width, height);
             } else {
                 nextPos = furthestFreeCell(nextPos, config).warp(width, height);
             }
@@ -531,7 +532,7 @@ public final class Ghost extends Critter {
             }
         }
         // Cas où aucun mur n'a été trouvé, renvoie nextPos
-        return pos.centeredPos(end, true, config);
+        return pos.centeredPos(end, true);
     }
 
     //endregion Position
