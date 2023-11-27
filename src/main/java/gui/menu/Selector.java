@@ -31,7 +31,7 @@ public final class Selector {
     final boolean pauseMenu) {
         currentlySelected = 0;
         keySelector = new KeySelector(selects, pauseMenu);
-        gameScene.setOnKeyPressed(keySelector);
+        gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySelector);
         int index = 0;
         for (Text text : choices) {
             MouseSelector m = new MouseSelector(selects, index++);
