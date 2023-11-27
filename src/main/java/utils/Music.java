@@ -1,26 +1,23 @@
 package utils;
 
-import javax.sound.sampled.AudioInputStream;
+import java.net.URL;
+
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.LineEvent;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
-
-import java.io.IOException;
-import java.net.URL;
+import javax.sound.sampled.LineListener;
 
 public final class Music {
+    private static final float DEFAULT_VOLUME = 0.5f;
+    private static float currentVolume = DEFAULT_VOLUME;
+
     /** {@code Clip}de musique/son. */
     private static Clip bgMusicClip = null;
-    private static float currentVolume = 1.0f;
+    private static Clip startBgm;
+    private static long pausePosition;
 
     private Music() {
-    }
-
-    public static float getVolume() {
-        return currentVolume;
     }
 
     /**
@@ -33,14 +30,15 @@ public final class Music {
         }
         currentVolume = volume;
 
-        if (bgMusicClip != null && bgMusicClip.isRunning()) {
-            FloatControl volumeControl =
-                (FloatControl) bgMusicClip.getControl(FloatControl.Type.MASTER_GAIN);
-            final float dB = (float) (Math.log(currentVolume) / Math.log(10.0) * 20.0);
-            volumeControl.setValue(dB);
+        if (isBgmPlaying()) {
+            setClipVolume(bgMusicClip);
         }
     }
 
+    /**
+     * Set le volume d'un{@code Clip}.
+     * @param clip {@code Clip}
+     */
     private static void setClipVolume(final Clip clip) {
         if (clip != null) {
             FloatControl volumeControl =
@@ -56,48 +54,33 @@ public final class Music {
      */
     public static void playSound(final String soundFileName) {
         try {
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
-                new URL(Resources.getFile(soundFileName))
-            );
             Clip sound = AudioSystem.getClip();
-            sound.addLineListener(event -> {
-                if (LineEvent.Type.STOP.equals(event.getType())) {
-                    sound.close();
+            sound.open(AudioSystem.getAudioInputStream(
+                new URL(Resources.getFile(soundFileName))
+            ));
+
+            if (soundFileName.equals("start")) {
+                if (isStartBgmPlaying()) {
+                    startBgm.close();
                 }
-            });
-            sound.open(audioInputStream);
+                startBgm = sound;
+            }
 
             setClipVolume(sound);
+
+            LineListener listener = new LineListener() {
+                @Override
+                public void update(final LineEvent event) {
+                    if (event.getType() == LineEvent.Type.STOP) {
+                        sound.removeLineListener(this);
+                        sound.close();
+                    }
+                }
+            };
+            sound.addLineListener(listener);
 
             sound.start();
         } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-    * Joue un effet sonore une fois, puis exécute l'action spécifiée après sa fin.
-    * @param soundFileName Nom du fichier dans le répertoire "resources"
-    * @param onFinished Action à exécuter après la fin de l'effet sonore
-    */
-    public static void playSound(final String soundFileName, final Runnable onFinished) {
-        try {
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
-                new URL(Resources.getFile(soundFileName))
-            );
-            Clip sound = AudioSystem.getClip();
-            sound.open(audioInputStream);
-
-            setClipVolume(sound);
-
-            sound.addLineListener(event -> {
-                if (event.getType() == LineEvent.Type.STOP) {
-                    sound.close();
-                    onFinished.run();
-                }
-            });
-            sound.start();
-        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
             e.printStackTrace();
         }
     }
@@ -108,12 +91,14 @@ public final class Music {
      */
     public static void playLoopingBgMusic(final String soundFileName) {
         stopBackgroundMusic();
+        if (isStartBgmPlaying()) {
+            startBgm.close();
+        }
         try {
-            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(
-                new URL(Resources.getFile(soundFileName))
-            );
             bgMusicClip = AudioSystem.getClip();
-            bgMusicClip.open(audioInputStream);
+            bgMusicClip.open(AudioSystem.getAudioInputStream(
+                new URL(Resources.getFile(soundFileName))
+            ));
 
             setClipVolume(bgMusicClip);
 
@@ -125,9 +110,44 @@ public final class Music {
 
     /** Arrête la musique de fond actuelle. */
     public static void stopBackgroundMusic() {
-        if (bgMusicClip != null && bgMusicClip.isRunning()) {
-            bgMusicClip.stop();
+        if (bgMusicClip != null && bgMusicClip.isOpen()) {
             bgMusicClip.close();
         }
+    }
+
+    /**
+     * Met en pause la lecture de la musique.
+     */
+    public static void pause() {
+        if (isBgmPlaying()) {
+            pausePosition = bgMusicClip.getMicrosecondPosition();
+            bgMusicClip.stop();
+        }
+    }
+
+    /**
+     * Reprend la lecture de la musique.
+     */
+    public static void resume() {
+        if (bgMusicClip != null && !isBgmPlaying()) {
+            bgMusicClip.setMicrosecondPosition(pausePosition);
+            bgMusicClip.loop(Clip.LOOP_CONTINUOUSLY);
+        }
+    }
+
+    public static float getVolume() {
+        return currentVolume;
+    }
+
+    public static void setBgMusicClip(final Clip bgMusicClip) {
+        Music.bgMusicClip = bgMusicClip;
+    }
+
+    public static boolean isBgmPlaying() {
+        return bgMusicClip != null && bgMusicClip.isRunning();
+    }
+
+    public static boolean isStartBgmPlaying() {
+        return startBgm != null && startBgm.isRunning();
     }
 }

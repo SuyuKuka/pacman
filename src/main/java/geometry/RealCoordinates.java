@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import config.MazeConfig;
 import model.Direction;
 
 public record RealCoordinates(double x, double y) {
@@ -135,13 +134,11 @@ public record RealCoordinates(double x, double y) {
      * Sinon, renvoie la coordonnée de destination initiale.
      * @param end Le RealCoordinates destination
      * @param precision {@code boolean}
-     * @param config
      * @return Retourne un {@link RealCoordinates} qui prend soit
      * les coordonnées exacte du centre d'une case traversée,
      * soit la valeur{@code end}.
      */
-    public RealCoordinates centeredPos(final RealCoordinates end, final boolean precision,
-        final MazeConfig config) {
+    public RealCoordinates centeredPos(final RealCoordinates end, final boolean precision) {
         //CHECKSTYLE:OFF
         final Direction d = this.getDirectionTo(end);
         final double value = precision ? 0.5 : 1;

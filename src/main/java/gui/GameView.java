@@ -3,11 +3,14 @@ package gui;
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
 import javafx.animation.AnimationTimer;
-import javafx.scene.layout.Pane;
+import javafx.geometry.Pos;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import model.Ghost;
 import model.MazeState;
 import model.PacMan;
-import utils.FpsAndThreads;
+import utils.Fps;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,16 +18,18 @@ import java.util.List;
 public final class GameView {
     /** La carte qui sera affichée. */
     private MazeState instMaze;
-    /** Main node. */
-    private Pane gameRoot;
+    /** {@code HBox}contenant la map et le score / vie. */
+    private HBox mainBox;
+    /** Map node. */
+    private GridPane mapPane;
     /** L'AnimationTimer qui appelle les fonctions d'update. */
     private AnimationTimer animationTimer;
     /** Liste d'éléments à update. */
     private List<GraphicsUpdater> graphicsUpdaters;
-    /** Largeur additionnelle pour l'affichage des infos à droite. */
-    private static final double RIGHT_WIDTH = 300;
+
+    private static final double INITIAL_SCALE = 18;
     /** Nombre de pixels représentant une unité de la map. */
-    private static final double SCALE = 18;
+    private static double scale = INITIAL_SCALE;
     private InGameGui inGameGui;
 
     private GameView() {
@@ -33,51 +38,103 @@ public final class GameView {
     /** Implémentation en singleton. */
     public static final GameView INSTANCE = new GameView();
 
-    private void addGraphics(final GraphicsUpdater updater) {
-        gameRoot.getChildren().add(updater.getNode());
-        graphicsUpdaters.add(updater);
-    }
-
     /**
-     * @param maze  le "modèle" de cette vue
-     * (le labyrinthe et tout ce qui s'y trouve)
+     * @param maze le "modèle" de cette vue (le labyrinthe et tout ce qui s'y trouve)
      * @param newInGameGui {@code InGameGui}courant
-     * @param root  le nœud racine dans la scène JavaFX dans lequel
-     * le jeu sera affiché
+     * @param box {@code HBox}contenant la map, le score et les vies.
      */
     public void setGameView(
-        final MazeState maze, final InGameGui newInGameGui, final Pane root) {
+    final MazeState maze, final InGameGui newInGameGui, final HBox box) {
+        final int spacing = 100;
+
         instMaze = maze;
         inGameGui = newInGameGui;
-        gameRoot = root;
+        mainBox = box;
+        mapPane = new GridPane();
 
-        // pixels per cell
-        root.setMinWidth(maze.getWidth() * SCALE + RIGHT_WIDTH);
-        root.setMinHeight(maze.getHeight() * SCALE);
-        root.setStyle("-fx-background-color: #000000");
+        VBox mapBox = new VBox();
+        mapBox.setAlignment(Pos.CENTER);
+        mapBox.getChildren().add(mapPane);
 
-        var critterFactory = new CritterGraphicsFactory(SCALE);
-        var cellFactory = new CellGraphicsFactory(SCALE);
+        mainBox.setAlignment(Pos.CENTER);
+        mainBox.setSpacing(spacing);
+        mainBox.getChildren().add(mapBox);
+        mainBox.setStyle("-fx-background-color: #000000");
+
+        var critterFactory = new CritterGraphicsFactory((int) scale);
+        var cellFactory = new CellGraphicsFactory((int) scale);
         graphicsUpdaters = new ArrayList<>();
         for (var critter : maze.getConfig().getCritters()) {
             if (critter instanceof PacMan) {
-                addGraphics(critterFactory.makePacGraphics((PacMan) critter, maze));
+                addCritterGraphics(critterFactory.makePacGraphics((PacMan) critter, maze));
             } else {
-                addGraphics(critterFactory.makeGhostGraphics((Ghost) critter));
+                addCritterGraphics(critterFactory.makeGhostGraphics((Ghost) critter));
             }
         }
 
         for (int x = 0; x < maze.getWidth(); x++) {
             for (int y = 0; y < maze.getHeight(); y++) {
                 addGraphics(
-                    cellFactory.makeGraphics(maze, new IntCoordinates(x, y))
+                    cellFactory.makeGraphics(maze, new IntCoordinates(x, y)),
+                    x, y
                 );
             }
         }
 
-        inGameGui.displayLives(maze);
-        inGameGui.displayScore(maze);
+        inGameGui.displayInfos(maze);
     }
+
+    /**
+     * Méthode appelée lorsque la hauteur de la fenêtre change.
+     */
+    public void resizeGame() {
+        final int spacing = 100;
+
+        mainBox.getChildren().remove(0);
+        mapPane = new GridPane();
+
+        VBox mapBox = new VBox();
+        mapBox.setAlignment(Pos.CENTER);
+        mapBox.getChildren().add(mapPane);
+
+        mainBox.setAlignment(Pos.CENTER);
+        mainBox.setSpacing(spacing);
+        mainBox.getChildren().add(0, mapBox);
+        mainBox.setStyle("-fx-background-color: #000000");
+
+        var critterFactory = new CritterGraphicsFactory((int) scale);
+        var cellFactory = new CellGraphicsFactory((int) scale);
+        graphicsUpdaters = new ArrayList<>();
+        for (var critter : instMaze.getConfig().getCritters()) {
+            if (critter instanceof PacMan) {
+                addCritterGraphics(critterFactory.makePacGraphics((PacMan) critter, instMaze));
+            } else {
+                addCritterGraphics(critterFactory.makeGhostGraphics((Ghost) critter));
+            }
+        }
+
+        for (int x = 0; x < instMaze.getWidth(); x++) {
+            for (int y = 0; y < instMaze.getHeight(); y++) {
+                addGraphics(
+                    cellFactory.makeGraphics(instMaze, new IntCoordinates(x, y)),
+                    x, y
+                );
+            }
+        }
+    }
+
+    private void addGraphics(final GraphicsUpdater updater, final int x, final int y) {
+        mapPane.add(updater.getNode(), x, y);
+        graphicsUpdaters.add(updater);
+    }
+
+    private void addCritterGraphics(final GraphicsUpdater updater) {
+        HBox box = new HBox(updater.getNode());
+        box.setAlignment(Pos.CENTER);
+        mapPane.add(box, 0, 0);
+        graphicsUpdaters.add(updater);
+    }
+
 
     /**
      * Méthode permettant d'animer les entités de la carte
@@ -101,7 +158,7 @@ public final class GameView {
                 inGameGui.updateLives(instMaze);
 
                 // Changer les boolean pour afficher les infos respectifs
-                tests(deltaT, false, false, null);
+                tests(deltaT, false, null);
 
                 for (var updater : graphicsUpdaters) {
                     updater.update();
@@ -119,28 +176,43 @@ public final class GameView {
         }
     }
 
+    /** Remets à{@code null} les variables. */
+    public void resetInstance() {
+        instMaze = null;
+        mainBox = null;
+        mapPane = null;
+        animationTimer = null;
+        graphicsUpdaters = null;
+    }
+
+    public static double getScale() {
+        return scale;
+    }
+
+    public static void setScale(final double scale) {
+        GameView.scale = scale;
+    }
+
+    public boolean isInGame() {
+        return animationTimer != null;
+    }
+
     /**
      * Méthode permettant d'obtenir les FPS, les threads et d'afficher
      * les targets d'un fantôme spécifique.
      * @param deltaT Durée depuis le dernier tick
      * @param showFps {@code true}affiche les FPS
-     * @param showThreads {@code true}affiche les threads
      * @param ghostTarget Nom du{@code Ghost}
      */
-    public void tests(
-        final long deltaT, final boolean showFps,
-        final boolean showThreads, final Ghost ghostTarget) {
+    public void tests(final long deltaT, final boolean showFps, final Ghost ghostTarget) {
         if (showFps) {
-            FpsAndThreads.updateFps(deltaT);
-        }
-        if (showThreads) {
-            FpsAndThreads.updateThread(deltaT);
+            Fps.updateFps(deltaT);
         }
         if (ghostTarget != null) {
-            var cellFactory = new CellGraphicsFactory(SCALE);
+            var cellFactory = new CellGraphicsFactory((int) scale);
             if (ghostTarget.getTarget() != null) {
                 RealCoordinates target = ghostTarget.getTarget();
-                addGraphics(cellFactory.showTarget(target));
+                addGraphics(cellFactory.showTarget(target), 0, 0);
             }
         }
     }
