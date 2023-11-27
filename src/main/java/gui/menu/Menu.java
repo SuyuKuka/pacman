@@ -13,8 +13,6 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
@@ -65,7 +63,9 @@ public class Menu extends Application {
         setMainStage(primaryStage);
         primaryStage.setTitle("Mac-Pan-Pac-Man");
         primaryStage.getIcons().add(Resources.getImage("pacman"));
+
         menuPane = new BorderPane();
+        menuPane.setBackground(getBackground());
 
         menuScene = new Scene(
             menuPane,
@@ -74,11 +74,7 @@ public class Menu extends Application {
         );
         menuScene.setFill(Color.BLACK);
 
-        menuPane.prefWidthProperty().bind(menuScene.widthProperty());
-        menuPane.prefHeightProperty().bind(menuScene.heightProperty());
-        menuPane.setBackground(getBackground());
-
-        addMainBox(menuScene);
+        addMainBox();
         addEventHandlers(menuScene);
 
         primaryStage.setScene(menuScene);
@@ -88,20 +84,56 @@ public class Menu extends Application {
         Multiplayer.INSTANCE.start(primaryStage);
         Settings.INSTANCE.start(primaryStage);
 
+        // Le scale initial est à 18,
+        // 720 (= Stage minHeight) / 18 = 40 d'où la valeur du ratio.
+        final int ratio = 40;
+        mainStage.heightProperty().addListener((obs, oldV, newV) -> {
+            if (GameView.INSTANCE.isInGame()) {
+                GameView.setScale(newV.doubleValue() / ratio);
+                GameView.INSTANCE.resizeGame();
+            }
+        });
+
+        mainStage.maximizedProperty().addListener(obs -> {
+            if (GameView.INSTANCE.isInGame()) {
+                GameView.setScale(mainStage.getHeight() / ratio);
+                GameView.INSTANCE.resizeGame();
+            }
+        });
+
         // Musique de fond jouée en boucle
         Music.playLoopingBgMusic("bgm");
     }
 
     /**
+     * Initialise la scène en question et permet d'actualiser sa taille
+     * lorque la méthode est appelée.
+     */
+    public void setScene() {
+        menuScene.setRoot(new HBox());
+        menuScene = new Scene(
+            menuPane,
+            mainStage.getScene().getWidth(),
+            mainStage.getScene().getHeight()
+        );
+        menuScene.setFill(Color.BLACK);
+
+        addEventHandlers(menuScene);
+    }
+
+    /**
      * Affiche le menu suite à l'appel de la méthode.
      */
-    public static void toMenu() {
+    public void toMenu() {
         GameView.INSTANCE.stopAnimation();
         GameView.INSTANCE.resetInstance();
+        setScene();
         mainStage.setScene(INSTANCE.menuScene);
 
         // Musique de fond jouée en boucle
-        Music.playLoopingBgMusic("bgm");
+        if (!Music.isBgmPlaying()) {
+            Music.playLoopingBgMusic("bgm");
+        }
     }
 
     /** Permet d'avoir le background.
@@ -128,9 +160,8 @@ public class Menu extends Application {
 
     /**
      * Ajoute les options à la scène{@code gameScene}.
-     * @param gameScene
      */
-    protected void addMainBox(final Scene gameScene) {
+    protected void addMainBox() {
         final int titleSize = 100;
         final int spacingSize = 20;
 
@@ -183,7 +214,7 @@ public class Menu extends Application {
             choices.add(3, quit);
         }
 
-        bindTextSizeToScene(gameScene);
+        bindTextSizeToScene();
 
         menuPane.setTop(titleBox);
         menuPane.setCenter(optionBox);
@@ -194,15 +225,14 @@ public class Menu extends Application {
 
     /**
      * Relie la taille du texte à la taille de la fenêtre.
-     * @param gameScene
      */
-    protected void bindTextSizeToScene(final Scene gameScene) {
+    protected void bindTextSizeToScene() {
         final int scale = 30;
         final int titleScale = 50;
         final String fxFontSize = "-fx-font-size: ";
 
         fontSize.bind(
-            gameScene.widthProperty().divide(scale).add(gameScene.heightProperty().divide(scale))
+            menuScene.widthProperty().divide(scale).add(menuScene.heightProperty().divide(scale))
         );
 
         titleText.styleProperty().bind(
@@ -223,26 +253,26 @@ public class Menu extends Application {
     protected void addEventHandlers(final Scene gameScene) {
         Selector selector = new Selector(selects, choices, gameScene, false);
 
-        options.get(0).addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
+        options.get(0).setOnMouseClicked(mouseEvent -> {
             Solo.INSTANCE.toSolo();
             selector.getKeySelector().resetSelect();
         });
-        options.get(1).addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
+        options.get(1).setOnMouseClicked(mouseEvent -> {
             Multiplayer.INSTANCE.toMulti();
             selector.getKeySelector().resetSelect();
         });
-        options.get(2).addEventHandler(MouseEvent.MOUSE_RELEASED, mouseEvent -> {
+        options.get(2).setOnMouseClicked(mouseEvent -> {
             Settings.INSTANCE.toSettings();
             selector.getKeySelector().resetSelect();
         });
         //CHECKSTYLE:OFF
-        options.get(3).addEventHandler(MouseEvent.MOUSE_RELEASED, keyEvent -> {
+        options.get(3).setOnMouseClicked(mouseEvent -> {
             mainStage.close();
             System.exit(0);
         });
         //CHECKSTYLE:ON
 
-        gameScene.addEventHandler(KeyEvent.KEY_RELEASED, keyEvent -> {
+        gameScene.setOnKeyPressed(keyEvent -> {
             final int soloCase = 0;
             final int multiplayerCase = 1;
             final int settingsCase = 2;

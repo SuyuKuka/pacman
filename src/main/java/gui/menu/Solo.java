@@ -8,10 +8,9 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
@@ -44,6 +43,8 @@ public final class Solo extends Menu {
     @Override
     public void start(final Stage primaryStage) {
         soloPane = new BorderPane();
+        soloPane.setBackground(getBackground());
+
         soloScene = new Scene(
             soloPane,
             primaryStage.getScene().getWidth(),
@@ -51,11 +52,20 @@ public final class Solo extends Menu {
         );
         soloScene.setFill(Color.BLACK);
 
-        soloPane.prefWidthProperty().bind(Menu.getMainStage().getScene().widthProperty());
-        soloPane.prefHeightProperty().bind(Menu.getMainStage().getScene().heightProperty());
-        soloPane.setBackground(getBackground());
+        addMainBox();
+        addEventHandlers(soloScene);
+    }
 
-        addMainBox(soloScene);
+    @Override
+    public void setScene() {
+        soloScene.setRoot(new HBox());
+        soloScene = new Scene(
+            soloPane,
+            Menu.getMainStage().getScene().getWidth(),
+            Menu.getMainStage().getScene().getHeight()
+        );
+        soloScene.setFill(Color.BLACK);
+
         addEventHandlers(soloScene);
     }
 
@@ -63,11 +73,12 @@ public final class Solo extends Menu {
      * Affiche le menu Solo.
      */
     public void toSolo() {
+        setScene();
         Menu.getMainStage().setScene(soloScene);
     }
 
     @Override
-    protected void addMainBox(final Scene gameScene) {
+    protected void addMainBox() {
         final int titleSize = 100;
         final int spacingSize = 20;
 
@@ -99,7 +110,7 @@ public final class Solo extends Menu {
             choices.add(1, backText);
         }
 
-        bindTextSizeToScene(gameScene);
+        bindTextSizeToScene();
 
         soloPane.setTop(title);
         soloPane.setCenter(optionBox);
@@ -112,20 +123,20 @@ public final class Solo extends Menu {
     protected void addEventHandlers(final Scene gameScene) {
         Selector selector = new Selector(selects, choices, gameScene, false);
 
-        options.get(0).addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
+        options.get(0).setOnMouseClicked(event -> {
             startLevel(0);
             selector.getKeySelector().resetSelect();
         });
-        options.get(1).addEventHandler(MouseEvent.MOUSE_RELEASED, event -> {
-            Menu.toMenu();
+        options.get(1).setOnMouseClicked(event -> {
+            Menu.INSTANCE.toMenu();
             selector.getKeySelector().resetSelect();
         });
 
-        gameScene.addEventHandler(KeyEvent.KEY_RELEASED, keyEvent -> {
+        gameScene.setOnKeyPressed(keyEvent -> {
             final int back = 1;
             if (keyEvent.getCode() == KeyCode.ENTER) {
                 if (Menu.getSelected() == back) {
-                    Menu.toMenu();
+                    Menu.INSTANCE.toMenu();
                 } else {
                     startLevel(getSelected());
                 }
@@ -135,13 +146,13 @@ public final class Solo extends Menu {
     }
 
     @Override
-    protected void bindTextSizeToScene(final Scene gameScene) {
+    protected void bindTextSizeToScene() {
         final int scale = 30;
         final int titleScale = 50;
         final String fxFontSize = "-fx-font-size: ";
 
         fontSize.bind(
-            gameScene.widthProperty().divide(scale).add(gameScene.heightProperty().divide(scale))
+            soloScene.widthProperty().divide(scale).add(soloScene.heightProperty().divide(scale))
         );
 
         titleText.styleProperty().bind(
@@ -164,10 +175,12 @@ public final class Solo extends Menu {
         InGameGui.setCurrentLevel(level);
         Music.stopBackgroundMusic();
 
-        Pane pane = new Pane();
+        StackPane root = new StackPane();
+        HBox box = new HBox();
+        root.getChildren().add(box);
 
         Scene gameScene = new Scene(
-            pane,
+            root,
             Menu.getMainStage().getScene().getWidth(),
             Menu.getMainStage().getScene().getHeight()
         );
@@ -191,9 +204,8 @@ public final class Solo extends Menu {
         var pacmanController = new PacmanController(maze.getConfig().getPacman());
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, pacmanController::keyPressedHandler);
 
-        GameView.INSTANCE.setGameView(maze, inGameGui, pane);
+        GameView.INSTANCE.setGameView(maze, inGameGui, box);
         GameView.INSTANCE.stopAnimation();
         GameView.INSTANCE.animate();
     }
-
 }

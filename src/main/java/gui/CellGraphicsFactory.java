@@ -5,6 +5,7 @@ import geometry.IntCoordinates;
 import geometry.RealCoordinates;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
@@ -18,7 +19,7 @@ public class CellGraphicsFactory {
      * Constructeur qui initialise l'échelle.
      * @param newScale L'échelle
      */
-    public CellGraphicsFactory(final double newScale) {
+    public CellGraphicsFactory(final int newScale) {
         scale = newScale;
     }
 
@@ -31,66 +32,54 @@ public class CellGraphicsFactory {
      * @param pos Position de la cellule
      * @return {@link GraphicsUpdater}
      */
-    public GraphicsUpdater makeGraphics(
-        final MazeState state, final IntCoordinates pos
-        ) {
+    public GraphicsUpdater makeGraphics(final MazeState state, final IntCoordinates pos) {
         final int dotScale = 15;
         final int energizerScale = 5;
         final int wallScale = 10;
-        final int translateScale = 9;
 
-        var group = new Group();
-        group.setTranslateX(pos.x() * scale);
-        group.setTranslateY(pos.y() * scale);
+        var group = new BorderPane();
+        group.setMaxSize(scale, scale);
+        group.setMinSize(scale, scale);
 
         Cell cell = state.getConfig().getCell(pos);
 
         var dot = new Circle();
-        group.getChildren().add(dot);
+        group.setCenter(dot);
         dot.setRadius(
             switch (cell.getContent()) {
             case DOT -> scale / dotScale;
             case ENERGIZER -> scale / energizerScale;
             default -> 0;
         });
-        dot.setCenterX(scale / 2);
-        dot.setCenterY(scale / 2);
         dot.setFill(Color.YELLOW);
+
         if (cell.getNorthWall()) {
-            var nWall = new Rectangle();
-            nWall.setHeight(scale / wallScale);
-            nWall.setWidth(scale);
-            nWall.setY(0);
-            nWall.setX(0);
-            nWall.setFill(Color.BLUE);
-            group.getChildren().add(nWall);
+            var wall = new Rectangle();
+            wall.setHeight(scale / wallScale);
+            wall.setWidth(scale);
+            wall.setFill(Color.BLUE);
+            group.setTop(wall);
         }
         if (cell.getEastWall()) {
-            var nWall = new Rectangle();
-            nWall.setHeight(scale);
-            nWall.setWidth(scale / wallScale);
-            nWall.setY(0);
-            nWall.setX(translateScale * scale / wallScale);
-            nWall.setFill(Color.BLUE);
-            group.getChildren().add(nWall);
+            var wall = new Rectangle();
+            wall.setHeight(scale);
+            wall.setWidth(scale / wallScale);
+            wall.setFill(Color.BLUE);
+            group.setRight(wall);
         }
         if (cell.getSouthWall()) {
-            var nWall = new Rectangle();
-            nWall.setHeight(scale / wallScale);
-            nWall.setWidth(scale);
-            nWall.setY(translateScale * scale / wallScale);
-            nWall.setX(0);
-            nWall.setFill(Color.BLUE);
-            group.getChildren().add(nWall);
+            var wall = new Rectangle();
+            wall.setHeight(scale / wallScale);
+            wall.setWidth(scale);
+            wall.setFill(Color.BLUE);
+            group.setBottom(wall);
         }
         if (cell.getWestWall()) {
-            var nWall = new Rectangle();
-            nWall.setHeight(scale);
-            nWall.setWidth(scale / wallScale);
-            nWall.setY(0);
-            nWall.setX(0);
-            nWall.setFill(Color.BLUE);
-            group.getChildren().add(nWall);
+            var wall = new Rectangle();
+            wall.setHeight(scale);
+            wall.setWidth(scale / wallScale);
+            wall.setFill(Color.BLUE);
+            group.setLeft(wall);
         }
         return new GraphicsUpdater() {
             @Override
