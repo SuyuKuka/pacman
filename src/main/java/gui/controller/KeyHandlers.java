@@ -9,11 +9,4 @@ public interface KeyHandlers {
      * @param event {@code KeyEvent}
      */
     void keyPressedHandler(KeyEvent event);
-
-    /**
-     * Méthode appelée lorsqu'une touche est relâchée.
-     * Elle réinitialise la durée du buffer.
-     * @param event {@code KeyEvent}
-     */
-    void keyReleasedHandler(KeyEvent event);
 }

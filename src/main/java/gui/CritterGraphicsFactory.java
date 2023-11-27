@@ -22,7 +22,7 @@ public final class CritterGraphicsFactory {
      * Constructeur qui initialise le {@link scale}.
      * @param newScale Echelle
      */
-    public CritterGraphicsFactory(final double newScale) {
+    public CritterGraphicsFactory(final int newScale) {
         scale = newScale;
     }
 
@@ -48,8 +48,8 @@ public final class CritterGraphicsFactory {
         return new GraphicsUpdater() {
             @Override
             public void update() {
-                image.setTranslateX((pacman.getPos().x() + (1 - SIZE) / 2) * scale);
-                image.setTranslateY((pacman.getPos().y() + (1 - SIZE) / 2) * scale);
+                image.setTranslateX(pacman.getPos().x() * scale);
+                image.setTranslateY(pacman.getPos().y() * scale);
 
                 double graphicsBuffer
                 = pacman.getGraphicsBuffer().getUpdateBuffer() + UPDATE_FREQUENCY;
@@ -108,8 +108,8 @@ public final class CritterGraphicsFactory {
         return new GraphicsUpdater() {
             @Override
             public void update() {
-                image.setTranslateX((ghost.getPos().x() + (1 - SIZE) / 2) * scale);
-                image.setTranslateY((ghost.getPos().y() + (1 - SIZE) / 2) * scale);
+                image.setTranslateX(ghost.getPos().x() * scale);
+                image.setTranslateY(ghost.getPos().y() * scale);
 
                 double graphicsBuffer
                 = ghost.getGraphicsBuffer().getUpdateBuffer() + UPDATE_FREQUENCY;
@@ -132,6 +132,8 @@ public final class CritterGraphicsFactory {
                         ghost.getGraphicsBuffer().setAlternate(
                             !ghost.getGraphicsBuffer().isAlternate()
                         );
+                    } else if (PacMan.getEnergizedTimer() < 1) {
+                        ghost.getGraphicsBuffer().setAlternate(false);
                     }
 
                     String newImage = getGhostImageName(ghost, image);
@@ -196,9 +198,13 @@ public final class CritterGraphicsFactory {
                 return pacman.getImage();
         }
 
+        return alternatePacImage(pacman, maze);
+    }
+
+    private String alternatePacImage(final PacMan pacman, final MazeState maze) {
+        final String name;
         GraphicsBuffer buffer = pacman.getGraphicsBuffer();
 
-        final String name;
         if (maze.getConfig().isCoop() && pacman == maze.getConfig().getPacman2()) {
             name = "pacman_rainbow_" + buffer.getPhase();
         } else {
@@ -218,6 +224,7 @@ public final class CritterGraphicsFactory {
         } else {
             buffer.setPhase(buffer.getPhase() - 1);
         }
+
         return name;
     }
 
