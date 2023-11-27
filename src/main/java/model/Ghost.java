@@ -394,8 +394,6 @@ public final class Ghost extends Critter {
         if (possibleDir.size() == 1) {
             return possibleDir.get(0);
         }
-        return possibleDir.get(indice);
-    }
 
         // Prend la direction où la distance est la plus petite.
         double[] deltaDist = new double[possibleDir.size()];
@@ -441,7 +439,6 @@ public final class Ghost extends Critter {
                 dirList.remove(i);
                 dirProba.remove(i);
             }
-            return WEST;
         }
         double random = Math.random() * 100; // 0 à 100
         int j = 0;

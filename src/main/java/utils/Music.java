@@ -122,7 +122,6 @@ public final class Music {
         if (isBgmPlaying()) {
             pausePosition = bgMusicClip.getMicrosecondPosition();
             bgMusicClip.stop();
-            bgMusicClip.close();
         }
     }
 
