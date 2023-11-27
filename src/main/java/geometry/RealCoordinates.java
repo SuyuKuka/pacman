@@ -1,5 +1,7 @@
 package geometry;
 
+import java.math.BigDecimal;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -146,40 +148,38 @@ public record RealCoordinates(double x, double y) {
         final double value = precision ? 0.5 : 1;
         switch (d) {
             case NORTH: {
-                    if (y % value == 0) {
-                        break;
+                    int curY = Math.abs((int) (y / value));
+                    final int nextY = Math.abs((int) (end.y / value));
+                    final BigDecimal offSet = new BigDecimal(end.y % value);
+                    if ((y / value) % value == 0) {
+                        curY--;
                     }
-                    int curY = (int) (y / value);
-                    int nextY = (int) (end.y / value);
                     if (curY > nextY) {
-                        return new RealCoordinates(x, value + end.y - end.y % value);
+                        return new RealCoordinates(x, value + end.y - offSet.doubleValue());
                     }
                 }
                 break;
             case EAST: {
-                    int curX = (int) (x / value);
-                    int nextX = (int) (end.x / value);
-                    if (curX < nextX && end.x % value < value / 2) {
+                    if ((int) (x / value) < (int) (end.x / value)) {
                         return new RealCoordinates(end.x - end.x % value, y);
                     }
                 }
                 break;
             case SOUTH: {
-                    int curY = (int) (y / value);
-                    int nextY = (int) (end.y / value);
-                    if (curY < nextY && end.y % value < value / 2) {
+                    if ((int) (y / value) < (int) (end.y / value)) {
                         return new RealCoordinates(x, end.y - end.y % value);
                     }
                 }
                 break;
             case WEST: {
-                    if (x % value == 0) {
-                        break;
+                    int curX = Math.abs((int) (x / value));
+                    final int nextX = Math.abs((int) (end.x / value));
+                    final BigDecimal offSet = new BigDecimal(end.x % value);
+                    if ((x / value) % value == 0) {
+                        curX--;
                     }
-                    int curX = (int) (x / value);
-                    int nextX = (int) (end.x / value);
                     if (curX > nextX) {
-                        return new RealCoordinates(value + end.x - end.x % value, y);
+                        return new RealCoordinates(value + end.x - offSet.doubleValue(), y);
                     }
                 }
                 break;

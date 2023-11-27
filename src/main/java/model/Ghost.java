@@ -128,11 +128,9 @@ public final class Ghost extends Critter {
      * @param deltaTns Tick de temps.
      */
     public void updateGhost(final MazeState state, final long deltaTns) {
-        boolean hasDirectionReversed = updateState(state);
+        updateState(state);
         updateTarget(state);
-        if (!hasDirectionReversed) {
-            updateDirection(state);
-        }
+        updateDirection(state);
         updatePosition(deltaTns, state.getConfig());
         updateSpeed(state);
     }
@@ -160,9 +158,8 @@ public final class Ghost extends Critter {
      * Actualise les paramètres du {@link Ghost} en fonction de l'état du {@link MazeState}.
      * La fonction renvoie true si elle a déjà changé la direction du {@link Ghost}.
      * @param state
-     * @return {@code boolean}
      */
-    public boolean updateState(final MazeState state) {
+    public void updateState(final MazeState state) {
         if (getPos().equals(eatenTarget) && activated) {
             ghostState = GhostState.NORMAL;
         }
@@ -174,13 +171,11 @@ public final class Ghost extends Critter {
                     if (state.getEatenPacgomme() >= inkyThreshold) {
                         activated = true;
                     }
-                    return false;
                 case CLYDE:
                     final int clydeThreshold = state.getConfig().getTotalPacGomme() / 3;
                     if (state.getEatenPacgomme() >= clydeThreshold) {
                         activated = true;
                     }
-                    return false;
                 default:
                     break;
             }
@@ -190,9 +185,7 @@ public final class Ghost extends Critter {
         if (gameState != GameState.FRIGHTENED && gameState != state.getCurrentState()) {
             state.setGameState(state.getCurrentState());
             setDirection(getDirection().getOpposite());
-            return true;
         }
-        return false;
     }
 
     //endregion State
@@ -438,7 +431,7 @@ public final class Ghost extends Critter {
                 i--;
             }
         }
-        double random = Math.random() * 100; // 0 à 100
+        double random = Math.random() * 99; // 0 à 100
         int j = 0;
         for (int i = 0; i < dirProba.size(); i++) {
             random -= dirProba.get(i);
@@ -511,6 +504,23 @@ public final class Ghost extends Critter {
     }
 
     /**
+     * Méthode qui vérifie si {@link Ghost} est passé à la position de sa cible.
+     * @param nextPos
+     * @param config
+     * @return {@code true} si elle passe à travers sa cible.
+     */
+    public boolean wentThroughTargetPos(final RealCoordinates nextPos, final MazeConfig config) {
+        final RealCoordinates pos = getPos();
+        if ((pos.x() == nextPos.x() && pos.x() == target.x())
+        || (pos.y() == nextPos.y() && pos.y() == target.y())) {
+            if (pos.getDirectionTo(target) != nextPos.getDirectionTo(target)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Méthode qui est appelée lorsqu'un fantôme a une très grande vitesse.
      * On doit alors vérifier qu'entre sa position actuelle et sa prochaine position qu'il n'y
      * ait pas de murs entre ces 2 positions.
@@ -528,6 +538,9 @@ public final class Ghost extends Critter {
                 return pos.roundFromDirection(getDirection());
             } else {
                 tmpPos = tmpPos.plus(dir.directionToUnit());
+                if (wentThroughTargetPos(tmpPos, config) && !pos.equals(target)) {
+                    return target;
+                }
             }
         }
         // Cas où aucun mur n'a été trouvé, renvoie nextPos
