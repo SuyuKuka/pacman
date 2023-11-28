@@ -1,7 +1,5 @@
 package geometry;
 
-import java.math.BigDecimal;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -150,12 +148,12 @@ public record RealCoordinates(double x, double y) {
             case NORTH: {
                     int curY = Math.abs((int) (y / value));
                     final int nextY = Math.abs((int) (end.y / value));
-                    final BigDecimal offSet = new BigDecimal(end.y % value);
                     if ((y / value) % value == 0) {
                         curY--;
                     }
                     if (curY > nextY) {
-                        return new RealCoordinates(x, value + end.y - offSet.doubleValue());
+                        final double offSet = Math.ceil(end.y % value) * value;
+                        return new RealCoordinates(x, value + end.y - offSet);
                     }
                 }
                 break;
@@ -174,12 +172,12 @@ public record RealCoordinates(double x, double y) {
             case WEST: {
                     int curX = Math.abs((int) (x / value));
                     final int nextX = Math.abs((int) (end.x / value));
-                    final BigDecimal offSet = new BigDecimal(end.x % value);
                     if ((x / value) % value == 0) {
                         curX--;
                     }
                     if (curX > nextX) {
-                        return new RealCoordinates(value + end.x - offSet.doubleValue(), y);
+                        final double offSet = Math.ceil(end.x % value) * value;
+                        return new RealCoordinates(value + end.x - offSet, y);
                     }
                 }
                 break;
