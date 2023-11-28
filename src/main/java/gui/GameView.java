@@ -7,10 +7,13 @@ import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import model.Ghost;
 import model.MazeState;
 import model.PacMan;
 import utils.Fps;
+import utils.Resources;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,9 +124,28 @@ public final class GameView {
                 );
             }
         }
+
+        for (GraphicsUpdater graphicsUpdater : InGameGui.getEatScoreUpdater()) {
+            final int fontSize = 11 + (int) scale - 18;
+            ((Text) graphicsUpdater.getNode()).setFont(
+                Font.loadFont(Resources.getFile("small_pixel-7"), fontSize)
+            );
+            addGraphics(
+                graphicsUpdater,
+                GridPane.getColumnIndex(graphicsUpdater.getNode()),
+                GridPane.getRowIndex(graphicsUpdater.getNode())
+            );
+        }
     }
 
-    private void addGraphics(final GraphicsUpdater updater, final int x, final int y) {
+    /**
+     * Ajoute le{@code Node}contenu dans l'{@code updater}dans {@link #mapPane} aux coordonnées
+     * {@code x}et{@code y}.
+     * @param updater {@code GraphicsUpdater}
+     * @param x {@code int}
+     * @param y {@code int}
+     */
+    public void addGraphics(final GraphicsUpdater updater, final int x, final int y) {
         mapPane.add(updater.getNode(), x, y);
         graphicsUpdaters.add(updater);
     }
@@ -215,5 +237,9 @@ public final class GameView {
                 addGraphics(cellFactory.showTarget(target), 0, 0);
             }
         }
+    }
+
+    public GridPane getMapPane() {
+        return mapPane;
     }
 }

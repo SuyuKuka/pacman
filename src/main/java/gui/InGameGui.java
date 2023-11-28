@@ -1,12 +1,14 @@
 package gui;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import gui.menu.Menu;
 import gui.menu.Multiplayer;
 import gui.menu.Solo;
 import gui.menu.Selector;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -18,7 +20,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import model.Ghost;
 import model.MazeState;
+import model.Ghost.GhostState;
 import utils.Resources;
 import utils.Music;
 
@@ -51,6 +55,8 @@ public final class InGameGui {
     private VBox infos;
     /** Le{@code Text}contenant le score. */
     private Text scoreText;
+    /** Liste de{@code GraphicsUpdater}pour le score lorsqu'on mange un fantôme. */
+    private static ArrayList<GraphicsUpdater> eatScoreUpdater = new ArrayList<>();
     /** Un tableau contenant les images des vies de Pac-Man. */
     private ImageView[] lives;
     /** Boolean indiquant si la partie est finie. */
@@ -58,9 +64,12 @@ public final class InGameGui {
     /** Boolean indiquant si la partie est mise en pause. */
     private static boolean paused = false;
 
+    /** Versus ou Coop. */
     private String mode;
 
     private Selector selector;
+
+    private static final String FONT = "small_pixel-7";
 
     /**
      * Constructeur{@code InGameGui}.
@@ -126,9 +135,9 @@ public final class InGameGui {
         final int spacing = 10;
 
         title.setText("Score");
-        title.setFont(Font.loadFont(Resources.getFile("small_pixel-7"), titleSize));
+        title.setFont(Font.loadFont(Resources.getFile(FONT), titleSize));
         title.setFill(Color.WHITE);
-        scoreText.setFont(Font.loadFont(Resources.getFile("small_pixel-7"), scoreSize));
+        scoreText.setFont(Font.loadFont(Resources.getFile(FONT), scoreSize));
         scoreText.setFill(Color.WHITE);
 
         VBox score = new VBox(title, scoreText);
@@ -153,6 +162,35 @@ public final class InGameGui {
             showEndGame();
             addEndHandlers();
         }
+    }
+
+    /**
+     * Affiche la quantité de points gagnée en mangeant un fantôme.
+     * @param eatScore Quantité de points
+     * @param ghost Le fantôme qui a été mangé
+     */
+    public static void showEatGhostPoints(final int eatScore, final Ghost ghost) {
+        final int fontSize = 11;
+        Text eatGhostPoints = new Text(String.valueOf(eatScore));
+        eatGhostPoints.setFont(Font.loadFont(Resources.getFile(FONT), fontSize));
+        eatGhostPoints.setFill(Color.WHITE);
+
+        GraphicsUpdater updater = new GraphicsUpdater() {
+            @Override
+            public void update() {
+                if (ghost.getGhostState().equals(GhostState.NORMAL)) {
+                    GameView.INSTANCE.getMapPane().getChildren().remove(eatGhostPoints);
+                    eatScoreUpdater.remove(this);
+                }
+            }
+
+            @Override
+            public Node getNode() {
+                return eatGhostPoints;
+            }
+        };
+        eatScoreUpdater.add(updater);
+        GameView.INSTANCE.addGraphics(updater, (int) ghost.getPos().x(), (int) ghost.getPos().y());
     }
 
     /**
@@ -429,5 +467,9 @@ public final class InGameGui {
 
     public static void setCurrentLevel(final int currentLevel) {
         InGameGui.currentLevel = currentLevel;
+    }
+
+    public static List<GraphicsUpdater> getEatScoreUpdater() {
+        return eatScoreUpdater;
     }
 }
