@@ -202,7 +202,6 @@ public final class Multiplayer extends Menu {
             startLevel(0);
             selector.getKeySelector().resetSelect();
         });
-        // TODO : Niveau coop
         options.get(1).setOnMouseClicked(event -> {
             startLevel(1);
             selector.getKeySelector().resetSelect();
