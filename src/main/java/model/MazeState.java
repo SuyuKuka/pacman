@@ -1,7 +1,11 @@
 package model;
 
+import java.util.concurrent.TimeUnit;
+
 import config.MazeConfig;
 import geometry.RealCoordinates;
+import gui.GameView;
+import gui.InGameGui;
 import model.Ghost.GhostState;
 import utils.Music;
 
@@ -16,9 +20,7 @@ public final class MazeState {
         FRIGHTENED
     }
 
-    //CHECKSTYLE:OFF
     private static final double NANOSECONDS = Math.pow(10, 9);
-    //CHECKSTYLE:ON
 
     /** MazeState actuel pour les tests unitaires. */
     private static MazeState currentMaze;
@@ -127,7 +129,7 @@ public final class MazeState {
      * augmente de 10 et le fantôme revient à sa position initiale.
      */
     private void updateCollision() {
-        final double collisionRange = 0.7;
+        final double collisionRange = 0.5;
         final int eatScore = 200;
         final RealCoordinates pacmanPos = config.getPacman().getPos();
         RealCoordinates pacman2Pos = new RealCoordinates(0, 0);
@@ -142,16 +144,31 @@ public final class MazeState {
             || Math.abs(ghostPos.x() - pacman2Pos.x()) <= collisionRange
             && Math.abs(ghostPos.y() - pacman2Pos.y()) <= collisionRange) {
                 if (ghost.getGhostState() == GhostState.FRIGHTENED
-                        && config.getPacman().isEnergized()) {
+                && config.getPacman().isEnergized()) {
                     addScore(eatScore);
                     ghost.setGhostState(GhostState.EATEN);
                     ghost.setTarget(config.getGhostSpawnEntrance());
+                    Music.playSound("eatghost");
+                    freezeGame(eatScore, ghost);
                 } else if (ghost.getGhostState() == GhostState.NORMAL) {
                     playerLost();
                     return;
                 }
             }
         }
+    }
+
+    private void freezeGame(final int eatScore, final Ghost ghost) {
+        final long duration = 500;
+        InGameGui.showEatGhostPoints(eatScore, ghost);
+        GameView.INSTANCE.stopAnimation();
+        try {
+            TimeUnit.MILLISECONDS.sleep(duration);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            Thread.currentThread().interrupt();
+        }
+        GameView.INSTANCE.animate();
     }
 
     /**

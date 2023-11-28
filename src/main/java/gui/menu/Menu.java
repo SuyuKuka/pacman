@@ -125,6 +125,9 @@ public class Menu extends Application {
      * Affiche le menu suite à l'appel de la méthode.
      */
     public void toMenu() {
+        if (GameView.INSTANCE.isInGame()) {
+            Music.stopBackgroundMusic();
+        }
         GameView.INSTANCE.stopAnimation();
         GameView.INSTANCE.resetInstance();
         setScene();
