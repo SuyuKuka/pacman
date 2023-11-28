@@ -1,6 +1,7 @@
 package gui;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import gui.menu.Menu;
 import gui.menu.Multiplayer;
@@ -54,6 +55,8 @@ public final class InGameGui {
     private VBox infos;
     /** Le{@code Text}contenant le score. */
     private Text scoreText;
+    /** Liste de{@code GraphicsUpdater}pour le score lorsqu'on mange un fantôme. */
+    private static ArrayList<GraphicsUpdater> eatScoreUpdater = new ArrayList<>();
     /** Un tableau contenant les images des vies de Pac-Man. */
     private ImageView[] lives;
     /** Boolean indiquant si la partie est finie. */
@@ -167,7 +170,7 @@ public final class InGameGui {
      * @param ghost Le fantôme qui a été mangé
      */
     public static void showEatGhostPoints(final int eatScore, final Ghost ghost) {
-        final int fontSize = 12;
+        final int fontSize = 11;
         Text eatGhostPoints = new Text(String.valueOf(eatScore));
         eatGhostPoints.setFont(Font.loadFont(Resources.getFile(FONT), fontSize));
         eatGhostPoints.setFill(Color.WHITE);
@@ -177,6 +180,7 @@ public final class InGameGui {
             public void update() {
                 if (ghost.getGhostState().equals(GhostState.NORMAL)) {
                     GameView.INSTANCE.getMapPane().getChildren().remove(eatGhostPoints);
+                    eatScoreUpdater.remove(this);
                 }
             }
 
@@ -185,6 +189,7 @@ public final class InGameGui {
                 return eatGhostPoints;
             }
         };
+        eatScoreUpdater.add(updater);
         GameView.INSTANCE.addGraphics(updater, (int) ghost.getPos().x(), (int) ghost.getPos().y());
     }
 
@@ -462,5 +467,9 @@ public final class InGameGui {
 
     public static void setCurrentLevel(final int currentLevel) {
         InGameGui.currentLevel = currentLevel;
+    }
+
+    public static List<GraphicsUpdater> getEatScoreUpdater() {
+        return eatScoreUpdater;
     }
 }

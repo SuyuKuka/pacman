@@ -7,10 +7,13 @@ import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import model.Ghost;
 import model.MazeState;
 import model.PacMan;
 import utils.Fps;
+import utils.Resources;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -120,6 +123,18 @@ public final class GameView {
                     x, y
                 );
             }
+        }
+
+        for (GraphicsUpdater graphicsUpdater : InGameGui.getEatScoreUpdater()) {
+            final int fontSize = 11 + (int) scale - 18;
+            ((Text) graphicsUpdater.getNode()).setFont(
+                Font.loadFont(Resources.getFile("small_pixel-7"), fontSize)
+            );
+            addGraphics(
+                graphicsUpdater,
+                GridPane.getColumnIndex(graphicsUpdater.getNode()),
+                GridPane.getRowIndex(graphicsUpdater.getNode())
+            );
         }
     }
 
