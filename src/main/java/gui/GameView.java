@@ -123,7 +123,14 @@ public final class GameView {
         }
     }
 
-    private void addGraphics(final GraphicsUpdater updater, final int x, final int y) {
+    /**
+     * Ajoute le{@code Node}contenu dans l'{@code updater}dans {@link #mapPane} aux coordonnées
+     * {@code x}et{@code y}.
+     * @param updater {@code GraphicsUpdater}
+     * @param x {@code int}
+     * @param y {@code int}
+     */
+    public void addGraphics(final GraphicsUpdater updater, final int x, final int y) {
         mapPane.add(updater.getNode(), x, y);
         graphicsUpdaters.add(updater);
     }
@@ -215,5 +222,9 @@ public final class GameView {
                 addGraphics(cellFactory.showTarget(target), 0, 0);
             }
         }
+    }
+
+    public GridPane getMapPane() {
+        return mapPane;
     }
 }
