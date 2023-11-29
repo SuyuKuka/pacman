@@ -8,15 +8,14 @@ import model.Ghost;
 import model.PacMan;
 import model.Ghost.GhostType;
 import utils.MapVerification;
+import utils.Resources;
 import model.MazeState;
 
-import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.nio.charset.StandardCharsets;
-import org.apache.commons.io.FileUtils;
+
 import org.json.JSONObject;
 import org.json.JSONArray;
 
@@ -145,14 +144,12 @@ public final class MazeConfig {
      * utilisé pour la configuration de la carte. <br></br>
      * Le fichier doit contenir des données nécessaires pour
      * une carte rectangulaire.
-     * @param path Le chemin du fichier à importer.
+     * @param name Le nom du fichier à importer.
      * @return {@code Cell[][] maze}
      */
-    public static Cell[][] getJSONMaze(final String path) {
+    public static Cell[][] getJSONMaze(final String name) {
         try {
-            String file = FileUtils.readFileToString(
-                new File(path), StandardCharsets.UTF_8
-            );
+            String file = Resources.getPathOrContent(name);
             JSONObject jObject = new JSONObject(file);
             JSONArray jArray = new JSONArray(jObject.getJSONArray("Line1"));
             final int lineLength = (jArray.get(0).toString().length() + 1) / 2;
@@ -180,14 +177,12 @@ public final class MazeConfig {
     /**
      * Méthode qui retourne le tableau contenant les différents instants pour
      * le changement de mode.
-     * @param path Le chemin du fichier à importer.
+     * @param name Le nom du fichier à importer.
      * @return {@code int[]}
      */
-    public static int[] getStateSwap(final String path) {
+    public static int[] getStateSwap(final String name) {
         try {
-            String file = FileUtils.readFileToString(
-                new File(path), StandardCharsets.UTF_8
-            );
+            String file = Resources.getPathOrContent(name);
             JSONObject jObject = new JSONObject(file).getJSONObject("config");
             JSONArray jArray = new JSONArray(jObject.getJSONArray("swapTime"));
             int[] stateSwap = new int[jArray.length()];
@@ -207,16 +202,14 @@ public final class MazeConfig {
      * @param type {@link GhostType} du fantôme,{@code null} si Pac-Man
      * @param pacman2 Si en coop
      * @param config {@code String} "critterSpawn" / "target" / "eatenTarget"
-     * @param path Le chemin du fichier à importer.
+     * @param name Le nom du fichier à importer.
      * @return {@code RealCoordinates}
      */
     public static RealCoordinates critterSpawnOrTargetPos(
-            final GhostType type, final boolean pacman2, final String config, final String path) {
+    final GhostType type, final boolean pacman2, final String config, final String name) {
         //CHECKSTYLE:OFFcheckstyle:magicnumber
         try {
-            String file = FileUtils.readFileToString(
-                new File(path), StandardCharsets.UTF_8
-            );
+            String file = Resources.getPathOrContent(name);
             JSONObject jObject = new JSONObject(file).getJSONObject("config");
             JSONArray jArray;
             String[] pos = new String[2];
@@ -226,47 +219,6 @@ public final class MazeConfig {
                 return new RealCoordinates(Double.valueOf(pos[0]), Double.valueOf(pos[1]));
             }
             jArray = new JSONArray(jObject.getJSONArray(config));
-            switch (type) {
-                case BLINKY:
-                    pos = jArray.getString(0).split(";");
-                    break;
-                case INKY:
-                    pos = jArray.getString(1).split(";");
-                    break;
-                case PINKY:
-                    pos = jArray.getString(2).split(";");
-                    break;
-                case CLYDE:
-                    pos = jArray.getString(3).split(";");
-                    break;
-
-                default:
-                    break;
-            }
-            return new RealCoordinates(Double.valueOf(pos[0]), Double.valueOf(pos[1]));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new RealCoordinates(0, 0);
-        //CHECKSTYLE:ON
-    }
-
-    /**
-     * Méthode qui retourne un{@code RealCoordinates}du target
-     * d'un{@code Critter}en{@code SCATTER}depuis le fichier de configuration.
-     * @param type {@link GhostType} du fantôme,{@code null} si Pac-Man
-     * @param path Le chemin du fichier à importer.
-     * @return {@code RealCoordinates}
-     */
-    public static RealCoordinates critterTargetPos(final GhostType type, final String path) {
-        //CHECKSTYLE:OFFcheckstyle:magicnumber
-        try {
-            String file = FileUtils.readFileToString(
-                new File(path), StandardCharsets.UTF_8
-            );
-            JSONObject jObject = new JSONObject(file).getJSONObject("config");
-            JSONArray jArray = new JSONArray(jObject.getJSONArray("target"));
-            String[] pos = new String[2];
             switch (type) {
                 case BLINKY:
                     pos = jArray.getString(0).split(";");
@@ -359,7 +311,7 @@ public final class MazeConfig {
      * @return {@link MazeConfig}
      */
     public static MazeConfig classicalConfig(final boolean versus, final boolean coop) {
-        return new MazeConfig(versus, coop, "src/main/java/config/Level1.json");
+        return new MazeConfig(versus, coop, "Level1");
     }
 
     /**

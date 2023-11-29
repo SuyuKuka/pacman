@@ -56,7 +56,7 @@ public final class Music {
         try {
             Clip sound = AudioSystem.getClip();
             sound.open(AudioSystem.getAudioInputStream(
-                new URL(Resources.getFile(soundFileName))
+                new URL(Resources.getPathOrContent(soundFileName))
             ));
 
             if (soundFileName.equals("start")) {
@@ -97,7 +97,7 @@ public final class Music {
         try {
             bgMusicClip = AudioSystem.getClip();
             bgMusicClip.open(AudioSystem.getAudioInputStream(
-                new URL(Resources.getFile(soundFileName))
+                new URL(Resources.getPathOrContent(soundFileName))
             ));
 
             setClipVolume(bgMusicClip);
