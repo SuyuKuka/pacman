@@ -84,23 +84,6 @@ public class Menu extends Application {
         Multiplayer.INSTANCE.start(primaryStage);
         Settings.INSTANCE.start(primaryStage);
 
-        // Le scale initial est à 18,
-        // 720 (= Stage minHeight) / 18 = 40 d'où la valeur du ratio.
-        final int ratio = 40;
-        mainStage.heightProperty().addListener((obs, oldV, newV) -> {
-            if (GameView.INSTANCE.isInGame()) {
-                GameView.setScale(newV.doubleValue() / ratio);
-                GameView.INSTANCE.resizeGame();
-            }
-        });
-
-        mainStage.maximizedProperty().addListener(obs -> {
-            if (GameView.INSTANCE.isInGame()) {
-                GameView.setScale(mainStage.getHeight() / ratio);
-                GameView.INSTANCE.resizeGame();
-            }
-        });
-
         // Musique de fond jouée en boucle
         Music.playLoopingBgMusic("bgm");
     }
@@ -317,7 +300,7 @@ public class Menu extends Application {
     public static Text createText(final String str, final int size) {
         Text text = new Text(str);
         text.setFill(Color.WHITE);
-        text.setFont(Font.loadFont(Resources.getFile("small_pixel-7"), size));
+        text.setFont(Font.loadFont(Resources.getPathOrContent("small_pixel-7"), size));
         return text;
     }
 

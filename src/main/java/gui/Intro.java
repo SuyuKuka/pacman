@@ -2,6 +2,7 @@ package gui;
 
 import gui.menu.Menu;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
@@ -28,8 +29,7 @@ public class Intro extends Application {
         primaryStage.getIcons().add(Resources.getImage("pacman"));
 
         // Chemin vers la vidéo
-        String videoPath = Resources.getFile("tenders_org");
-        Media media = new Media(videoPath);
+        Media media = Resources.getMedia("tenders_org");
         MediaPlayer mediaPlayer = new MediaPlayer(media);
         MediaView mediaView = new MediaView(mediaPlayer);
 
@@ -48,6 +48,23 @@ public class Intro extends Application {
 
         mediaPlayer.play();
 
+        // Le scale initial est à 18,
+        // 720 (= Stage minHeight) / 18 = 40 d'où la valeur du ratio.
+        final int ratio = 40;
+        primaryStage.heightProperty().addListener((obs, oldV, newV) -> {
+            if (GameView.INSTANCE.isInGame()) {
+                GameView.setScale(newV.doubleValue() / ratio);
+                GameView.INSTANCE.resizeGame();
+            }
+        });
+
+        primaryStage.maximizedProperty().addListener(obs -> {
+            if (GameView.INSTANCE.isInGame()) {
+                GameView.setScale(primaryStage.getHeight() / ratio);
+                GameView.INSTANCE.resizeGame();
+            }
+        });
+
+        primaryStage.setOnCloseRequest(val -> Platform.exit());
     }
 }
-

@@ -128,7 +128,7 @@ public final class GameView {
         for (GraphicsUpdater graphicsUpdater : InGameGui.getEatScoreUpdater()) {
             final int fontSize = 11 + (int) scale - 18;
             ((Text) graphicsUpdater.getNode()).setFont(
-                Font.loadFont(Resources.getFile("small_pixel-7"), fontSize)
+                Font.loadFont(Resources.getPathOrContent("small_pixel-7"), fontSize)
             );
             addGraphics(
                 graphicsUpdater,

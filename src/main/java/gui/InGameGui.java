@@ -23,8 +23,8 @@ import javafx.scene.shape.Rectangle;
 import model.Ghost;
 import model.MazeState;
 import model.Ghost.GhostState;
-import utils.Resources;
 import utils.Music;
+import utils.Resources;
 
 public final class InGameGui {
     /** La{@code Scene}actuelle. */
@@ -135,9 +135,9 @@ public final class InGameGui {
         final int spacing = 10;
 
         title.setText("Score");
-        title.setFont(Font.loadFont(Resources.getFile(FONT), titleSize));
+        title.setFont(Font.loadFont(Resources.getPathOrContent(FONT), titleSize));
         title.setFill(Color.WHITE);
-        scoreText.setFont(Font.loadFont(Resources.getFile(FONT), scoreSize));
+        scoreText.setFont(Font.loadFont(Resources.getPathOrContent(FONT), scoreSize));
         scoreText.setFill(Color.WHITE);
 
         VBox score = new VBox(title, scoreText);
@@ -172,7 +172,7 @@ public final class InGameGui {
     public static void showEatGhostPoints(final int eatScore, final Ghost ghost) {
         final int fontSize = 11;
         Text eatGhostPoints = new Text(String.valueOf(eatScore));
-        eatGhostPoints.setFont(Font.loadFont(Resources.getFile(FONT), fontSize));
+        eatGhostPoints.setFont(Font.loadFont(Resources.getPathOrContent(FONT), fontSize));
         eatGhostPoints.setFill(Color.WHITE);
 
         GraphicsUpdater updater = new GraphicsUpdater() {
