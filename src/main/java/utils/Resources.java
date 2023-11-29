@@ -129,7 +129,7 @@ public final class Resources {
     }
 
     /**
-     * Retourne le path du fichier.
+     * Retourne le path du fichier ou le contenu des json.
      * @param name Nom du fichier
      * @return {@code String}path
      */
