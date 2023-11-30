@@ -1,4 +1,4 @@
-package gui;
+package gui.graphics;
 
 import config.Cell;
 import geometry.IntCoordinates;

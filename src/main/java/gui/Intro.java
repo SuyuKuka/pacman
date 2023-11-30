@@ -51,9 +51,9 @@ public class Intro extends Application {
 
         mediaPlayer.play();
 
-        // Le scale initial est à 18,
-        // 720 (= Stage minHeight) / 18 = 40 d'où la valeur du ratio.
-        final int ratio = 40;
+        // Le scale initial est à 16,
+        // 720 (= Stage minHeight) / 16 = 45 d'où la valeur du ratio.
+        final int ratio = 45;
         primaryStage.heightProperty().addListener((obs, oldV, newV) -> {
             if (GameView.INSTANCE.isInGame()) {
                 GameView.setScale(newV.doubleValue() / ratio);

@@ -5,8 +5,8 @@ import config.Cell;
 import config.MazeConfig;
 
 import geometry.IntCoordinates;
-import gui.GraphicsBuffer;
 import geometry.RealCoordinates;
+import gui.graphics.GraphicsBuffer;
 import utils.Music;
 
 public final class PacMan extends Critter {
