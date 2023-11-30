@@ -6,7 +6,7 @@ public final class Launcher {
     private Launcher() { }
 
     /**
-     * .
+     * Démarre le jeu.
      * @param args
      */
     public static void main(final String[] args) {
