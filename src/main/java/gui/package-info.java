@@ -1,9 +1,9 @@
 /**
- * Les classes contenues dans ce package ont plusieurs utilités :<br><br>
- * - Importer les images des entités<br><br>
+ * Les classes contenues dans ce package ont pour but de :<br><br>
+ * - Initialiser / importer les graphismes du jeu<br><br>
  * - Créer les différents menus du jeu<br><br>
- * - Contrôler Pac-Man<br><br>
+ * - Permettre de contrôler les Pac-Man et le fantôme jouable<br><br>
  * - Mettre à jour les graphismes in-game<br><br>
- * - Configurer les paramètres du jeu.
+ * - Mettre à jour l'état du jeu.
  */
 package gui;

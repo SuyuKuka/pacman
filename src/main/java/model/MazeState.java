@@ -310,4 +310,8 @@ public final class MazeState {
     public int getHeight() {
         return config.getGrid().length;
     }
+
+    public double getTimeSinceStart() {
+        return totalTime + currentLiveTime;
+    }
 }

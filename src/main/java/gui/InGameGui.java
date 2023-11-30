@@ -3,6 +3,7 @@ package gui;
 import java.util.ArrayList;
 import java.util.List;
 
+import gui.graphics.GraphicsUpdater;
 import gui.menu.MainMenu;
 import gui.menu.Menu;
 import gui.menu.Multiplayer;
@@ -11,6 +12,8 @@ import gui.menu.Selector;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -23,7 +26,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import model.Ghost;
 import model.MazeState;
+import model.PacMan;
 import model.Ghost.GhostState;
+import model.MazeState.GameState;
 import utils.Music;
 import utils.Resources;
 
@@ -34,15 +39,16 @@ public final class InGameGui {
     private StackPane endGamePane = new StackPane();
     /** Le{@code StackPane}lorsque le jeu est en pause. */
     private StackPane pausePane = new StackPane();
-
     /** Arrière-plan assombri. */
     private Rectangle dimBackground = makeDimBackground();
-    /** Menu de fin de jeu. */
-    private VBox endGameMenu;
+
     /** Les ">" du menu de fin de jeu. */
     private ArrayList<Text> endGameSelects = new ArrayList<>();
     /** Les choix du menu de fin de jeu. */
     private ArrayList<Text> endgameOptions = new ArrayList<>();
+    /** Menu de fin de jeu. */
+    private VBox endGameMenu;
+
     /** Les ">" du menu pause. */
     private ArrayList<Text> pauseSelects = new ArrayList<>();
     /** Les choix du menu pause. */
@@ -50,20 +56,27 @@ public final class InGameGui {
     /** Menu pause. */
     private VBox pauseMenu = pauseMenu();
 
-    /** Indice du niveau choisi. */
-    private static int currentLevel;
     /** {@code VBox}contenant le score et les vies. */
     private VBox infos;
     /** Le{@code Text}contenant le score. */
     private Text scoreText;
-    /** Liste de{@code GraphicsUpdater}pour le score lorsqu'on mange un fantôme. */
-    private static ArrayList<GraphicsUpdater> eatScoreUpdater = new ArrayList<>();
     /** Un tableau contenant les images des vies de Pac-Man. */
     private ImageView[] lives;
-    /** Boolean indiquant si la partie est finie. */
-    private boolean end = false;
+    // Progress bar
+    /** {@code Label}indiquant l'état des fantômes. */
+    private Label barLabel;
+    /** Barre de progression. */
+    private ProgressBar bar;
+
+    /** Liste de{@code GraphicsUpdater}pour le score lorsqu'on mange un fantôme. */
+    private static ArrayList<GraphicsUpdater> eatScoreUpdater = new ArrayList<>();
+
+    /** Indice du niveau choisi. */
+    private static int currentLevel;
     /** Boolean indiquant si la partie est mise en pause. */
     private static boolean paused = false;
+    /** Boolean indiquant si la partie est finie. */
+    private boolean end = false;
 
     /** Versus ou Coop. */
     private String mode;
@@ -111,15 +124,16 @@ public final class InGameGui {
      */
     public void displayInfos(final MazeState state) {
         StackPane rootPane = (StackPane) gameScene.getRoot();
-        HBox gameBox = (HBox) (rootPane.getChildren().get(0));
+        HBox mainBox = (HBox) (rootPane.getChildren().get(0));
 
         infos = new VBox();
         infos.setAlignment(Pos.CENTER);
         infos.setSpacing(rootPane.getHeight() / 2);
         makeScoreDisplay();
         makeLivesDisplay(state);
+        makeProgressBar();
 
-        gameBox.getChildren().add(infos);
+        mainBox.getChildren().add(infos);
     }
 
     /**
@@ -241,6 +255,100 @@ public final class InGameGui {
             showEndGame();
             addEndHandlers();
         }
+    }
+
+    /** Méthode qui initialise la barre de progression. */
+    private void makeProgressBar() {
+        VBox mapBox = GameView.INSTANCE.getMapBox();
+
+        final int spacing = 5;
+        final int fontSize = 50;
+
+        barLabel = new Label();
+        barLabel.setFont(Font.loadFont(Resources.getPathOrContent(FONT), fontSize));
+        barLabel.setTextFill(Color.WHITE);
+
+        bar = new ProgressBar();
+        bar.setProgress(0);
+        final double ratio = 1.8;
+        bar.setMinHeight(GameView.getScale() * ratio);
+        bar.setMaxWidth(gameScene.getWidth());
+
+        VBox progressBar = Menu.createVBox(spacing, Pos.CENTER, barLabel, bar);
+
+        mapBox.getChildren().add(0, progressBar);
+    }
+
+    /**
+     * Méthode mettant à jour la progression de la barre d'état et de son nom.
+     * @param state {@code MazeState}
+     */
+    public void updateProgressBar(final MazeState state) {
+        if (state.getCurrentLiveTime() == null) {
+            return;
+        }
+
+        GameState currentState = state.getGameState();
+        barLabel.setText(state.getGameState().toString());
+
+        if (currentState.equals(GameState.FRIGHTENED)) {
+            bar.setProgress(PacMan.getEnergizedTimer() / PacMan.getEnergizedDuration());
+        } else {
+            int stateDuration = 1;
+            double time = state.getTimeSinceStart();
+            final int[] stateSwap = state.getConfig().getGhostStateSwap();
+            for (int i = 0; i < stateSwap.length; i++) {
+                if (time - stateSwap[i] < 0) {
+                    stateDuration = stateSwap[i];
+                    break;
+                } else {
+                    time -= stateSwap[i];
+                }
+            }
+            bar.setProgress(time / stateDuration);
+        }
+
+        switch (currentState) {
+            case SCATTER:
+                bar.setStyle("-fx-accent: #0000FF");
+                break;
+            case CHASE:
+                bar.setStyle("-fx-accent: #FF0000");
+                break;
+            case FRIGHTENED:
+                bar.setStyle("-fx-accent: #FFFF00");
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Méthode mettant à jour la barre de progression lors du démarrage de la partie.
+     * @param time
+     */
+    public void updateStartProgressBar(final double time) {
+        final double startDuration = 3.9;
+        final double ready = 1.5;
+        final int set = 3;
+        if (time < ready) {
+            barLabel.setText("Ready");
+        } else if (time < set) {
+            barLabel.setText("Set");
+        } else {
+            barLabel.setText("Go!");
+        }
+
+        bar.setProgress(time / startDuration);
+    }
+
+    /**
+     * Redimensionne la barre de progression.
+     */
+    public void resizeProgressBar() {
+        final double ratio = 1.8;
+        bar.setMinHeight(GameView.getScale() * ratio);
     }
 
     /**

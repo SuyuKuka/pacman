@@ -2,6 +2,9 @@ package gui;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
+import gui.graphics.CellGraphicsFactory;
+import gui.graphics.CritterGraphicsFactory;
+import gui.graphics.GraphicsUpdater;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
@@ -13,6 +16,7 @@ import model.Ghost;
 import model.MazeState;
 import model.PacMan;
 import utils.Fps;
+import utils.Music;
 import utils.Resources;
 
 import java.util.ArrayList;
@@ -21,8 +25,10 @@ import java.util.List;
 public final class GameView {
     /** La carte qui sera affichée. */
     private MazeState instMaze;
-    /** {@code HBox}contenant la map et le score / vie. */
+    /** {@code HBox}contenant {@link #mapBox} (barre de progression + map) et le score + vie. */
     private HBox mainBox;
+    /** {@code VBox}contenant la barre de progression et la map. */
+    private VBox mapBox;
     /** Map node. */
     private GridPane mapPane;
     /** L'AnimationTimer qui appelle les fonctions d'update. */
@@ -30,10 +36,12 @@ public final class GameView {
     /** Liste d'éléments à update. */
     private List<GraphicsUpdater> graphicsUpdaters;
 
-    private static final double INITIAL_SCALE = 18;
+    private static final double INITIAL_SCALE = 16;
     /** Nombre de pixels représentant une unité de la map. */
     private static double scale = INITIAL_SCALE;
     private InGameGui inGameGui;
+
+    private double timeSinceAnimationStart = 0;
 
     private GameView() {
     }
@@ -55,9 +63,10 @@ public final class GameView {
         mainBox = box;
         mapPane = new GridPane();
 
-        VBox mapBox = new VBox();
+        mapBox = new VBox();
         mapBox.setAlignment(Pos.CENTER);
         mapBox.getChildren().add(mapPane);
+        mapBox.setFillWidth(true);
 
         mainBox.setAlignment(Pos.CENTER);
         mainBox.setSpacing(spacing);
@@ -91,19 +100,9 @@ public final class GameView {
      * Méthode appelée lorsque la hauteur de la fenêtre change.
      */
     public void resizeGame() {
-        final int spacing = 100;
-
-        mainBox.getChildren().remove(0);
+        mapBox.getChildren().remove(1);
         mapPane = new GridPane();
-
-        VBox mapBox = new VBox();
-        mapBox.setAlignment(Pos.CENTER);
-        mapBox.getChildren().add(mapPane);
-
-        mainBox.setAlignment(Pos.CENTER);
-        mainBox.setSpacing(spacing);
-        mainBox.getChildren().add(0, mapBox);
-        mainBox.setStyle("-fx-background-color: #000000");
+        mapBox.getChildren().add(1, mapPane);
 
         var critterFactory = new CritterGraphicsFactory((int) scale);
         var cellFactory = new CellGraphicsFactory((int) scale);
@@ -136,6 +135,8 @@ public final class GameView {
                 GridPane.getRowIndex(graphicsUpdater.getNode())
             );
         }
+
+        inGameGui.resizeProgressBar();
     }
 
     /**
@@ -164,6 +165,7 @@ public final class GameView {
      * pour effectuer ses updates. (Ex: 60 updates pour un écran 60hz)
      */
     public void animate() {
+        timeSinceAnimationStart = 0;
         animationTimer = new AnimationTimer() {
             private long last = 0;
 
@@ -175,9 +177,18 @@ public final class GameView {
                     return;
                 }
                 var deltaT = now - last;
+
                 instMaze.update(deltaT);
                 inGameGui.updateScore(instMaze);
                 inGameGui.updateLives(instMaze);
+
+                final double nanoseconds = Math.pow(10, 9);
+                timeSinceAnimationStart += deltaT / nanoseconds;
+                if (Music.isStartBgmPlaying()) {
+                    inGameGui.updateStartProgressBar(timeSinceAnimationStart);
+                } else {
+                    inGameGui.updateProgressBar(instMaze);
+                }
 
                 // Changer les boolean pour afficher les infos respectifs
                 tests(deltaT, false, null);
@@ -241,5 +252,9 @@ public final class GameView {
 
     public GridPane getMapPane() {
         return mapPane;
+    }
+
+    public VBox getMapBox() {
+        return mapBox;
     }
 }

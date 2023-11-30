@@ -2,7 +2,7 @@ package model;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
-import gui.GraphicsBuffer;
+import gui.graphics.GraphicsBuffer;
 import model.MazeState.GameState;
 
 import static model.Direction.NORTH;
