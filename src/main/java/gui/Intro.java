@@ -1,5 +1,6 @@
 package gui;
 
+import gui.menu.MainMenu;
 import gui.menu.Menu;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -16,10 +17,12 @@ public class Intro extends Application {
 
     /**
      * Méthode appelée au lancement du jeu. Elle joue l'introduction.
-     * La méthode {@link Menu#start} est appelée à la fin.
+     * La méthode {@link MainMenu#start} est appelée à la fin.
      */
     @Override
     public void start(final Stage primaryStage) {
+        Menu.setMainStage(primaryStage);
+
         final int width = 1000;
         final int height = 720;
         primaryStage.setMinWidth(width);
@@ -44,7 +47,7 @@ public class Intro extends Application {
 
         mediaView.setMediaPlayer(mediaPlayer);
 
-        mediaPlayer.setOnEndOfMedia(() -> Menu.INSTANCE.start(primaryStage));
+        mediaPlayer.setOnEndOfMedia(() -> MainMenu.INSTANCE.start(primaryStage));
 
         mediaPlayer.play();
 

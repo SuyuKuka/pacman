@@ -3,6 +3,7 @@ package gui;
 import java.util.ArrayList;
 import java.util.List;
 
+import gui.menu.MainMenu;
 import gui.menu.Menu;
 import gui.menu.Multiplayer;
 import gui.menu.Solo;
@@ -86,7 +87,7 @@ public final class InGameGui {
     }
 
     /**
-     * Retourne un fond assombri par rapport aux dimensions du {@link Menu#mainStage}.
+     * Retourne un fond assombri par rapport aux dimensions du {@link MainMenu#mainStage}.
      * @return {@code Rectangle}fond assombri
      */
     public Rectangle makeDimBackground() {
@@ -307,13 +308,13 @@ public final class InGameGui {
             selector.getKeySelector().resetSelect();
         });
         endgameOptions.get(1).setOnMouseClicked(mouseEvent -> {
-            Menu.INSTANCE.toMenu();
+            MainMenu.INSTANCE.toMenu();
             selector.getKeySelector().resetSelect();
         });
 
         gameScene.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
-                switch (Menu.getSelected()) {
+                switch (Selector.getSelectedIndex()) {
                     case 0:
                         if (mode.equals("Solo")) {
                             Solo.startLevel(currentLevel);
@@ -323,7 +324,7 @@ public final class InGameGui {
                         break;
 
                     case 1:
-                        Menu.INSTANCE.toMenu();
+                        MainMenu.INSTANCE.toMenu();
                         break;
 
                     default:
@@ -421,14 +422,14 @@ public final class InGameGui {
             selector.getKeySelector().resetSelect();
         });
         pauseOptions.get(2).setOnMouseClicked(mouseEvent -> {
-            Menu.INSTANCE.toMenu();
+            MainMenu.INSTANCE.toMenu();
             selector.getKeySelector().resetSelect();
         });
 
         gameScene.setOnKeyPressed(keyEvent -> {
             if (paused && keyEvent.getCode() == KeyCode.ENTER) {
                 pause(false);
-                switch (Menu.getSelected()) {
+                switch (Selector.getSelectedIndex()) {
                     case 0:
                         Music.resume();
                         break;
@@ -442,7 +443,7 @@ public final class InGameGui {
                         break;
 
                     case 2:
-                        Menu.INSTANCE.toMenu();
+                        MainMenu.INSTANCE.toMenu();
                         break;
 
                     default:

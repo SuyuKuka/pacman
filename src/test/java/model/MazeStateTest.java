@@ -1,7 +1,5 @@
 package model;
 
-import gui.menu.Menu;
-
 // import org.junit.jupiter.api.Test;
 // import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -15,7 +13,7 @@ import gui.menu.Menu;
 // import org.testfx.api.FxRobot;
 
 // @ExtendWith(ApplicationExtension.class)
-class MazeStateTest extends Menu {
+class MazeStateTest {
 
     // @Start
     // public void start(final Stage stage) {
