@@ -2,7 +2,7 @@ package model;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
-import gui.GraphicsBuffer;
+import gui.graphics.GraphicsBuffer;
 import model.MazeState.GameState;
 
 import static model.Direction.NORTH;
@@ -128,11 +128,9 @@ public final class Ghost extends Critter {
      * @param deltaTns Tick de temps.
      */
     public void updateGhost(final MazeState state, final long deltaTns) {
-        boolean hasDirectionReversed = updateState(state);
+        updateState(state);
         updateTarget(state);
-        if (!hasDirectionReversed) {
-            updateDirection(state);
-        }
+        updateDirection(state);
         updatePosition(deltaTns, state.getConfig());
         updateSpeed(state);
     }
@@ -160,9 +158,8 @@ public final class Ghost extends Critter {
      * Actualise les paramètres du {@link Ghost} en fonction de l'état du {@link MazeState}.
      * La fonction renvoie true si elle a déjà changé la direction du {@link Ghost}.
      * @param state
-     * @return {@code boolean}
      */
-    public boolean updateState(final MazeState state) {
+    public void updateState(final MazeState state) {
         if (getPos().equals(eatenTarget) && activated) {
             ghostState = GhostState.NORMAL;
         }
@@ -174,13 +171,13 @@ public final class Ghost extends Critter {
                     if (state.getEatenPacgomme() >= inkyThreshold) {
                         activated = true;
                     }
-                    return false;
+                    break;
                 case CLYDE:
                     final int clydeThreshold = state.getConfig().getTotalPacGomme() / 3;
                     if (state.getEatenPacgomme() >= clydeThreshold) {
                         activated = true;
                     }
-                    return false;
+                    break;
                 default:
                     break;
             }
@@ -190,9 +187,7 @@ public final class Ghost extends Critter {
         if (gameState != GameState.FRIGHTENED && gameState != state.getCurrentState()) {
             state.setGameState(state.getCurrentState());
             setDirection(getDirection().getOpposite());
-            return true;
         }
-        return false;
     }
 
     //endregion State
@@ -503,7 +498,7 @@ public final class Ghost extends Critter {
             if (pos.equals(nextPos)) {
                 return;
             } else if (pos.haveSameNeighbours(nextPos)) {
-                nextPos = pos.centeredPos(nextPos, true).warp(width, height);
+                nextPos = pos.adjustNextPos(nextPos, true).warp(width, height);
             } else {
                 nextPos = furthestFreeCell(nextPos, config).warp(width, height);
             }
@@ -532,7 +527,7 @@ public final class Ghost extends Critter {
             }
         }
         // Cas où aucun mur n'a été trouvé, renvoie nextPos
-        return pos.centeredPos(end, true);
+        return pos.adjustNextPos(end, true);
     }
 
     //endregion Position

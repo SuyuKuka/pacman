@@ -14,7 +14,7 @@ public final class Music {
 
     /** {@code Clip}de musique/son. */
     private static Clip bgMusicClip = null;
-    private static Clip startBgm;
+    private static Clip startBgm = null;
     private static long pausePosition;
 
     private Music() {
@@ -56,7 +56,7 @@ public final class Music {
         try {
             Clip sound = AudioSystem.getClip();
             sound.open(AudioSystem.getAudioInputStream(
-                new URL(Resources.getFile(soundFileName))
+                new URL(Resources.getPathOrContent(soundFileName))
             ));
 
             if (soundFileName.equals("start")) {
@@ -97,7 +97,7 @@ public final class Music {
         try {
             bgMusicClip = AudioSystem.getClip();
             bgMusicClip.open(AudioSystem.getAudioInputStream(
-                new URL(Resources.getFile(soundFileName))
+                new URL(Resources.getPathOrContent(soundFileName))
             ));
 
             setClipVolume(bgMusicClip);
@@ -144,10 +144,10 @@ public final class Music {
     }
 
     public static boolean isBgmPlaying() {
-        return bgMusicClip != null && bgMusicClip.isRunning();
+        return bgMusicClip != null && bgMusicClip.isActive();
     }
 
     public static boolean isStartBgmPlaying() {
-        return startBgm != null && startBgm.isRunning();
+        return startBgm != null && startBgm.isActive();
     }
 }

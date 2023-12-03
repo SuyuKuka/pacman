@@ -1,7 +1,11 @@
 package model;
 
+import java.util.concurrent.TimeUnit;
+
 import config.MazeConfig;
 import geometry.RealCoordinates;
+import gui.GameView;
+import gui.InGameGui;
 import model.Ghost.GhostState;
 import utils.Music;
 
@@ -16,9 +20,7 @@ public final class MazeState {
         FRIGHTENED
     }
 
-    //CHECKSTYLE:OFF
     private static final double NANOSECONDS = Math.pow(10, 9);
-    //CHECKSTYLE:ON
 
     /** MazeState actuel pour les tests unitaires. */
     private static MazeState currentMaze;
@@ -26,7 +28,9 @@ public final class MazeState {
     /** {@link MazeConfig#config} actuel. */
     private final MazeConfig config;
 
+    private static final double COLLISION_RANGE = 0.8;
     private static final int TOTAL_LIVES = 3;
+    private static int ghostEatenCount = 0;
     private int lives;
 
     /** {@link GameState} actuel. */
@@ -110,6 +114,7 @@ public final class MazeState {
             }
             gameState = GameState.FRIGHTENED;
         } else if (!config.getPacman().isEnergized() && gameState == GameState.FRIGHTENED) {
+            setGhostEatenCount(0);
             for (Ghost ghost : config.getGhostList()) {
                 if (ghost.getGhostState() == GhostState.FRIGHTENED)  {
                     ghost.setGhostState(GhostState.NORMAL);
@@ -127,7 +132,6 @@ public final class MazeState {
      * augmente de 10 et le fantôme revient à sa position initiale.
      */
     private void updateCollision() {
-        final double collisionRange = 0.7;
         final int eatScore = 200;
         final RealCoordinates pacmanPos = config.getPacman().getPos();
         RealCoordinates pacman2Pos = new RealCoordinates(0, 0);
@@ -137,21 +141,38 @@ public final class MazeState {
 
         for (Ghost ghost : config.getGhostList()) {
             final RealCoordinates ghostPos = ghost.getPos();
-            if (Math.abs(ghostPos.x() - pacmanPos.x()) <= collisionRange
-            && Math.abs(ghostPos.y() - pacmanPos.y()) <= collisionRange
-            || Math.abs(ghostPos.x() - pacman2Pos.x()) <= collisionRange
-            && Math.abs(ghostPos.y() - pacman2Pos.y()) <= collisionRange) {
+            if (Math.abs(ghostPos.x() - pacmanPos.x()) <= COLLISION_RANGE
+            && Math.abs(ghostPos.y() - pacmanPos.y()) <= COLLISION_RANGE
+            || Math.abs(ghostPos.x() - pacman2Pos.x()) <= COLLISION_RANGE
+            && Math.abs(ghostPos.y() - pacman2Pos.y()) <= COLLISION_RANGE) {
                 if (ghost.getGhostState() == GhostState.FRIGHTENED
-                        && config.getPacman().isEnergized()) {
-                    addScore(eatScore);
+                && config.getPacman().isEnergized()) {
+                    Music.playSound("eatghost");
                     ghost.setGhostState(GhostState.EATEN);
                     ghost.setTarget(config.getGhostSpawnEntrance());
+                    addScore(eatScore * (int) Math.pow(2, ghostEatenCount));
+                    freezeGame(eatScore * (int) Math.pow(2, ghostEatenCount), ghost);
+                    setGhostEatenCount(ghostEatenCount + 1);
                 } else if (ghost.getGhostState() == GhostState.NORMAL) {
+                    setGhostEatenCount(0);
                     playerLost();
                     return;
                 }
             }
         }
+    }
+
+    private void freezeGame(final int eatScore, final Ghost ghost) {
+        final long duration = 500;
+        InGameGui.showEatGhostPoints(eatScore, ghost);
+        GameView.INSTANCE.stopAnimation();
+        try {
+            TimeUnit.MILLISECONDS.sleep(duration);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            Thread.currentThread().interrupt();
+        }
+        GameView.INSTANCE.animate();
     }
 
     /**
@@ -292,5 +313,13 @@ public final class MazeState {
      */
     public int getHeight() {
         return config.getGrid().length;
+    }
+
+    public double getTimeSinceStart() {
+        return totalTime + currentLiveTime;
+    }
+
+    public static void setGhostEatenCount(final int ghostEatenCount) {
+        MazeState.ghostEatenCount = ghostEatenCount;
     }
 }

@@ -38,7 +38,7 @@ tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
-mainClassName = 'gui.Intro'
+mainClassName = 'gui.Launcher'
 
 test {
     useJUnitPlatform()
@@ -53,4 +53,16 @@ checkstyleMain {
 }
 checkstyleTest {
     source ='src/test/java'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'gui.Launcher'
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from {
+        configurations.runtimeClasspath.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
 }

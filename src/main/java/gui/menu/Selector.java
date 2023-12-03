@@ -13,7 +13,7 @@ import javafx.scene.text.Text;
 
 public final class Selector {
     /** Indice de l'option actuellement choisi. */
-    private int currentlySelected;
+    private static int selectedIndex;
     private KeySelector keySelector;
 
     /**
@@ -29,7 +29,7 @@ public final class Selector {
     final List<Text> choices,
     final Scene gameScene,
     final boolean pauseMenu) {
-        currentlySelected = 0;
+        setSelectedIndex(0);
         keySelector = new KeySelector(selects, pauseMenu);
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySelector);
         int index = 0;
@@ -41,6 +41,18 @@ public final class Selector {
 
     public KeySelector getKeySelector() {
         return keySelector;
+    }
+
+    /**
+     * Retourne l'indice de l'option choisie.
+     * @return {@code int}
+     */
+    public static int getSelectedIndex() {
+        return selectedIndex;
+    }
+
+    public static void setSelectedIndex(final int selectedIndex) {
+        Selector.selectedIndex = selectedIndex;
     }
 
     public final class KeySelector implements EventHandler<KeyEvent> {
@@ -86,29 +98,29 @@ public final class Selector {
             }
             if (keyEvent.getCode() == KeyCode.UP) {
                 // Flèche vers le haut
-                selects.get(Menu.getSelected()).setVisible(false);
-                currentlySelected = Menu.getSelected() - 1;
-                if (currentlySelected < 0) {
-                    currentlySelected = maxChoice;
-                    Menu.setSelected(maxChoice);
+                selects.get(selectedIndex).setVisible(false);
+                setSelectedIndex(selectedIndex - 1);
+                if (selectedIndex < 0) {
+                    setSelectedIndex(maxChoice);
+                    Selector.setSelectedIndex(maxChoice);
                 } else {
-                    Menu.setSelected(currentlySelected);
+                    Selector.setSelectedIndex(selectedIndex);
                 }
-                selects.get(Menu.getSelected()).setVisible(true);
+                selects.get(selectedIndex).setVisible(true);
             } else if (keyEvent.getCode() == KeyCode.DOWN) {
                 // Flèche vers le bas
-                selects.get(Menu.getSelected()).setVisible(false);
-                currentlySelected = Menu.getSelected() + 1;
-                if (currentlySelected > maxChoice) {
-                    currentlySelected = 0;
-                    Menu.setSelected(0);
+                selects.get(selectedIndex).setVisible(false);
+                setSelectedIndex(selectedIndex + 1);
+                if (selectedIndex > maxChoice) {
+                    setSelectedIndex(0);
+                    Selector.setSelectedIndex(0);
                 } else {
-                    Menu.setSelected(currentlySelected);
+                    Selector.setSelectedIndex(selectedIndex);
                 }
-                selects.get(Menu.getSelected()).setVisible(true);
+                selects.get(selectedIndex).setVisible(true);
             } else if (keyEvent.getCode() == KeyCode.ESCAPE && !InGameGui.isPaused()) {
                 resetSelect();
-                Menu.INSTANCE.toMenu();
+                MainMenu.INSTANCE.toMenu();
             }
         }
 
@@ -116,7 +128,7 @@ public final class Selector {
          * Réinitialise les ">".
          */
         public void resetSelect() {
-            Menu.setSelected(0);
+            Selector.setSelectedIndex(0);
             for (int i = 1; i <= maxChoice; i++) {
                 selects.get(i).setVisible(false);
             }
@@ -148,8 +160,8 @@ public final class Selector {
             for (int i = 0; i < selects.size(); i++) {
                 selects.get(i).setVisible(false);
             }
-            Menu.setSelected(selectKey);
-            currentlySelected = selectKey;
+            Selector.setSelectedIndex(selectKey);
+            setSelectedIndex(selectKey);
             selects.get(selectKey).setVisible(true);
         }
     }
