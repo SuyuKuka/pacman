@@ -55,15 +55,15 @@ public class Intro extends Application {
         // 720 (= Stage minHeight) / 16 = 45 d'où la valeur du ratio.
         final int ratio = 45;
         primaryStage.heightProperty().addListener((obs, oldV, newV) -> {
+            GameView.setScale(newV.doubleValue() / ratio);
             if (GameView.INSTANCE.isInGame()) {
-                GameView.setScale(newV.doubleValue() / ratio);
                 GameView.INSTANCE.resizeGame();
             }
         });
 
         primaryStage.maximizedProperty().addListener(obs -> {
+            GameView.setScale(primaryStage.getHeight() / ratio);
             if (GameView.INSTANCE.isInGame()) {
-                GameView.setScale(primaryStage.getHeight() / ratio);
                 GameView.INSTANCE.resizeGame();
             }
         });

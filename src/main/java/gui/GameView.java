@@ -9,6 +9,7 @@ import javafx.animation.AnimationTimer;
 import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -29,6 +30,8 @@ public final class GameView {
     private HBox mainBox;
     /** {@code VBox}contenant la barre de progression et la map. */
     private VBox mapBox;
+    /** {@code StackPane}contenant la map et les critters. */
+    private StackPane mapStack;
     /** Map node. */
     private GridPane mapPane;
     /** L'AnimationTimer qui appelle les fonctions d'update. */
@@ -61,17 +64,20 @@ public final class GameView {
         instMaze = maze;
         inGameGui = newInGameGui;
         mainBox = box;
-        mapPane = new GridPane();
-
         mapBox = new VBox();
-        mapBox.setAlignment(Pos.CENTER);
-        mapBox.getChildren().add(mapPane);
-        mapBox.setFillWidth(true);
+        mapStack = new StackPane();
+        mapPane = new GridPane();
 
         mainBox.setAlignment(Pos.CENTER);
         mainBox.setSpacing(spacing);
         mainBox.getChildren().add(mapBox);
         mainBox.setStyle("-fx-background-color: #000000");
+
+        mapBox.setAlignment(Pos.CENTER);
+        mapBox.getChildren().add(0, mapStack);
+        mapBox.setFillWidth(true);
+
+        mapStack.getChildren().add(mapPane);
 
         var critterFactory = new CritterGraphicsFactory((int) scale);
         var cellFactory = new CellGraphicsFactory((int) scale);
@@ -100,9 +106,9 @@ public final class GameView {
      * Méthode appelée lorsque la hauteur de la fenêtre change.
      */
     public void resizeGame() {
-        mapBox.getChildren().remove(1);
+        mapStack.getChildren().clear();
         mapPane = new GridPane();
-        mapBox.getChildren().add(1, mapPane);
+        mapStack.getChildren().add(mapPane);
 
         var critterFactory = new CritterGraphicsFactory((int) scale);
         var cellFactory = new CellGraphicsFactory((int) scale);
@@ -125,15 +131,11 @@ public final class GameView {
         }
 
         for (GraphicsUpdater graphicsUpdater : InGameGui.getEatScoreUpdater()) {
-            final int fontSize = 11 + (int) scale - 18;
+            final int fontSize = 13 + (int) scale - (int) INITIAL_SCALE;
             ((Text) graphicsUpdater.getNode()).setFont(
                 Font.loadFont(Resources.getPathOrContent("small_pixel-7"), fontSize)
             );
-            addGraphics(
-                graphicsUpdater,
-                GridPane.getColumnIndex(graphicsUpdater.getNode()),
-                GridPane.getRowIndex(graphicsUpdater.getNode())
-            );
+            addEatScoreGraphics(graphicsUpdater);
         }
 
         inGameGui.resizeProgressBar();
@@ -148,14 +150,30 @@ public final class GameView {
      */
     public void addGraphics(final GraphicsUpdater updater, final int x, final int y) {
         mapPane.add(updater.getNode(), x, y);
-        graphicsUpdaters.add(updater);
+        if (!graphicsUpdaters.contains(updater)) {
+            graphicsUpdaters.add(updater);
+        }
     }
 
     private void addCritterGraphics(final GraphicsUpdater updater) {
-        HBox box = new HBox(updater.getNode());
-        box.setAlignment(Pos.CENTER);
-        mapPane.add(box, 0, 0);
-        graphicsUpdaters.add(updater);
+        mapStack.getChildren().add(updater.getNode());
+        StackPane.setAlignment(updater.getNode(), Pos.TOP_LEFT);
+        if (!graphicsUpdaters.contains(updater)) {
+            graphicsUpdaters.add(updater);
+        }
+    }
+
+    /**
+     * Méthode qui ajoute le{@code Text}score dans {@link #mapStack} et l'{@code updater}dans
+     * {@link #graphicsUpdaters} lorsqu'on mange un fantôme.
+     * @param updater
+     */
+    public void addEatScoreGraphics(final GraphicsUpdater updater) {
+        mapStack.getChildren().add(0, updater.getNode());
+        StackPane.setAlignment(updater.getNode(), Pos.TOP_LEFT);
+        if (!graphicsUpdaters.contains(updater)) {
+            graphicsUpdaters.add(updater);
+        }
     }
 
 
@@ -230,6 +248,22 @@ public final class GameView {
         return animationTimer != null;
     }
 
+    public GridPane getMapPane() {
+        return mapPane;
+    }
+
+    public VBox getMapBox() {
+        return mapBox;
+    }
+
+    public StackPane getMapStack() {
+        return mapStack;
+    }
+
+    public static double getInitialScale() {
+        return INITIAL_SCALE;
+    }
+
     /**
      * Méthode permettant d'obtenir les FPS, les threads et d'afficher
      * les targets d'un fantôme spécifique.
@@ -248,13 +282,5 @@ public final class GameView {
                 addGraphics(cellFactory.showTarget(target), 0, 0);
             }
         }
-    }
-
-    public GridPane getMapPane() {
-        return mapPane;
-    }
-
-    public VBox getMapBox() {
-        return mapBox;
     }
 }

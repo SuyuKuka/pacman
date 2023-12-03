@@ -14,9 +14,11 @@ public final class CritterGraphicsFactory {
     /** (Nombre d'update par seconde) / 60. */
     private static final double ALTERNATE_FREQUENCY = (double) 1 / 15;
     /** Scale pour la taille des critters. */
-    private static final double SIZE = 0.7;
+    private static final double SIZE = 1.4;
+    private static final double X_SHIFT = 0.175;
+    private static final double Y_SHIFT = 0.2;
     /** Echelle globale. */
-    private final double scale;
+    private final int scale;
 
     /**
      * Constructeur qui initialise le {@link scale}.
@@ -48,8 +50,8 @@ public final class CritterGraphicsFactory {
         return new GraphicsUpdater() {
             @Override
             public void update() {
-                image.setTranslateX(pacman.getPos().x() * scale);
-                image.setTranslateY(pacman.getPos().y() * scale);
+                image.setTranslateX(pacman.getPos().x() * scale - scale * X_SHIFT);
+                image.setTranslateY(pacman.getPos().y() * scale - scale * Y_SHIFT);
 
                 double graphicsBuffer
                 = pacman.getGraphicsBuffer().getUpdateBuffer() + UPDATE_FREQUENCY;
@@ -108,8 +110,8 @@ public final class CritterGraphicsFactory {
         return new GraphicsUpdater() {
             @Override
             public void update() {
-                image.setTranslateX(ghost.getPos().x() * scale);
-                image.setTranslateY(ghost.getPos().y() * scale);
+                image.setTranslateX(ghost.getPos().x() * scale - scale * X_SHIFT);
+                image.setTranslateY(ghost.getPos().y() * scale - scale * Y_SHIFT);
 
                 double graphicsBuffer
                 = ghost.getGraphicsBuffer().getUpdateBuffer() + UPDATE_FREQUENCY;
@@ -235,15 +237,6 @@ public final class CritterGraphicsFactory {
      * @return {@code String} du nom de l'image
      */
     private String getGhostImageName(final Ghost ghost, final ImageView image) {
-        if (ghost.getGhostState() == GhostState.EATEN) {
-            return "eaten";
-        }
-
-        if (ghost.getGhostState() == GhostState.FRIGHTENED
-        && !ghost.getGraphicsBuffer().isAlternate()) {
-            return "frightened";
-        }
-
         switch (ghost.getDirection()) {
             case EAST:
                 if (image.getScaleX() != -1) {
@@ -258,6 +251,15 @@ public final class CritterGraphicsFactory {
 
             default:
                 break;
+        }
+
+        if (ghost.getGhostState() == GhostState.EATEN) {
+            return "eaten";
+        }
+
+        if (ghost.getGhostState() == GhostState.FRIGHTENED
+        && !ghost.getGraphicsBuffer().isAlternate()) {
+            return "frightened";
         }
 
         switch (ghost.getGhostType()) {

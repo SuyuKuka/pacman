@@ -16,16 +16,16 @@ public final class MapVerification {
      * @param c
      */
     public static void tunnelFinder(final Cell[][] c) {
-        for (int i = 1; i < c.length - 1; i++) {
-            boolean isTunnel = c[i - 1][0].hasWall() && c[i + 1][0].hasWall();
-            if (c[i][0].getContent() == Content.DOT && isTunnel) {
-                c[i][0] = new Cell(false, false, false, false, Content.TUNNEL, false);
-                c[i][c[0].length - 1] = new Cell(false, false, false, false, Content.TUNNEL, false);
-                for (int j = 1; j < c[i].length; j++) {
-                    isTunnel = c[i - 1][j].hasWall() && c[i + 1][j].hasWall();
-                    if (c[i][j].getContent() == Content.DOT && isTunnel) {
-                        c[i][j] = new Cell(false, false, false, false, Content.TUNNEL, false);
-                        c[i][c[0].length - j - 1] = new Cell(F, F, F, F, Content.TUNNEL, F);
+        for (int y = 1; y < c.length - 1; y++) {
+            boolean isTunnel = c[y - 1][0].hasWall() && c[y + 1][0].hasWall();
+            if (c[y][0].getContent() == Content.DOT && isTunnel) {
+                c[y][0] = new Cell(false, false, false, false, Content.TUNNEL, false);
+                c[y][c[0].length - 1] = new Cell(false, false, false, false, Content.TUNNEL, false);
+                for (int x = 1; x < c[y].length; x++) {
+                    isTunnel = c[y - 1][x].hasWall() && c[y + 1][x].hasWall();
+                    if (c[y][x].getContent() == Content.DOT && isTunnel) {
+                        c[y][x] = new Cell(false, false, false, false, Content.TUNNEL, false);
+                        c[y][c[0].length - x - 1] = new Cell(F, F, F, F, Content.TUNNEL, F);
                     } else {
                         break;
                     }
@@ -41,8 +41,9 @@ public final class MapVerification {
      */
     public static boolean isAValidWall(final Cell c) {
         if (c.getContent() == Content.DOT
-            || c.getContent() == Content.ENERGIZER
-            || c.getContent() == Content.TUNNEL) {
+        || c.getContent() == Content.ENERGIZER
+        || c.getContent() == Content.TUNNEL
+        || c.getContent() == Content.SPAWN) {
             return true;
         }
         return !c.hasWall() && c.getContent() == Content.NOTHING;
@@ -70,25 +71,33 @@ public final class MapVerification {
         Cell[][] copy = copyGrid(grid);
         final int posYMaze = 3;
         final int posXMaze = grid[0].length - 1;
-        for (int i = posYMaze; i < grid.length - 2; i++) {
-            for (int j = 0; j < grid[i].length; j++) {
-                if (grid[i][j].hasWall()) {
+        for (int y = posYMaze; y < grid.length - 2; y++) {
+            for (int x = 0; x < grid[y].length; x++) {
+                if (grid[y][x].hasWall()) {
                     final int nbWalls = 4;
                     // 0 : NORTH | 1 : EAST | 2 : SOUTH | 3 : WEST
                     boolean[] wall = new boolean[nbWalls];
-                    wall[0] = (i == posYMaze || isAValidWall(grid[i - 1][j]));
-                    wall[1] = (j == posXMaze || isAValidWall(grid[i][j + 1]));
-                    wall[2] = (i == grid.length - posYMaze || isAValidWall(grid[i + 1][j]));
-                    wall[3] = (j == 0 || isAValidWall(grid[i][j - 1]));
-                    copy[i][j] = new Cell(wall[0], wall[1], wall[2], wall[3], Content.NOTHING, F);
+                    boolean isNearTunnel = false;
+                    if (y > 0 && y < grid.length - 2) {
+                        isNearTunnel = grid[y + 1][x].getContent() == Content.TUNNEL
+                        || grid[y - 1][x].getContent() == Content.TUNNEL;
+                    }
+                    wall[0] = (y == posYMaze || isAValidWall(grid[y - 1][x]));
+                    wall[1] = (x == posXMaze && !isNearTunnel
+                        || x != posXMaze && isAValidWall(grid[y][x + 1]));
+                    wall[2] = (y == grid.length - posYMaze || isAValidWall(grid[y + 1][x]));
+                    wall[3] = (x == 0 && !isNearTunnel || x != 0 && isAValidWall(grid[y][x - 1]));
+                    copy[y][x] = new Cell(
+                        wall[0], wall[1], wall[2], wall[3], grid[y][x].getContent(), F
+                    );
                 } else {
-                    copy[i][j] = grid[i][j];
+                    copy[y][x] = grid[y][x];
                 }
             }
         }
 
-        for (int i = 0; i < copy.length; i++) {
-            grid[i] = Arrays.copyOf(copy[i], copy[i].length);
+        for (int y = 0; y < copy.length; y++) {
+            grid[y] = Arrays.copyOf(copy[y], copy[y].length);
         }
     }
     //CHECKSTYLE:ON

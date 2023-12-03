@@ -40,6 +40,7 @@ public final class MazeConfig {
         LINE_TABLE.put("●", "ENERGIZER");
         LINE_TABLE.put("x", "NOTHING");
         LINE_TABLE.put("¤", "DOT");
+        LINE_TABLE.put("□", "OUTER");
     }
 
     /** La carte contenant chaque cellule {@link Cell}. */
@@ -154,16 +155,20 @@ public final class MazeConfig {
             JSONArray jArray = new JSONArray(jObject.getJSONArray("Line1"));
             final int lineLength = (jArray.get(0).toString().length() + 1) / 2;
             Cell[][] maze = new Cell[jObject.length() - 1][lineLength];
-            for (int i = 0; i < jObject.length() - 1; i++) {
-                jArray = new JSONArray(jObject.getJSONArray("Line" + (i + 1)));
-                for (int k = 0; k < lineLength; k++) {
-                    String output = jArray.getString(0).charAt(k * 2) + "";
+            for (int y = 0; y < jObject.length() - 1; y++) {
+                jArray = new JSONArray(jObject.getJSONArray("Line" + (y + 1)));
+                for (int x = 0; x < lineLength; x++) {
+                    String output = jArray.getString(0).charAt(x * 2) + "";
                     if (output.equals("■") || output.equals("/")) {
-                        maze[i][k] = cell(Type.valueOf(LINE_TABLE.get(output)));
+                        maze[y][x] = cell(Type.valueOf(LINE_TABLE.get(output)));
+                    } else if (output.equals("□")) {
+                        maze[y][x] = cell(
+                            Type.valueOf("CLOSED"), Content.valueOf(LINE_TABLE.get(output))
+                        );
                     } else if (output.equals("¤") || output.equals("x")) {
-                        maze[i][k] = cell(Content.valueOf(LINE_TABLE.get(output)), true);
+                        maze[y][x] = cell(Content.valueOf(LINE_TABLE.get(output)), true);
                     } else {
-                        maze[i][k] = cell(Content.valueOf(LINE_TABLE.get(output)));
+                        maze[y][x] = cell(Content.valueOf(LINE_TABLE.get(output)));
                     }
                 }
             }

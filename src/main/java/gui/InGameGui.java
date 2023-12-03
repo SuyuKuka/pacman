@@ -185,18 +185,22 @@ public final class InGameGui {
      * @param ghost Le fantôme qui a été mangé
      */
     public static void showEatGhostPoints(final int eatScore, final Ghost ghost) {
-        final int fontSize = 11;
+        final int fontSize = 15 + (int) GameView.getScale() - (int) GameView.getInitialScale();
         Text eatGhostPoints = new Text(String.valueOf(eatScore));
         eatGhostPoints.setFont(Font.loadFont(Resources.getPathOrContent(FONT), fontSize));
         eatGhostPoints.setFill(Color.WHITE);
+        final double posX = ghost.getPos().x();
+        final double posY = ghost.getPos().y();
 
         GraphicsUpdater updater = new GraphicsUpdater() {
             @Override
             public void update() {
                 if (ghost.getGhostState().equals(GhostState.NORMAL)) {
-                    GameView.INSTANCE.getMapPane().getChildren().remove(eatGhostPoints);
+                    GameView.INSTANCE.getMapStack().getChildren().remove(eatGhostPoints);
                     eatScoreUpdater.remove(this);
                 }
+                eatGhostPoints.setTranslateX(posX * (int) GameView.getScale());
+                eatGhostPoints.setTranslateY(posY * (int) GameView.getScale());
             }
 
             @Override
@@ -205,7 +209,7 @@ public final class InGameGui {
             }
         };
         eatScoreUpdater.add(updater);
-        GameView.INSTANCE.addGraphics(updater, (int) ghost.getPos().x(), (int) ghost.getPos().y());
+        GameView.INSTANCE.addEatScoreGraphics(updater);
     }
 
     /**
