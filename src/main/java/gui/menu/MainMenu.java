@@ -54,7 +54,7 @@ public final class MainMenu extends Menu {
     }
 
     @Override
-    protected void addMainBox() {
+    protected void addOptionsToMenu() {
         final int titleSize = 100;
         final int spacingSize = 20;
 
