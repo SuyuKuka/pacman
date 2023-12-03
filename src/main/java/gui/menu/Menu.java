@@ -15,6 +15,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
@@ -55,7 +56,7 @@ public abstract class Menu extends Application {
         menuPane.setBackground(getBackground());
         mainPane = new StackPane();
         mainPane.getChildren().add(menuPane);
-        mainPane.setStyle("-fx-background-color: BLACK");
+        mainPane.setStyle("-fx-background-color: black");
 
         menuScene = new Scene(
             mainPane,
@@ -177,7 +178,10 @@ public abstract class Menu extends Application {
 
         mainPane.getChildren().add(helpWindow);
 
-        addHelperHandlers();
+        addHelperHandlers(
+            upPlayerOne, leftPlayerOne, downPlayerOne, rightPlayerOne,
+            upPlayerTwo, leftPlayerTwo, downPlayerTwo, rightPlayerTwo
+        );
     }
 
     private StackPane getNewKey(final String key) {
@@ -199,7 +203,130 @@ public abstract class Menu extends Application {
         return keyPane;
     }
 
-    private void addHelperHandlers() {
+    private void addHelperHandlers(final StackPane...panes) {
+        final Color keyColor = Color.rgb(220, 220, 220);
+        for (int i = 0; i < panes.length; i++) {
+            final int index = i;
+            //CHECKSTYLE:OFF
+            switch (index) {
+                case 0:
+                    menuScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PacmanController.getKeybinds(), Direction.NORTH))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(Color.RED);
+                        }
+                    });
+                    menuScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PacmanController.getKeybinds(), Direction.NORTH))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(keyColor);
+                        }
+                    });
+                    break;
+                case 1:
+                    menuScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PacmanController.getKeybinds(), Direction.WEST))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(Color.RED);
+                        }
+                    });
+                    menuScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PacmanController.getKeybinds(), Direction.WEST))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(keyColor);
+                        }
+                    });
+                    break;
+                case 2:
+                    menuScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PacmanController.getKeybinds(), Direction.SOUTH))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(Color.RED);
+                        }
+                    });
+                    menuScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PacmanController.getKeybinds(), Direction.SOUTH))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(keyColor);
+                        }
+                    });
+                    break;
+                case 3:
+                    menuScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PacmanController.getKeybinds(), Direction.EAST))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(Color.RED);
+                        }
+                    });
+                    menuScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PacmanController.getKeybinds(), Direction.EAST))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(keyColor);
+                        }
+                    });
+                    break;
+                case 4:
+                    menuScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PlayerTwoController.getKeybinds(), Direction.NORTH))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(Color.RED);
+                        }
+                    });
+                    menuScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PlayerTwoController.getKeybinds(), Direction.NORTH))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(keyColor);
+                        }
+                    });
+                    break;
+                case 5:
+                    menuScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PlayerTwoController.getKeybinds(), Direction.WEST))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(Color.RED);
+                        }
+                    });
+                    menuScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PlayerTwoController.getKeybinds(), Direction.WEST))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(keyColor);
+                        }
+                    });
+                    break;
+                case 6:
+                    menuScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PlayerTwoController.getKeybinds(), Direction.SOUTH))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(Color.RED);
+                        }
+                    });
+                    menuScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PlayerTwoController.getKeybinds(), Direction.SOUTH))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(keyColor);
+                        }
+                    });
+                    break;
+                case 7:
+                    menuScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PlayerTwoController.getKeybinds(), Direction.EAST))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(Color.RED);
+                        }
+                    });
+                    menuScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+                        if (event.getCode().equals(Controller.getKeyCode(
+                        PlayerTwoController.getKeybinds(), Direction.EAST))) {
+                            ((Rectangle) panes[index].getChildren().get(0)).setFill(keyColor);
+                        }
+                    });
+                    break;
+
+                default:
+                    break;
+            }
+            //CHECKSTYLE:ON
+        }
     }
 
     /**
