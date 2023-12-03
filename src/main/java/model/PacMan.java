@@ -81,7 +81,7 @@ public final class PacMan extends Critter {
                     energized = true;
                 }
             }
-            c.setContent(Cell.Content.NOTHING);
+            c.setContent(Cell.Content.EATEN);
             if (sound) {
                 Music.playSound("eat");
             }

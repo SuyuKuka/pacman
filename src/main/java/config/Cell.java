@@ -18,8 +18,12 @@ public class Cell {
         ENERGIZER,
         /** Rien. (Indique les cellules de spawn des {@link Ghost}). */
         SPAWN,
-        /** Rien. (Indique les cellules de tunnel oùs la vitesse des {@link Ghost} est modifié). */
+        /** Rien. (Indique les cellules de tunnel où la vitesse des {@link Ghost} est modifié). */
         TUNNEL,
+        /** Rien. (Indique les cellules en dehors de la carte). */
+        OUTER,
+        /** Rien. (Indique qu'un pac-gomme a été mangé). */
+        EATEN,
         /** Donne 100 points si mangé par {@link PacMan}. */
         CERISE,
         /** Donne 300 points si mangé par {@link PacMan}. */
@@ -81,6 +85,23 @@ public class Cell {
     }
 
     /**
+     * Retourne une nouvelle cellule{@code Cell}de{@code Type}t contenant{@code c}.
+     * @param t {@code Type}
+     * @param c {@code Content}
+     * @return Nouvelle cellule {@link #Cell}
+     */
+    public static Cell cell(final Type t, final Content c) {
+        switch (t) {
+            case OPEN:
+                return new Cell(false, false, false, false, c, false);
+            case CLOSED:
+                return new Cell(true, true, true, true, c, false);
+            default:
+                return null;
+        }
+    }
+
+    /**
      * Retourne une nouvelle cellule{@code Cell}contenant{@code c}.
      * Si {@code restricted} est vraie, les {@link Ghost} ne peuvent
      * pas s'orienter vers le haut à l'intérieur de ces cellules.
@@ -103,7 +124,7 @@ public class Cell {
 
     /**
      * Renvoie vraie si le contenu de la cellule doit être affiché graphiquement.
-     * (NOTHING, SPAWN et TUNNEL retournent false).
+     * (NOTHING, SPAWN, TUNNEL et OUTER retournent false).
      * @return {@code boolean}
      */
     public final boolean isDrawn() {
@@ -111,6 +132,8 @@ public class Cell {
             case NOTHING:
             case SPAWN:
             case TUNNEL:
+            case OUTER:
+            case EATEN:
                 return false;
             default:
                 break;

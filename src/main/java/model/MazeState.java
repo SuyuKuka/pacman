@@ -28,6 +28,7 @@ public final class MazeState {
     /** {@link MazeConfig#config} actuel. */
     private final MazeConfig config;
 
+    private static final double COLLISION_RANGE = 0.8;
     private static final int TOTAL_LIVES = 3;
     private static int ghostEatenCount = 0;
     private int lives;
@@ -131,7 +132,6 @@ public final class MazeState {
      * augmente de 10 et le fantôme revient à sa position initiale.
      */
     private void updateCollision() {
-        final double collisionRange = 0.5;
         final int eatScore = 200;
         final RealCoordinates pacmanPos = config.getPacman().getPos();
         RealCoordinates pacman2Pos = new RealCoordinates(0, 0);
@@ -141,10 +141,10 @@ public final class MazeState {
 
         for (Ghost ghost : config.getGhostList()) {
             final RealCoordinates ghostPos = ghost.getPos();
-            if (Math.abs(ghostPos.x() - pacmanPos.x()) <= collisionRange
-            && Math.abs(ghostPos.y() - pacmanPos.y()) <= collisionRange
-            || Math.abs(ghostPos.x() - pacman2Pos.x()) <= collisionRange
-            && Math.abs(ghostPos.y() - pacman2Pos.y()) <= collisionRange) {
+            if (Math.abs(ghostPos.x() - pacmanPos.x()) <= COLLISION_RANGE
+            && Math.abs(ghostPos.y() - pacmanPos.y()) <= COLLISION_RANGE
+            || Math.abs(ghostPos.x() - pacman2Pos.x()) <= COLLISION_RANGE
+            && Math.abs(ghostPos.y() - pacman2Pos.y()) <= COLLISION_RANGE) {
                 if (ghost.getGhostState() == GhostState.FRIGHTENED
                 && config.getPacman().isEnergized()) {
                     Music.playSound("eatghost");
