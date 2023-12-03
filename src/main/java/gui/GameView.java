@@ -2,15 +2,23 @@ package gui;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
+import gui.graphics.CellGraphicsFactory;
+import gui.graphics.CritterGraphicsFactory;
+import gui.graphics.GraphicsUpdater;
 import javafx.animation.AnimationTimer;
 import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import model.Ghost;
 import model.MazeState;
 import model.PacMan;
 import utils.Fps;
+import utils.Music;
+import utils.Resources;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +26,12 @@ import java.util.List;
 public final class GameView {
     /** La carte qui sera affichée. */
     private MazeState instMaze;
-    /** {@code HBox}contenant la map et le score / vie. */
+    /** {@code HBox}contenant {@link #mapBox} (barre de progression + map) et le score + vie. */
     private HBox mainBox;
+    /** {@code VBox}contenant la barre de progression et la map. */
+    private VBox mapBox;
+    /** {@code StackPane}contenant la map et les critters. */
+    private StackPane mapStack;
     /** Map node. */
     private GridPane mapPane;
     /** L'AnimationTimer qui appelle les fonctions d'update. */
@@ -27,10 +39,12 @@ public final class GameView {
     /** Liste d'éléments à update. */
     private List<GraphicsUpdater> graphicsUpdaters;
 
-    private static final double INITIAL_SCALE = 18;
+    private static final double INITIAL_SCALE = 16;
     /** Nombre de pixels représentant une unité de la map. */
     private static double scale = INITIAL_SCALE;
     private InGameGui inGameGui;
+
+    private double timeSinceAnimationStart = 0;
 
     private GameView() {
     }
@@ -50,16 +64,20 @@ public final class GameView {
         instMaze = maze;
         inGameGui = newInGameGui;
         mainBox = box;
+        mapBox = new VBox();
+        mapStack = new StackPane();
         mapPane = new GridPane();
-
-        VBox mapBox = new VBox();
-        mapBox.setAlignment(Pos.CENTER);
-        mapBox.getChildren().add(mapPane);
 
         mainBox.setAlignment(Pos.CENTER);
         mainBox.setSpacing(spacing);
         mainBox.getChildren().add(mapBox);
         mainBox.setStyle("-fx-background-color: #000000");
+
+        mapBox.setAlignment(Pos.CENTER);
+        mapBox.getChildren().add(0, mapStack);
+        mapBox.setFillWidth(true);
+
+        mapStack.getChildren().add(mapPane);
 
         var critterFactory = new CritterGraphicsFactory((int) scale);
         var cellFactory = new CellGraphicsFactory((int) scale);
@@ -88,19 +106,9 @@ public final class GameView {
      * Méthode appelée lorsque la hauteur de la fenêtre change.
      */
     public void resizeGame() {
-        final int spacing = 100;
-
-        mainBox.getChildren().remove(0);
+        mapStack.getChildren().clear();
         mapPane = new GridPane();
-
-        VBox mapBox = new VBox();
-        mapBox.setAlignment(Pos.CENTER);
-        mapBox.getChildren().add(mapPane);
-
-        mainBox.setAlignment(Pos.CENTER);
-        mainBox.setSpacing(spacing);
-        mainBox.getChildren().add(0, mapBox);
-        mainBox.setStyle("-fx-background-color: #000000");
+        mapStack.getChildren().add(mapPane);
 
         var critterFactory = new CritterGraphicsFactory((int) scale);
         var cellFactory = new CellGraphicsFactory((int) scale);
@@ -121,18 +129,51 @@ public final class GameView {
                 );
             }
         }
+
+        for (GraphicsUpdater graphicsUpdater : InGameGui.getEatScoreUpdater()) {
+            final int fontSize = 13 + (int) scale - (int) INITIAL_SCALE;
+            ((Text) graphicsUpdater.getNode()).setFont(
+                Font.loadFont(Resources.getPathOrContent("small_pixel-7"), fontSize)
+            );
+            addEatScoreGraphics(graphicsUpdater);
+        }
+
+        inGameGui.resizeProgressBar();
     }
 
-    private void addGraphics(final GraphicsUpdater updater, final int x, final int y) {
+    /**
+     * Ajoute le{@code Node}contenu dans l'{@code updater}dans {@link #mapPane} aux coordonnées
+     * {@code x}et{@code y}.
+     * @param updater {@code GraphicsUpdater}
+     * @param x {@code int}
+     * @param y {@code int}
+     */
+    public void addGraphics(final GraphicsUpdater updater, final int x, final int y) {
         mapPane.add(updater.getNode(), x, y);
-        graphicsUpdaters.add(updater);
+        if (!graphicsUpdaters.contains(updater)) {
+            graphicsUpdaters.add(updater);
+        }
     }
 
     private void addCritterGraphics(final GraphicsUpdater updater) {
-        HBox box = new HBox(updater.getNode());
-        box.setAlignment(Pos.CENTER);
-        mapPane.add(box, 0, 0);
-        graphicsUpdaters.add(updater);
+        mapStack.getChildren().add(updater.getNode());
+        StackPane.setAlignment(updater.getNode(), Pos.TOP_LEFT);
+        if (!graphicsUpdaters.contains(updater)) {
+            graphicsUpdaters.add(updater);
+        }
+    }
+
+    /**
+     * Méthode qui ajoute le{@code Text}score dans {@link #mapStack} et l'{@code updater}dans
+     * {@link #graphicsUpdaters} lorsqu'on mange un fantôme.
+     * @param updater
+     */
+    public void addEatScoreGraphics(final GraphicsUpdater updater) {
+        mapStack.getChildren().add(0, updater.getNode());
+        StackPane.setAlignment(updater.getNode(), Pos.TOP_LEFT);
+        if (!graphicsUpdaters.contains(updater)) {
+            graphicsUpdaters.add(updater);
+        }
     }
 
 
@@ -142,6 +183,7 @@ public final class GameView {
      * pour effectuer ses updates. (Ex: 60 updates pour un écran 60hz)
      */
     public void animate() {
+        timeSinceAnimationStart = 0;
         animationTimer = new AnimationTimer() {
             private long last = 0;
 
@@ -153,9 +195,18 @@ public final class GameView {
                     return;
                 }
                 var deltaT = now - last;
+
                 instMaze.update(deltaT);
                 inGameGui.updateScore(instMaze);
                 inGameGui.updateLives(instMaze);
+
+                final double nanoseconds = Math.pow(10, 9);
+                timeSinceAnimationStart += deltaT / nanoseconds;
+                if (Music.isStartBgmPlaying()) {
+                    inGameGui.updateStartProgressBar(timeSinceAnimationStart);
+                } else {
+                    inGameGui.updateProgressBar(instMaze);
+                }
 
                 // Changer les boolean pour afficher les infos respectifs
                 tests(deltaT, false, null);
@@ -195,6 +246,22 @@ public final class GameView {
 
     public boolean isInGame() {
         return animationTimer != null;
+    }
+
+    public GridPane getMapPane() {
+        return mapPane;
+    }
+
+    public VBox getMapBox() {
+        return mapBox;
+    }
+
+    public StackPane getMapStack() {
+        return mapStack;
+    }
+
+    public static double getInitialScale() {
+        return INITIAL_SCALE;
     }
 
     /**

@@ -1,7 +1,9 @@
 package gui;
 
+import gui.menu.MainMenu;
 import gui.menu.Menu;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.Media;
@@ -15,10 +17,12 @@ public class Intro extends Application {
 
     /**
      * Méthode appelée au lancement du jeu. Elle joue l'introduction.
-     * La méthode {@link Menu#start} est appelée à la fin.
+     * La méthode {@link MainMenu#start} est appelée à la fin.
      */
     @Override
     public void start(final Stage primaryStage) {
+        Menu.setMainStage(primaryStage);
+
         final int width = 1000;
         final int height = 720;
         primaryStage.setMinWidth(width);
@@ -28,8 +32,7 @@ public class Intro extends Application {
         primaryStage.getIcons().add(Resources.getImage("pacman"));
 
         // Chemin vers la vidéo
-        String videoPath = Resources.getFile("tenders_org");
-        Media media = new Media(videoPath);
+        Media media = Resources.getMedia("tenders_org");
         MediaPlayer mediaPlayer = new MediaPlayer(media);
         MediaView mediaView = new MediaView(mediaPlayer);
 
@@ -44,10 +47,27 @@ public class Intro extends Application {
 
         mediaView.setMediaPlayer(mediaPlayer);
 
-        mediaPlayer.setOnEndOfMedia(() -> Menu.INSTANCE.start(primaryStage));
+        mediaPlayer.setOnEndOfMedia(() -> MainMenu.INSTANCE.start(primaryStage));
 
         mediaPlayer.play();
 
+        // Le scale initial est à 16,
+        // 720 (= Stage minHeight) / 16 = 45 d'où la valeur du ratio.
+        final int ratio = 45;
+        primaryStage.heightProperty().addListener((obs, oldV, newV) -> {
+            GameView.setScale(newV.doubleValue() / ratio);
+            if (GameView.INSTANCE.isInGame()) {
+                GameView.INSTANCE.resizeGame();
+            }
+        });
+
+        primaryStage.maximizedProperty().addListener(obs -> {
+            GameView.setScale(primaryStage.getHeight() / ratio);
+            if (GameView.INSTANCE.isInGame()) {
+                GameView.INSTANCE.resizeGame();
+            }
+        });
+
+        primaryStage.setOnCloseRequest(val -> Platform.exit());
     }
 }
-

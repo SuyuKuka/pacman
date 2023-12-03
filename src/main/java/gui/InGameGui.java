@@ -1,13 +1,19 @@
 package gui;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import gui.graphics.GraphicsUpdater;
+import gui.menu.MainMenu;
 import gui.menu.Menu;
 import gui.menu.Multiplayer;
 import gui.menu.Solo;
 import gui.menu.Selector;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -18,9 +24,13 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import model.Ghost;
 import model.MazeState;
-import utils.Resources;
+import model.PacMan;
+import model.Ghost.GhostState;
+import model.MazeState.GameState;
 import utils.Music;
+import utils.Resources;
 
 public final class InGameGui {
     /** La{@code Scene}actuelle. */
@@ -29,15 +39,16 @@ public final class InGameGui {
     private StackPane endGamePane = new StackPane();
     /** Le{@code StackPane}lorsque le jeu est en pause. */
     private StackPane pausePane = new StackPane();
-
     /** Arrière-plan assombri. */
     private Rectangle dimBackground = makeDimBackground();
-    /** Menu de fin de jeu. */
-    private VBox endGameMenu;
+
     /** Les ">" du menu de fin de jeu. */
     private ArrayList<Text> endGameSelects = new ArrayList<>();
     /** Les choix du menu de fin de jeu. */
     private ArrayList<Text> endgameOptions = new ArrayList<>();
+    /** Menu de fin de jeu. */
+    private VBox endGameMenu;
+
     /** Les ">" du menu pause. */
     private ArrayList<Text> pauseSelects = new ArrayList<>();
     /** Les choix du menu pause. */
@@ -45,22 +56,34 @@ public final class InGameGui {
     /** Menu pause. */
     private VBox pauseMenu = pauseMenu();
 
-    /** Indice du niveau choisi. */
-    private static int currentLevel;
     /** {@code VBox}contenant le score et les vies. */
     private VBox infos;
     /** Le{@code Text}contenant le score. */
     private Text scoreText;
     /** Un tableau contenant les images des vies de Pac-Man. */
     private ImageView[] lives;
-    /** Boolean indiquant si la partie est finie. */
-    private boolean end = false;
+    // Progress bar
+    /** {@code Label}indiquant l'état des fantômes. */
+    private Label barLabel;
+    /** Barre de progression. */
+    private ProgressBar bar;
+
+    /** Liste de{@code GraphicsUpdater}pour le score lorsqu'on mange un fantôme. */
+    private static ArrayList<GraphicsUpdater> eatScoreUpdater = new ArrayList<>();
+
+    /** Indice du niveau choisi. */
+    private static int currentLevel;
     /** Boolean indiquant si la partie est mise en pause. */
     private static boolean paused = false;
+    /** Boolean indiquant si la partie est finie. */
+    private boolean end = false;
 
+    /** Versus ou Coop. */
     private String mode;
 
     private Selector selector;
+
+    private static final String FONT = "small_pixel-7";
 
     /**
      * Constructeur{@code InGameGui}.
@@ -77,7 +100,7 @@ public final class InGameGui {
     }
 
     /**
-     * Retourne un fond assombri par rapport aux dimensions du {@link Menu#mainStage}.
+     * Retourne un fond assombri par rapport aux dimensions du {@link MainMenu#mainStage}.
      * @return {@code Rectangle}fond assombri
      */
     public Rectangle makeDimBackground() {
@@ -101,15 +124,16 @@ public final class InGameGui {
      */
     public void displayInfos(final MazeState state) {
         StackPane rootPane = (StackPane) gameScene.getRoot();
-        HBox gameBox = (HBox) (rootPane.getChildren().get(0));
+        HBox mainBox = (HBox) (rootPane.getChildren().get(0));
 
         infos = new VBox();
         infos.setAlignment(Pos.CENTER);
         infos.setSpacing(rootPane.getHeight() / 2);
         makeScoreDisplay();
         makeLivesDisplay(state);
+        makeProgressBar();
 
-        gameBox.getChildren().add(infos);
+        mainBox.getChildren().add(infos);
     }
 
     /**
@@ -126,9 +150,9 @@ public final class InGameGui {
         final int spacing = 10;
 
         title.setText("Score");
-        title.setFont(Font.loadFont(Resources.getFile("small_pixel-7"), titleSize));
+        title.setFont(Font.loadFont(Resources.getPathOrContent(FONT), titleSize));
         title.setFill(Color.WHITE);
-        scoreText.setFont(Font.loadFont(Resources.getFile("small_pixel-7"), scoreSize));
+        scoreText.setFont(Font.loadFont(Resources.getPathOrContent(FONT), scoreSize));
         scoreText.setFill(Color.WHITE);
 
         VBox score = new VBox(title, scoreText);
@@ -153,6 +177,39 @@ public final class InGameGui {
             showEndGame();
             addEndHandlers();
         }
+    }
+
+    /**
+     * Affiche la quantité de points gagnée en mangeant un fantôme.
+     * @param eatScore Quantité de points
+     * @param ghost Le fantôme qui a été mangé
+     */
+    public static void showEatGhostPoints(final int eatScore, final Ghost ghost) {
+        final int fontSize = 15 + (int) GameView.getScale() - (int) GameView.getInitialScale();
+        Text eatGhostPoints = new Text(String.valueOf(eatScore));
+        eatGhostPoints.setFont(Font.loadFont(Resources.getPathOrContent(FONT), fontSize));
+        eatGhostPoints.setFill(Color.WHITE);
+        final double posX = ghost.getPos().x();
+        final double posY = ghost.getPos().y();
+
+        GraphicsUpdater updater = new GraphicsUpdater() {
+            @Override
+            public void update() {
+                if (ghost.getGhostState().equals(GhostState.NORMAL)) {
+                    GameView.INSTANCE.getMapStack().getChildren().remove(eatGhostPoints);
+                    eatScoreUpdater.remove(this);
+                }
+                eatGhostPoints.setTranslateX(posX * (int) GameView.getScale());
+                eatGhostPoints.setTranslateY(posY * (int) GameView.getScale());
+            }
+
+            @Override
+            public Node getNode() {
+                return eatGhostPoints;
+            }
+        };
+        eatScoreUpdater.add(updater);
+        GameView.INSTANCE.addEatScoreGraphics(updater);
     }
 
     /**
@@ -202,6 +259,100 @@ public final class InGameGui {
             showEndGame();
             addEndHandlers();
         }
+    }
+
+    /** Méthode qui initialise la barre de progression. */
+    private void makeProgressBar() {
+        VBox mapBox = GameView.INSTANCE.getMapBox();
+
+        final int spacing = 5;
+        final int fontSize = 50;
+
+        barLabel = new Label();
+        barLabel.setFont(Font.loadFont(Resources.getPathOrContent(FONT), fontSize));
+        barLabel.setTextFill(Color.WHITE);
+
+        bar = new ProgressBar();
+        bar.setProgress(0);
+        final double ratio = 1.8;
+        bar.setMinHeight(GameView.getScale() * ratio);
+        bar.setMaxWidth(gameScene.getWidth());
+
+        VBox progressBar = Menu.createVBox(spacing, Pos.CENTER, barLabel, bar);
+
+        mapBox.getChildren().add(0, progressBar);
+    }
+
+    /**
+     * Méthode mettant à jour la progression de la barre d'état et de son nom.
+     * @param state {@code MazeState}
+     */
+    public void updateProgressBar(final MazeState state) {
+        if (state.getCurrentLiveTime() == null) {
+            return;
+        }
+
+        GameState currentState = state.getGameState();
+        barLabel.setText(state.getGameState().toString());
+
+        if (currentState.equals(GameState.FRIGHTENED)) {
+            bar.setProgress(PacMan.getEnergizedTimer() / PacMan.getEnergizedDuration());
+        } else {
+            int stateDuration = 1;
+            double time = state.getTimeSinceStart();
+            final int[] stateSwap = state.getConfig().getGhostStateSwap();
+            for (int i = 0; i < stateSwap.length; i++) {
+                if (time - stateSwap[i] < 0) {
+                    stateDuration = stateSwap[i];
+                    break;
+                } else {
+                    time -= stateSwap[i];
+                }
+            }
+            bar.setProgress(time / stateDuration);
+        }
+
+        switch (currentState) {
+            case SCATTER:
+                bar.setStyle("-fx-accent: #0000FF");
+                break;
+            case CHASE:
+                bar.setStyle("-fx-accent: #FF0000");
+                break;
+            case FRIGHTENED:
+                bar.setStyle("-fx-accent: #FFFF00");
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Méthode mettant à jour la barre de progression lors du démarrage de la partie.
+     * @param time
+     */
+    public void updateStartProgressBar(final double time) {
+        final double startDuration = 3.9;
+        final double ready = 1.5;
+        final int set = 3;
+        if (time < ready) {
+            barLabel.setText("Ready");
+        } else if (time < set) {
+            barLabel.setText("Set");
+        } else {
+            barLabel.setText("Go!");
+        }
+
+        bar.setProgress(time / startDuration);
+    }
+
+    /**
+     * Redimensionne la barre de progression.
+     */
+    public void resizeProgressBar() {
+        final double ratio = 1.8;
+        bar.setMinHeight(GameView.getScale() * ratio);
     }
 
     /**
@@ -269,13 +420,13 @@ public final class InGameGui {
             selector.getKeySelector().resetSelect();
         });
         endgameOptions.get(1).setOnMouseClicked(mouseEvent -> {
-            Menu.INSTANCE.toMenu();
+            MainMenu.INSTANCE.toMenu();
             selector.getKeySelector().resetSelect();
         });
 
         gameScene.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
-                switch (Menu.getSelected()) {
+                switch (Selector.getSelectedIndex()) {
                     case 0:
                         if (mode.equals("Solo")) {
                             Solo.startLevel(currentLevel);
@@ -285,7 +436,7 @@ public final class InGameGui {
                         break;
 
                     case 1:
-                        Menu.INSTANCE.toMenu();
+                        MainMenu.INSTANCE.toMenu();
                         break;
 
                     default:
@@ -383,14 +534,14 @@ public final class InGameGui {
             selector.getKeySelector().resetSelect();
         });
         pauseOptions.get(2).setOnMouseClicked(mouseEvent -> {
-            Menu.INSTANCE.toMenu();
+            MainMenu.INSTANCE.toMenu();
             selector.getKeySelector().resetSelect();
         });
 
         gameScene.setOnKeyPressed(keyEvent -> {
             if (paused && keyEvent.getCode() == KeyCode.ENTER) {
                 pause(false);
-                switch (Menu.getSelected()) {
+                switch (Selector.getSelectedIndex()) {
                     case 0:
                         Music.resume();
                         break;
@@ -404,7 +555,7 @@ public final class InGameGui {
                         break;
 
                     case 2:
-                        Menu.INSTANCE.toMenu();
+                        MainMenu.INSTANCE.toMenu();
                         break;
 
                     default:
@@ -429,5 +580,9 @@ public final class InGameGui {
 
     public static void setCurrentLevel(final int currentLevel) {
         InGameGui.currentLevel = currentLevel;
+    }
+
+    public static List<GraphicsUpdater> getEatScoreUpdater() {
+        return eatScoreUpdater;
     }
 }

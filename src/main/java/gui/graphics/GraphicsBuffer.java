@@ -1,4 +1,4 @@
-package gui;
+package gui.graphics;
 
 public final class GraphicsBuffer {
     // Buffer pour les images des critters

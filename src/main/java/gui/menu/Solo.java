@@ -1,8 +1,5 @@
 package gui.menu;
 
-import javafx.beans.binding.Bindings;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -12,11 +9,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-
-import java.util.ArrayList;
 
 import config.MazeConfig;
 import gui.GameView;
@@ -27,14 +21,6 @@ import model.MazeState;
 import utils.Music;
 
 public final class Solo extends Menu {
-    private BorderPane soloPane;
-    private Scene soloScene;
-    private DoubleProperty fontSize = new SimpleDoubleProperty(INITIAL_TEXT_SIZE);
-    private Text titleText;
-    private ArrayList<HBox> options = new ArrayList<>();
-    private ArrayList<Text> selects = new ArrayList<>();
-    private ArrayList<Text> choices = new ArrayList<>();
-
     public static final Solo INSTANCE = new Solo();
 
     private Solo() {
@@ -42,31 +28,6 @@ public final class Solo extends Menu {
 
     @Override
     public void start(final Stage primaryStage) {
-        soloPane = new BorderPane();
-        soloPane.setBackground(getBackground());
-
-        soloScene = new Scene(
-            soloPane,
-            primaryStage.getScene().getWidth(),
-            primaryStage.getScene().getHeight()
-        );
-        soloScene.setFill(Color.BLACK);
-
-        addMainBox();
-        addEventHandlers(soloScene);
-    }
-
-    @Override
-    public void setScene() {
-        soloScene.setRoot(new HBox());
-        soloScene = new Scene(
-            soloPane,
-            Menu.getMainStage().getScene().getWidth(),
-            Menu.getMainStage().getScene().getHeight()
-        );
-        soloScene.setFill(Color.BLACK);
-
-        addEventHandlers(soloScene);
     }
 
     /**
@@ -74,7 +35,7 @@ public final class Solo extends Menu {
      */
     public void toSolo() {
         setScene();
-        Menu.getMainStage().setScene(soloScene);
+        getMainStage().setScene(getMenuScene());
     }
 
     @Override
@@ -82,88 +43,67 @@ public final class Solo extends Menu {
         final int titleSize = 100;
         final int spacingSize = 20;
 
-        titleText = createText("Level Selector", titleSize);
-        HBox title = createHBox(0, Pos.TOP_CENTER, titleText);
+        setTitleText(createText("Level Selector", titleSize));
+        HBox title = createHBox(0, Pos.TOP_CENTER, getTitleText());
 
-        Text select0 = createText(">", fontSize.getValue().intValue());
-        Text classique = createText("Classique", fontSize.getValue().intValue());
+        Text select0 = createText(">", getFontSize().getValue().intValue());
+        Text classique = createText("Classique", getFontSize().getValue().intValue());
 
-        Text selectBack = createText(">", fontSize.getValue().intValue());
-        Text backText = createText("Back", fontSize.getValue().intValue());
+        Text selectBack = createText(">", getFontSize().getValue().intValue());
+        Text backText = createText("Back", getFontSize().getValue().intValue());
 
         //CHECKSTYLE:OFF
-        if (options.isEmpty()) {
-            options.add(0, createHBox(spacingSize, Pos.CENTER, select0, classique));
-            options.add(1, createHBox(spacingSize, Pos.BOTTOM_LEFT, selectBack, backText));
+        if (getOptions().isEmpty()) {
+            getOptions().add(0, createHBox(spacingSize, Pos.CENTER, select0, classique));
+            getOptions().add(1, createHBox(spacingSize, Pos.BOTTOM_LEFT, selectBack, backText));
         }
 
         VBox optionBox = createVBox(
             spacingSize, Pos.CENTER,
-            options.get(0)
+            getOptions().get(0)
         );
 
-        if (selects.isEmpty() && choices.isEmpty()) {
-            selects.add(0, select0);
-            selects.add(1, selectBack);
+        if (getSelects().isEmpty() && getChoices().isEmpty()) {
+            getSelects().add(0, select0);
+            getSelects().add(1, selectBack);
 
-            choices.add(0, classique);
-            choices.add(1, backText);
+            getChoices().add(0, classique);
+            getChoices().add(1, backText);
         }
 
         bindTextSizeToScene();
 
-        soloPane.setTop(title);
-        soloPane.setCenter(optionBox);
-        soloPane.setBottom(options.get(1));
+        getMenuPane().setTop(title);
+        getMenuPane().setCenter(optionBox);
+        getMenuPane().setBottom(getOptions().get(1));
         BorderPane.setMargin(title, new Insets(100, 0, 0, 0));
         //CHECKSTYLE:ON
     }
 
     @Override
     protected void addEventHandlers(final Scene gameScene) {
-        Selector selector = new Selector(selects, choices, gameScene, false);
+        Selector selector = new Selector(getSelects(), getChoices(), gameScene, false);
 
-        options.get(0).setOnMouseClicked(event -> {
+        getOptions().get(0).setOnMouseClicked(event -> {
             startLevel(0);
             selector.getKeySelector().resetSelect();
         });
-        options.get(1).setOnMouseClicked(event -> {
-            Menu.INSTANCE.toMenu();
+        getOptions().get(1).setOnMouseClicked(event -> {
+            MainMenu.INSTANCE.toMenu();
             selector.getKeySelector().resetSelect();
         });
 
         gameScene.setOnKeyPressed(keyEvent -> {
             final int back = 1;
             if (keyEvent.getCode() == KeyCode.ENTER) {
-                if (Menu.getSelected() == back) {
-                    Menu.INSTANCE.toMenu();
+                if (Selector.getSelectedIndex() == back) {
+                    MainMenu.INSTANCE.toMenu();
                 } else {
-                    startLevel(getSelected());
+                    startLevel(Selector.getSelectedIndex());
                 }
                 selector.getKeySelector().resetSelect();
             }
         });
-    }
-
-    @Override
-    protected void bindTextSizeToScene() {
-        final int scale = 30;
-        final int titleScale = 50;
-        final String fxFontSize = "-fx-font-size: ";
-
-        fontSize.bind(
-            soloScene.widthProperty().divide(scale).add(soloScene.heightProperty().divide(scale))
-        );
-
-        titleText.styleProperty().bind(
-            Bindings.concat(fxFontSize, fontSize.add(titleScale).asString())
-        );
-        for (Text text : choices) {
-            text.styleProperty().bind(Bindings.concat(fxFontSize, fontSize.asString()));
-        }
-        for (Text text : selects) {
-            text.styleProperty().bind(Bindings.concat(fxFontSize, fontSize.asString()));
-        }
     }
 
     /**
@@ -181,8 +121,8 @@ public final class Solo extends Menu {
 
         Scene gameScene = new Scene(
             root,
-            Menu.getMainStage().getScene().getWidth(),
-            Menu.getMainStage().getScene().getHeight()
+            getMainStage().getScene().getWidth(),
+            getMainStage().getScene().getHeight()
         );
 
         MazeState maze;
@@ -197,7 +137,7 @@ public final class Solo extends Menu {
                 break;
         }
 
-        Menu.getMainStage().setScene(gameScene);
+        getMainStage().setScene(gameScene);
         InGameGui inGameGui = new InGameGui(gameScene, "Solo");
 
         Controller.setInGameGui(inGameGui);
