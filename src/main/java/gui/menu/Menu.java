@@ -3,10 +3,6 @@ package gui.menu;
 import java.util.ArrayList;
 import java.util.List;
 
-import gui.GameView;
-import gui.controller.Controller;
-import gui.controller.PacmanController;
-import gui.controller.PlayerTwoController;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
@@ -22,20 +18,16 @@ import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import model.Direction;
 import utils.Resources;
 
 public abstract class Menu extends Application {
     protected static final int INITIAL_TEXT_SIZE = 45;
-    private static DoubleProperty fontSize = new SimpleDoubleProperty(INITIAL_TEXT_SIZE);
+    private DoubleProperty fontSize = new SimpleDoubleProperty(INITIAL_TEXT_SIZE);
     private Text titleText;
     private ArrayList<HBox> options = new ArrayList<>();
     private ArrayList<Text> selects = new ArrayList<>();
@@ -44,28 +36,21 @@ public abstract class Menu extends Application {
     /** Stage. */
     private static Stage mainStage;
 
-    private StackPane mainPane;
     private BorderPane menuPane;
     private Scene menuScene;
-
-    private StackPane helpWindow;
 
     protected Menu() {
         menuPane = new BorderPane();
         menuPane.setBackground(getBackground());
-        mainPane = new StackPane();
-        mainPane.getChildren().add(menuPane);
-        mainPane.setStyle("-fx-background-color: BLACK");
 
         menuScene = new Scene(
-            mainPane,
+            menuPane,
             mainStage.getScene().getWidth(),
             mainStage.getScene().getHeight()
         );
         menuScene.setFill(Color.BLACK);
 
-        addHelper();
-        addOptionsToMenu();
+        addMainBox();
         addEventHandlers(getMenuScene());
     }
 
@@ -74,133 +59,27 @@ public abstract class Menu extends Application {
      * lorque la méthode est appelée.
      */
     protected void setScene() {
-        mainPane.getChildren().clear();
-        mainPane.getChildren().add(menuPane);
         menuScene.setRoot(new HBox());
         menuScene = new Scene(
-            mainPane, mainStage.getScene().getWidth(), mainStage.getScene().getHeight()
+            menuPane,
+            mainStage.getScene().getWidth(),
+            mainStage.getScene().getHeight()
         );
+        menuScene.setFill(Color.BLACK);
 
-        addHelper();
-        addOptionsToMenu();
         addEventHandlers(menuScene);
     }
 
     /**
-     * Ajoute les options au {@link #menuPane}.
+     * Ajoute les options à la scène {@link #menuScene}.
      */
-    protected void addOptionsToMenu() { }
+    protected void addMainBox() { }
 
     /**
      * Ajoute les différents{@code EventHandler}(souris, clavier).
      * @param scene
      */
     protected void addEventHandlers(final Scene scene) { }
-
-    protected final void addHelper() {
-        addHelpWindow();
-        addHelpCircle();
-    }
-
-    private void addHelpCircle() {
-        final double radius = GameView.getScale() * 1.5;
-        StackPane helpCircle = new StackPane();
-
-        Circle circle = new Circle();
-        circle.setRadius(radius);
-        circle.setFill(Color.WHITE);
-
-        Text questionMark = createText("?", fontSize.doubleValue());
-        questionMark.setFill(Color.BLACK);
-
-        StackPane.setAlignment(circle, Pos.CENTER);
-        StackPane.setAlignment(questionMark, Pos.CENTER);
-
-        helpCircle.setMaxSize(INITIAL_TEXT_SIZE, INITIAL_TEXT_SIZE);
-        helpCircle.setTranslateX(-INITIAL_TEXT_SIZE / 2.0);
-        helpCircle.setTranslateY(-INITIAL_TEXT_SIZE / 2.0);
-        helpCircle.getChildren().addAll(circle, questionMark);
-        StackPane.setAlignment(helpCircle, Pos.BOTTOM_RIGHT);
-
-        mainPane.getChildren().add(helpCircle);
-        helpCircle.setOnMouseClicked(event -> helpWindow.setVisible(!helpWindow.isVisible()));
-    }
-
-    private void addHelpWindow() {
-        final int margin = 200;
-        final double spacing = mainStage.getWidth() / 8;
-
-        VBox left = new VBox();
-        left.setAlignment(Pos.CENTER);
-
-        VBox right = new VBox();
-        right.setAlignment(Pos.CENTER);
-
-        HBox hbox = createHBox(spacing, Pos.CENTER, left, right);
-
-        helpWindow = new StackPane(hbox);
-
-        helpWindow.setMaxSize(mainStage.getWidth() - margin, mainStage.getHeight() - margin);
-        helpWindow.setStyle("-fx-background-color: #333333");
-        helpWindow.setVisible(false);
-        StackPane.setAlignment(helpWindow, Pos.CENTER);
-
-        StackPane upPlayerOne = getNewKey(Controller.getKeyCode(
-            PacmanController.getKeybinds(), Direction.NORTH
-        ).toString());
-        StackPane leftPlayerOne = getNewKey(Controller.getKeyCode(
-            PacmanController.getKeybinds(), Direction.WEST
-        ).toString());
-        StackPane downPlayerOne = getNewKey(Controller.getKeyCode(
-            PacmanController.getKeybinds(), Direction.SOUTH
-        ).toString());
-        StackPane rightPlayerOne = getNewKey(Controller.getKeyCode(
-            PacmanController.getKeybinds(), Direction.EAST
-        ).toString());
-        HBox threeKeysPlayerOne = new HBox(leftPlayerOne, downPlayerOne, rightPlayerOne);
-        left.getChildren().addAll(upPlayerOne, threeKeysPlayerOne);
-
-        StackPane upPlayerTwo = getNewKey(Controller.getKeyCode(
-            PlayerTwoController.getKeybinds(), Direction.NORTH
-        ).toString());
-        StackPane leftPlayerTwo = getNewKey(Controller.getKeyCode(
-            PlayerTwoController.getKeybinds(), Direction.WEST
-        ).toString());
-        StackPane downPlayerTwo = getNewKey(Controller.getKeyCode(
-            PlayerTwoController.getKeybinds(), Direction.SOUTH
-        ).toString());
-        StackPane rightPlayerTwo = getNewKey(Controller.getKeyCode(
-            PlayerTwoController.getKeybinds(), Direction.EAST
-        ).toString());
-        HBox threeKeysPlayerTwo = new HBox(leftPlayerTwo, downPlayerTwo, rightPlayerTwo);
-        right.getChildren().addAll(upPlayerTwo, threeKeysPlayerTwo);
-
-        mainPane.getChildren().add(helpWindow);
-
-        addHelperHandlers();
-    }
-
-    private StackPane getNewKey(final String key) {
-        final double keySize = 5 * GameView.getScale();
-        final Color keyColor = Color.rgb(220, 220, 220);
-
-        Text label = createText(key, fontSize.doubleValue() / 2);
-        Rectangle rec = new Rectangle();
-        StackPane keyPane = new StackPane(rec, label);
-
-        StackPane.setAlignment(label, Pos.CENTER);
-        StackPane.setAlignment(rec, Pos.CENTER);
-        label.setFill(Color.BLACK);
-        rec.setWidth(keySize);
-        rec.setHeight(keySize);
-        rec.setFill(keyColor);
-        keyPane.setMaxSize(rec.getWidth(), rec.getHeight());
-
-        return keyPane;
-    }
-
-    private void addHelperHandlers() {
-    }
 
     /**
      * Relie la taille du texte à la taille de la fenêtre.
@@ -256,7 +135,7 @@ public abstract class Menu extends Application {
      * @param size La taille du{@code Text}
      * @return {@code Text}
      */
-    public static Text createText(final String str, final double size) {
+    public static Text createText(final String str, final int size) {
         Text text = new Text(str);
         text.setFill(Color.WHITE);
         text.setFont(Font.loadFont(Resources.getPathOrContent("small_pixel-7"), size));
@@ -272,7 +151,7 @@ public abstract class Menu extends Application {
      * @return {@code VBox}
      */
     public static VBox createVBox(
-    final double spacing, final Pos position, final Node... nodes) {
+            final int spacing, final Pos position, final Node... nodes) {
         VBox box = new VBox(spacing);
         box.getChildren().addAll(nodes);
         box.setAlignment(position);
@@ -288,7 +167,8 @@ public abstract class Menu extends Application {
      * @return {@code HBox}
      */
     public static HBox createHBox(
-    final double spacing, final Pos position, final Node... nodes) {
+        final int spacing, final Pos position, final Node... nodes
+        ) {
         HBox box = new HBox(spacing);
         box.getChildren().addAll(nodes);
         box.setAlignment(position);
@@ -311,7 +191,7 @@ public abstract class Menu extends Application {
         return menuScene;
     }
 
-    public static DoubleProperty getFontSize() {
+    public final DoubleProperty getFontSize() {
         return fontSize;
     }
 

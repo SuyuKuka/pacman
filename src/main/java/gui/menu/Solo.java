@@ -39,7 +39,7 @@ public final class Solo extends Menu {
     }
 
     @Override
-    protected void addOptionsToMenu() {
+    protected void addMainBox() {
         final int titleSize = 100;
         final int spacingSize = 20;
 
