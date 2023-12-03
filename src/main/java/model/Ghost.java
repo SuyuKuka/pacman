@@ -171,11 +171,13 @@ public final class Ghost extends Critter {
                     if (state.getEatenPacgomme() >= inkyThreshold) {
                         activated = true;
                     }
+                    break;
                 case CLYDE:
                     final int clydeThreshold = state.getConfig().getTotalPacGomme() / 3;
                     if (state.getEatenPacgomme() >= clydeThreshold) {
                         activated = true;
                     }
+                    break;
                 default:
                     break;
             }
