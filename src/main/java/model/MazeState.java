@@ -29,6 +29,7 @@ public final class MazeState {
     private final MazeConfig config;
 
     private static final int TOTAL_LIVES = 3;
+    private static int ghostEatenCount = 0;
     private int lives;
 
     /** {@link GameState} actuel. */
@@ -112,6 +113,7 @@ public final class MazeState {
             }
             gameState = GameState.FRIGHTENED;
         } else if (!config.getPacman().isEnergized() && gameState == GameState.FRIGHTENED) {
+            setGhostEatenCount(0);
             for (Ghost ghost : config.getGhostList()) {
                 if (ghost.getGhostState() == GhostState.FRIGHTENED)  {
                     ghost.setGhostState(GhostState.NORMAL);
@@ -145,12 +147,14 @@ public final class MazeState {
             && Math.abs(ghostPos.y() - pacman2Pos.y()) <= collisionRange) {
                 if (ghost.getGhostState() == GhostState.FRIGHTENED
                 && config.getPacman().isEnergized()) {
-                    addScore(eatScore);
+                    Music.playSound("eatghost");
                     ghost.setGhostState(GhostState.EATEN);
                     ghost.setTarget(config.getGhostSpawnEntrance());
-                    Music.playSound("eatghost");
-                    freezeGame(eatScore, ghost);
+                    addScore(eatScore * (int) Math.pow(2, ghostEatenCount));
+                    freezeGame(eatScore * (int) Math.pow(2, ghostEatenCount), ghost);
+                    setGhostEatenCount(ghostEatenCount + 1);
                 } else if (ghost.getGhostState() == GhostState.NORMAL) {
+                    setGhostEatenCount(0);
                     playerLost();
                     return;
                 }
@@ -313,5 +317,9 @@ public final class MazeState {
 
     public double getTimeSinceStart() {
         return totalTime + currentLiveTime;
+    }
+
+    public static void setGhostEatenCount(final int ghostEatenCount) {
+        MazeState.ghostEatenCount = ghostEatenCount;
     }
 }
