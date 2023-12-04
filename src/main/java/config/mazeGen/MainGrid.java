@@ -1,4 +1,4 @@
-package config.MazeGenerator;
+package config.mazeGen;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -290,7 +290,6 @@ public final class MainGrid {
         if (isValidMaze(maze)) {
             finished = true;
             System.out.println("Un terrain (pas forcément) valide a été trouvé.");
-            return;
         } else {
             if (buildState == BuildState.BELOWSPAWN) {
                 if (currentPiece < SPAWN_PIECE) {
@@ -843,4 +842,12 @@ public final class MainGrid {
     }
 
     // endregion function
+
+    public static int[] getMinMaxHauteur() {
+        return MIN_MAX_HAUTEUR;
+    }
+
+    public static int[] getMinMaxLongueur() {
+        return MIN_MAX_LONGUEUR;
+    }
 }

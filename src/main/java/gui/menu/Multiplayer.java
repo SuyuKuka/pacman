@@ -52,9 +52,8 @@ public final class Multiplayer extends Menu {
         InGameGui.setCurrentLevel(mode);
         Music.stopBackgroundMusic();
 
-        StackPane root = new StackPane();
         HBox box = new HBox();
-        root.getChildren().add(box);
+        StackPane root = new StackPane(box);
 
         Scene gameScene = new Scene(
             root,
@@ -67,14 +66,14 @@ public final class Multiplayer extends Menu {
         final int coop = 1;
         switch (mode) {
             case versus:
-                maze = new MazeState(MazeConfig.classicalConfig(true, false));
+                maze = new MazeState(MazeConfig.classicalConfig(false));
                 break;
             case coop:
-                maze = new MazeState(MazeConfig.classicalConfig(false, true));
+                maze = new MazeState(MazeConfig.classicalConfig(true));
                 break;
 
             default:
-                maze = new MazeState(MazeConfig.classicalConfig(false, false));
+                maze = new MazeState(MazeConfig.classicalConfig(false));
                 break;
         }
 
@@ -110,23 +109,23 @@ public final class Multiplayer extends Menu {
         setTitleText(createText("Game Selection", titleSize));
         HBox title = createHBox(0, Pos.TOP_CENTER, getTitleText());
 
-        Text select0 = createText(">", getFontSize().getValue().intValue());
-        Text versus = createText("Versus", getFontSize().getValue().intValue());
+        Text select0 = createText(">", getFontSize().doubleValue());
+        Text versus = createText("Versus", getFontSize().doubleValue());
 
-        Text select1 = createText(">", getFontSize().getValue().intValue());
-        Text coop = createText("Coop", getFontSize().getValue().intValue());
+        Text select1 = createText(">", getFontSize().doubleValue());
+        Text coop = createText("Coop", getFontSize().doubleValue());
 
-        Text selectBack = createText(">", getFontSize().getValue().intValue());
-        Text back = createText("Back", getFontSize().getValue().intValue());
+        Text selectBack = createText(">", getFontSize().doubleValue());
+        Text back = createText("Back", getFontSize().doubleValue());
 
         if (getOptions().isEmpty()) {
-            getOptions().add(0, createHBox(
+            getOptions().add(createHBox(
                 spacingSize, Pos.CENTER, select0, versus
             ));
-            getOptions().add(1, createHBox(
+            getOptions().add(createHBox(
                 spacingSize, Pos.CENTER, select1, coop
             ));
-            getOptions().add(2, createHBox(
+            getOptions().add(createHBox(
                 spacingSize, Pos.BOTTOM_LEFT, selectBack, back
             ));
         }
@@ -136,13 +135,13 @@ public final class Multiplayer extends Menu {
         );
 
         if (getSelects().isEmpty() && getChoices().isEmpty()) {
-            getSelects().add(0, select0);
-            getSelects().add(1, select1);
-            getSelects().add(2, selectBack);
+            getSelects().add(select0);
+            getSelects().add(select1);
+            getSelects().add(selectBack);
 
-            getChoices().add(0, versus);
-            getChoices().add(1, coop);
-            getChoices().add(2, back);
+            getChoices().add(versus);
+            getChoices().add(coop);
+            getChoices().add(back);
         }
 
         bindTextSizeToScene();

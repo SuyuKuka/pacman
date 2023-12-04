@@ -61,50 +61,59 @@ public final class MainMenu extends Menu {
         setTitleText(createText("Mac-Pan-Pac-Man", titleSize));
         VBox titleBox = createVBox(0, Pos.TOP_CENTER, getTitleText());
 
-        Text select0 = createText(">", getFontSize().getValue().intValue());
-        Text solo = createText("Solo", getFontSize().getValue().intValue());
+        Text select0 = createText(">", getFontSize().doubleValue());
+        Text solo = createText("Solo", getFontSize().doubleValue());
 
-        Text select1 = createText(">", getFontSize().getValue().intValue());
-        Text multiplayer = createText("Multiplayer", getFontSize().getValue().intValue());
+        Text select1 = createText(">", getFontSize().doubleValue());
+        Text multiplayer = createText("Multiplayer", getFontSize().doubleValue());
 
-        Text select2 = createText(">", getFontSize().getValue().intValue());
-        Text settings = createText("Settings", getFontSize().getValue().intValue());
+        Text select2 = createText(">", getFontSize().doubleValue());
+        Text endless = createText("Endless", getFontSize().doubleValue());
 
-        Text select3 = createText(">", getFontSize().getValue().intValue());
-        Text quit = createText("Quit", getFontSize().getValue().intValue());
+        Text select3 = createText(">", getFontSize().doubleValue());
+        Text settings = createText("Settings", getFontSize().doubleValue());
+
+        Text select4 = createText(">", getFontSize().doubleValue());
+        Text quit = createText("Quit", getFontSize().doubleValue());
 
         if (getOptions().isEmpty()) {
-            getOptions().add(0, createHBox(
+            getOptions().add(createHBox(
                 spacingSize, Pos.CENTER, select0, solo
             ));
-            getOptions().add(1, createHBox(
+            getOptions().add(createHBox(
                 spacingSize, Pos.CENTER, select1, multiplayer
             ));
-            getOptions().add(2, createHBox(
-                spacingSize, Pos.CENTER, select2, settings
+            getOptions().add(createHBox(
+                spacingSize, Pos.CENTER, select2, endless
             ));
             //CHECKSTYLE:OFF
-            getOptions().add(3, createHBox(
-                spacingSize, Pos.CENTER, select3, quit
+            getOptions().add(createHBox(
+                spacingSize, Pos.CENTER, select3, settings
+            ));
+            getOptions().add(createHBox(
+                spacingSize, Pos.CENTER, select4, quit
             ));
         }
 
         VBox optionBox = createVBox(
             spacingSize,
             Pos.CENTER,
-            getOptions().get(0), getOptions().get(1), getOptions().get(2), getOptions().get(3)
+            getOptions().get(0), getOptions().get(1), getOptions().get(2),
+            getOptions().get(3), getOptions().get(4)
         );
 
         if (getSelects().isEmpty() && getChoices().isEmpty()) {
-            getSelects().add(0, select0);
-            getSelects().add(1, select1);
-            getSelects().add(2, select2);
-            getSelects().add(3, select3);
+            getSelects().add(select0);
+            getSelects().add(select1);
+            getSelects().add(select2);
+            getSelects().add(select3);
+            getSelects().add(select4);
 
-            getChoices().add(0, solo);
-            getChoices().add(1, multiplayer);
-            getChoices().add(2, settings);
-            getChoices().add(3, quit);
+            getChoices().add(solo);
+            getChoices().add(multiplayer);
+            getChoices().add(endless);
+            getChoices().add(settings);
+            getChoices().add(quit);
         }
 
         bindTextSizeToScene();
@@ -129,11 +138,15 @@ public final class MainMenu extends Menu {
             selector.getKeySelector().resetSelect();
         });
         getOptions().get(2).setOnMouseClicked(mouseEvent -> {
-            Settings.INSTANCE.toSettings();
+            Endless.INSTANCE.toEndless();
             selector.getKeySelector().resetSelect();
         });
         //CHECKSTYLE:OFF
         getOptions().get(3).setOnMouseClicked(mouseEvent -> {
+            Settings.INSTANCE.toSettings();
+            selector.getKeySelector().resetSelect();
+        });
+        getOptions().get(4).setOnMouseClicked(mouseEvent -> {
             getMainStage().close();
             System.exit(0);
         });
@@ -142,8 +155,9 @@ public final class MainMenu extends Menu {
         gameScene.setOnKeyPressed(keyEvent -> {
             final int soloCase = 0;
             final int multiplayerCase = 1;
-            final int settingsCase = 2;
-            final int quitCase = 3;
+            final int endlessCase = 2;
+            final int settingsCase = 3;
+            final int quitCase = 4;
             if (keyEvent.getCode() == KeyCode.ENTER) {
                 switch (Selector.getSelectedIndex()) {
                     case soloCase:
@@ -152,6 +166,10 @@ public final class MainMenu extends Menu {
 
                     case multiplayerCase:
                         Multiplayer.INSTANCE.toMulti();
+                        break;
+
+                    case endlessCase:
+                        Endless.INSTANCE.toEndless();
                         break;
 
                     case settingsCase:

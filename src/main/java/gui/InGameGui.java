@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import gui.graphics.GraphicsUpdater;
+import gui.menu.Endless;
 import gui.menu.MainMenu;
 import gui.menu.Menu;
 import gui.menu.Multiplayer;
@@ -78,8 +79,9 @@ public final class InGameGui {
     /** Boolean indiquant si la partie est finie. */
     private boolean end = false;
 
-    /** Versus ou Coop. */
+    /** Solo ou Multi. */
     private String mode;
+    private boolean isEndless;
 
     private Selector selector;
 
@@ -95,6 +97,17 @@ public final class InGameGui {
         setPaused(false);
         Music.setBgMusicClip(null);
         Music.playSound("start");
+    }
+
+    /**
+     * Constructeur{@code InGameGui}en Endless.
+     * @param scene
+     * @param mode
+     * @param isEndless
+     */
+    public InGameGui(final Scene scene, final String mode, final boolean isEndless) {
+        this(scene, mode);
+        this.isEndless = isEndless;
     }
 
     /**
@@ -362,6 +375,10 @@ public final class InGameGui {
         Text gameover = Menu.createText(title, titleSize);
         Text score = Menu.createText("Score : " + state.getScore(), scoreSize);
 
+        Text selectContinue = Menu.createText(">", textSize);
+        Text continuer = Menu.createText("Continue", textSize);
+        HBox optionContinue = Menu.createHBox(textSpacing, Pos.CENTER, selectContinue, continuer);
+
         Text select0 = Menu.createText(">", textSize);
         Text restart = Menu.createText("Restart", textSize);
         HBox option0 = Menu.createHBox(textSpacing, Pos.CENTER, select0, restart);
@@ -372,14 +389,24 @@ public final class InGameGui {
             textSpacing, Pos.CENTER, select1, menu
         );
 
-        endGameSelects.add(0, select0);
-        endGameSelects.add(1, select1);
+        VBox optionBox;
+        if (!isEndless) {
+            optionBox = Menu.createVBox(optionSpacing, Pos.CENTER, option0, option1);
+        } else {
+            endGameSelects.add(selectContinue);
+            endgameOptions.add(continuer);
+            optionBox = Menu.createVBox(
+                optionSpacing, Pos.CENTER, optionContinue, option0, option1
+            );
+        }
 
-        endgameOptions.add(0, restart);
-        endgameOptions.add(1, menu);
+        endGameSelects.add(select0);
+        endGameSelects.add(select1);
+
+        endgameOptions.add(restart);
+        endgameOptions.add(menu);
 
         VBox titleBox = Menu.createVBox(0, Pos.CENTER, gameover, score);
-        VBox optionBox = Menu.createVBox(optionSpacing, Pos.CENTER, option0, option1);
 
         return Menu.createVBox(mainBoxSpacing, Pos.CENTER, titleBox, optionBox);
     }
@@ -397,7 +424,9 @@ public final class InGameGui {
         selector = new Selector(endGameSelects, endgameOptions, gameScene, false);
 
         endgameOptions.get(0).setOnMouseClicked(event -> {
-            if (mode.equals("Solo")) {
+            if (isEndless) {
+                Endless.startLevel(mode, currentLevel, currentLevel);
+            } else if (mode.equals("Solo")) {
                 Solo.startLevel(currentLevel);
             } else {
                 Multiplayer.startLevel(currentLevel);
@@ -405,15 +434,27 @@ public final class InGameGui {
             selector.getKeySelector().resetSelect();
         });
         endgameOptions.get(1).setOnMouseClicked(mouseEvent -> {
-            MainMenu.INSTANCE.toMenu();
+            if (isEndless) {
+                Endless.INSTANCE.restartLevel(Endless.getSelectedMode());
+            } else {
+                MainMenu.INSTANCE.toMenu();
+            }
             selector.getKeySelector().resetSelect();
         });
+        if (isEndless) {
+            endgameOptions.get(2).setOnMouseClicked(mouseEvent -> {
+                MainMenu.INSTANCE.toMenu();
+                selector.getKeySelector().resetSelect();
+            });
+        }
 
         gameScene.setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
                 switch (Selector.getSelectedIndex()) {
                     case 0:
-                        if (mode.equals("Solo")) {
+                        if (isEndless) {
+                            Endless.startLevel(mode, currentLevel, currentLevel);
+                        } else if (mode.equals("Solo")) {
                             Solo.startLevel(currentLevel);
                         } else {
                             Multiplayer.startLevel(currentLevel);
@@ -421,6 +462,14 @@ public final class InGameGui {
                         break;
 
                     case 1:
+                        if (isEndless) {
+                            Endless.INSTANCE.restartLevel(Endless.getSelectedMode());
+                        } else {
+                            MainMenu.INSTANCE.toMenu();
+                        }
+                        break;
+
+                    case 2:
                         MainMenu.INSTANCE.toMenu();
                         break;
 
@@ -511,7 +560,9 @@ public final class InGameGui {
         });
         pauseOptions.get(1).setOnMouseClicked(mouseEvent -> {
             pause(false);
-            if (mode.equals("Solo")) {
+            if (isEndless) {
+                Endless.INSTANCE.restartLevel(Endless.getSelectedMode());
+            } else if (mode.equals("Solo")) {
                 Solo.startLevel(currentLevel);
             } else {
                 Multiplayer.startLevel(currentLevel);
@@ -532,7 +583,9 @@ public final class InGameGui {
                         break;
 
                     case 1:
-                        if (mode.equals("Solo")) {
+                        if (isEndless) {
+                            Endless.INSTANCE.restartLevel(Endless.getSelectedMode());
+                        } else if (mode.equals("Solo")) {
                             Solo.startLevel(currentLevel);
                         } else {
                             Multiplayer.startLevel(currentLevel);

@@ -150,4 +150,8 @@ public final class Music {
     public static boolean isStartBgmPlaying() {
         return startBgm != null && startBgm.isActive();
     }
+
+    public static Clip getStartBgm() {
+        return startBgm;
+    }
 }

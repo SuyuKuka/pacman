@@ -200,9 +200,13 @@ public final class GameView {
                 inGameGui.updateScore(instMaze);
                 inGameGui.updateLives(instMaze);
 
+                final int maxLength = 5;
                 final double nanoseconds = Math.pow(10, 9);
                 timeSinceAnimationStart += deltaT / nanoseconds;
                 if (Music.isStartBgmPlaying()) {
+                    inGameGui.updateStartProgressBar(timeSinceAnimationStart);
+                } else if (instMaze.getCurrentLiveTime() == null && !Music.isStartBgmPlaying()) {
+                    timeSinceAnimationStart = maxLength;
                     inGameGui.updateStartProgressBar(timeSinceAnimationStart);
                 } else {
                     inGameGui.updateProgressBar(instMaze);
