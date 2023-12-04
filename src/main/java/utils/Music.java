@@ -11,8 +11,9 @@ import javax.sound.sampled.LineListener;
 public final class Music {
     private static final float DEFAULT_VOLUME = 0.5f;
     private static float currentVolume = DEFAULT_VOLUME;
+    private static float effectsVolume = DEFAULT_VOLUME;
 
-    /** {@code Clip}de musique/son. */
+    /** Clip de musique/son. */
     private static Clip bgMusicClip = null;
     private static Clip startBgm = null;
     private static long pausePosition;
@@ -21,29 +22,40 @@ public final class Music {
     }
 
     /**
-     * Set le volume.
-     * @param volume {@code float}
+     * Définit le volume des effets sonores.
+     * @param volume Volume en tant que valeur de type float
      */
-    public static void setVolume(final float volume) {
+    public static void setEffectsVolume(final float volume) {
+        if (volume < 0f || volume > 1f) {
+            throw new IllegalArgumentException("Volume value has to be between 0 and 1");
+        }
+        effectsVolume = volume;
+    }
+
+    /**
+     * Définit le volume de la musique de fond.
+     * @param volume Volume en tant que valeur de type float
+     */
+    public static void setBgMusicVolume(final float volume) {
         if (volume < 0f || volume > 1f) {
             throw new IllegalArgumentException("Volume value has to be between 0 and 1");
         }
         currentVolume = volume;
-
         if (isBgmPlaying()) {
-            setClipVolume(bgMusicClip);
+            setClipVolume(bgMusicClip, currentVolume);
         }
     }
 
     /**
-     * Set le volume d'un{@code Clip}.
-     * @param clip {@code Clip}
+     * Définit le volume d'un Clip.
+     * @param clip Clip audio
+     * @param volume Volume en tant que valeur de type float
      */
-    private static void setClipVolume(final Clip clip) {
+    private static void setClipVolume(final Clip clip, final float volume) {
         if (clip != null) {
             FloatControl volumeControl =
                 (FloatControl) clip.getControl(FloatControl.Type.MASTER_GAIN);
-            final float dB = (float) (Math.log(currentVolume) / Math.log(10.0) * 20.0);
+            final float dB = (float) (Math.log(volume) / Math.log(10.0) * 20.0);
             volumeControl.setValue(dB);
         }
     }
@@ -66,7 +78,7 @@ public final class Music {
                 startBgm = sound;
             }
 
-            setClipVolume(sound);
+            setClipVolume(sound, effectsVolume);
 
             LineListener listener = new LineListener() {
                 @Override
@@ -78,7 +90,6 @@ public final class Music {
                 }
             };
             sound.addLineListener(listener);
-
             sound.start();
         } catch (Exception e) {
             e.printStackTrace();
@@ -100,7 +111,7 @@ public final class Music {
                 new URL(Resources.getPathOrContent(soundFileName))
             ));
 
-            setClipVolume(bgMusicClip);
+            setClipVolume(bgMusicClip, currentVolume);
 
             bgMusicClip.loop(Clip.LOOP_CONTINUOUSLY);
         } catch (Exception e) {
@@ -135,8 +146,12 @@ public final class Music {
         }
     }
 
-    public static float getVolume() {
+    public static float getBgMusicVolume() {
         return currentVolume;
+    }
+
+    public static float getEffectsVolume() {
+        return effectsVolume;
     }
 
     public static void setBgMusicClip(final Clip bgMusicClip) {
