@@ -93,7 +93,6 @@ public final class MazeConfig {
         } else {
             grid = getJSONMaze(configPath);
         }
-
         ghostStateSwap = getStateSwap(configPath);
         totalPacGomme = countPacGomme();
         MapVerification.tunnelFinder(grid);
@@ -157,9 +156,8 @@ public final class MazeConfig {
                     if (output.equals("■") || output.equals("/")) {
                         maze[y][x] = cell(Type.valueOf(LINE_TABLE.get(output)));
                     } else if (output.equals("□")) {
-                        maze[y][x] = cell(
-                            Type.valueOf("CLOSED"), Content.valueOf(LINE_TABLE.get(output))
-                        );
+                        maze[y][x] = cell(Type.valueOf("CLOSED"),
+                        Content.valueOf(LINE_TABLE.get(output)));
                     } else if (output.equals("¤") || output.equals("x")) {
                         maze[y][x] = cell(Content.valueOf(LINE_TABLE.get(output)), true);
                     } else {

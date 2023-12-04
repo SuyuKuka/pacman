@@ -12,17 +12,24 @@ import config.Cell.Content;
  * à chaque blocs de pièces possibles du jeu.
  * <p>{@code (0 = bloc qui ne contient rien mais peut être un mur)}
  * <p>{@code (1 = bloc qui ne contient rien mais ne peut pas être un mur)}
- * <p> Limitations du générateur, certains élements sont prédictibles : <p>
- * - La position du Spawn des {@link Ghost}. {@code (score 19 et 15)} <p>
- * - Le nombre et la position des tunnels {@code (score 20+)} <p>
- * - Les 2 barres verticales vides se trouvant sur les 2 côtés du Spawn.<p>
- * La génération de la map suit plusieurs étapes de fabrication.<p>
+ * <p>Limitations du générateur, certains élements sont prédictibles :
+ * <p>- La position du Spawn des {@link Ghost}. {@code (score 19 et 15)}
+ * <p>- Le nombre et la position des tunnels {@code (score 20+)}
+ * <p>La génération de la map suit plusieurs étapes de fabrication.
+ * <p>Tout d'abord, on ne génère qu'une moitié de map car l'autre moitié est une symétrie.
+ * De plus, on ne manipule pas les pièces directement mais des placeholders.
+ * C'est à dire, des pièces pleines qui font office de pièce normale qu'on va remplacer
+ * par la suite par de vraies pièces. (Cela permet d'éviter de recalculer
+ * le maze pour plusieurs pièces de même dimensions).
+ * <p>Ensuite, dès que le terrain est valide, elles sont remplacées aléatoirement par une des pièces
+ * des sacs disponibles.
  * Les pièces qui composent le terrain sont rangées dans {@code 4 sacs différents} :
- * <p>- "tunnel", généré au tout début sur le côté. (1 sur une petite map, 2 sinon). (score 20).
- * <p>- "spawnWall", pièce qui se trouve en dessous du Spawn. (score 30).
- * <p>- "middleWall", les pièces qui collent le mur intérieur et se trouvent en dessous
- * et au-dessus du spawn. (score 40+) (on génère une moitié de map qu'on duplique ensuite).
- * <p>- "freeWall", les pièces qui se trouvent à droite du Spawn (score 50+).
+ * <p>- {@code "tunnel"}, généré au tout début sur le côté.
+ * (1 tunnel sur une petite map, 2 tunnels sinon). {@code (score 20)}.
+ * <p>- {@code "spawnWall"}, pièce qui se trouve en dessous du Spawn. {@code (score 30)}.
+ * <p>- {@code "middleWall"}, les pièces qui collent le mur intérieur et se trouvent en dessous
+ * et au-dessus du spawn. (cf: moitié de map) {@code (score 40+)}.
+ * <p>- {@code "freeWall"}, les pièces qui se trouvent à droite du Spawn {@code (score 50+)}.
  * @author Henri CHIV
  */
 public final class MainGrid {
@@ -30,8 +37,9 @@ public final class MainGrid {
     // CLASSIQUE : 31x28
     private static Random random = new Random();
     private static final int CHAR_TO_INT = 48;
-    private static final int[] MIN_MAX_HAUTEUR = {23, 39};
-    private static final int[] MIN_MAX_LONGUEUR = {24, 42};
+    private static final int[] MIN_MAX_HAUTEUR = {25, 51};
+    private static final int[] MIN_MAX_LONGUEUR = {26, 50};
+    private static final int MAZE_GEN_DONT_LOOK_0 = 2;
 
     public enum BuildState {
         /**
@@ -65,6 +73,7 @@ public final class MainGrid {
     private static final int SPAWN_WALL_INT = 15;
     private static final int SPAWN_INT = 19;
 
+
     private static final int TUNNEL_PIECE = 20;
     private static final int SPAWN_PIECE = 30;
     private static final int MIDDLE_PIECE = 40;
@@ -72,7 +81,6 @@ public final class MainGrid {
 
     private static int currentPiece = TUNNEL_PIECE;
     private static boolean finished = false;
-    private static int failedAttempt = 0;
 
     private MainGrid() { }
 
@@ -84,7 +92,7 @@ public final class MainGrid {
      * @param longueur
      */
     public static void generateGrid(final int hauteur, final int longueur) {
-        int gridH = hauteur; // toujours impair et 23 < h < 41
+        int gridH = hauteur; // toujours impair
         if (gridH < MIN_MAX_HAUTEUR[0]) {
             gridH = MIN_MAX_HAUTEUR[0];
         } else if (gridH > MIN_MAX_HAUTEUR[1]) {
@@ -92,13 +100,13 @@ public final class MainGrid {
         } else if (gridH % 2 == 0) {
             gridH++;
         }
-        int gridL = longueur; // toujours pair et 24 < l < 38
+        int gridL = longueur; // toujours pair
         if (gridL < MIN_MAX_LONGUEUR[0]) {
             gridL = MIN_MAX_LONGUEUR[0];
         } else if (gridL > MIN_MAX_LONGUEUR[1]) {
             gridL = MIN_MAX_LONGUEUR[1];
         } else if (gridL % 2 == 1) {
-            gridH++;
+            gridL++;
         }
 
         grid = new int[gridH][gridL / 2];
@@ -239,31 +247,6 @@ public final class MainGrid {
     }
 
     /**
-     * Affiche dans la console la grille donnée en paramètre.
-     * Rajoute un message personnalisé si il s'agit d'une grille validée ou non.
-     * @param intGrid
-     * @param success
-     */
-    public static void printGrid(final int[][] intGrid, final boolean success) {
-        System.out.println("===============================");
-        if (success) {
-            System.out.println("    Solution possible :");
-        }
-        System.out.println("Longueur : " + intGrid[0].length + " | Hauteur : " + intGrid.length);
-        for (int i = 0; i < intGrid.length; i++) {
-            for (int j = 0; j < intGrid[i].length; j++) {
-                if (String.valueOf(intGrid[i][j]).length() == 2) {
-                    System.out.print(intGrid[i][j] + " ");
-                } else {
-                    System.out.print(intGrid[i][j] + "  ");
-                }
-            }
-            System.out.println();
-        }
-        System.out.println("===============================");
-    }
-
-    /**
      * Renvoie une copie de la grille.
      * @param intGrid
      * @return {@code int[][]}
@@ -289,7 +272,6 @@ public final class MainGrid {
     public static void backtrackOneSolution(final int[][] maze) {
         if (isValidMaze(maze)) {
             finished = true;
-            System.out.println("Un terrain (pas forcément) valide a été trouvé.");
         } else {
             if (buildState == BuildState.BELOWSPAWN) {
                 if (currentPiece < SPAWN_PIECE) {
@@ -336,6 +318,24 @@ public final class MainGrid {
     }
 
     /**
+     * Méthode qui renvoie faux si les intersections du terrain(static) ne sont pas conformes.
+     * @param map
+     * @return {@code boolean}
+     */
+    public static boolean verifyEmptyCell(final int[][] map) {
+        for (int i = 0; i < map.length - 1; i++) {
+            for (int j = 0; j < map[i].length - 1; j++) {
+                if (map[i][j] == 1 && map[i + 1][j] == 1
+                && map[i][j + 1] == 1 && map[i + 1][j + 1] == 1) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+
+    /**
      * Remplace les placeholder par de vraies pièces du jeu.
      * @param map
      */
@@ -350,7 +350,7 @@ public final class MainGrid {
                         getPossibleRealPieces(map, new int[]{i, j});
                     int randomNumber = random.nextInt(possiblesPieces.size());
                     String[] chosenPiece = possiblesPieces.get(randomNumber).clone();
-                    if (map[i][j] > TUNNEL_PIECE) {
+                    if (map[i][j] > SPAWN_PIECE) {
                         modifyPiece(chosenPiece, map[i][j] >= FREE_PIECE);
                     }
                     for (int k = 0; k < chosenPiece.length; k++) {
@@ -483,58 +483,6 @@ public final class MainGrid {
         }
         return false;
         // CHECKSTYLE:ON
-    }
-
-    /**
-     * Ajuste un peu les imperfections de la map.
-     * @param map
-     */
-    public static void adjustMap(final int[][] map) {
-        // CHECKSTYLE:OFF
-        for (int i = 0; i < map.length - 1; i++) {
-            for (int j = 0; j < map[i].length - 1; j++) {
-                if (map[i][j] == 1 && map[i + 1][j] == 1
-                && map[i][j + 1] == 1 && map[i + 1][j + 1] == 1) {
-                    if (map[i - 1][j] != 1 && map[i - 1][j] == map[i - 1][j - 1]){
-                        map[i][j] = currentPiece;
-                        map[i][j + 1] = currentPiece;
-                    } else if (map[i][j + 2] != 1 && map[i][j + 2] == map[i + 1][j + 2]) {
-                        map[i][j + 1] = currentPiece;
-                        map[i + 1][j + 1] = currentPiece;
-                    } else if (map[i + 2][j] != 1 && map[i + 2][j] == map[i + 2][j + 1]) {
-                        map[i + 2][j] = currentPiece;
-                        map[i + 2][j + 1] = currentPiece;
-                    } else if (map[i][j - 1] != 1 && map[i][j - 1] == map[i + 1][j - 1]) {
-                        map[i][j - 1] = currentPiece;
-                        map[i + 1][j - 1] = currentPiece;
-                    }
-                }
-                currentPiece++;
-            }
-        }
-        // CHECKSTYLE:ON
-    }
-
-    /**
-     * Méthode qui renvoie faux si les intersections du terrain(static) ne sont pas conformes.
-     * @param map
-     * @return {@code boolean}
-     */
-    public static boolean verifyEmptyCell(final int[][] map) {
-        for (int i = 0; i < map.length - 1; i++) {
-            for (int j = 0; j < map[i].length - 1; j++) {
-                if (map[i][j] == 1 && map[i + 1][j] == 1
-                && map[i][j + 1] == 1 && map[i + 1][j + 1] == 1) {
-                    failedAttempt++;
-                    final int test = 100000;
-                    if (failedAttempt % test == 0) {
-                        System.out.println("Tentative n°" + failedAttempt + " échouée...");
-                    }
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     /**
@@ -828,11 +776,13 @@ public final class MainGrid {
      */
     public static Cell[][] createRandomMap(final int hauteur, final int longueur) {
         Piece.initialiseGridPieces();
+        int cmpt = 0;
         do {
+            resetBacktrackSettings();
             generateGrid(hauteur, longueur);
             backtrackOneSolution(grid);
-            resetBacktrackSettings();
-        } while (!verifyEmptyCell(grid));
+            cmpt++;
+        } while (cmpt == MAZE_GEN_DONT_LOOK_0 || !verifyEmptyCell(grid));
         putRealPiecesOnGrid(grid);
         placePowerUps(grid);
         removeSpawnDotAndAddRestrictedCells(grid);

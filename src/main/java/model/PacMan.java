@@ -106,7 +106,7 @@ public final class PacMan extends Critter {
         if (pos.equals(nextPos)) {
             return;
         } else if (pos.haveSameNeighbours(nextPos)) {
-            nextPos = pos.adjustNextPos(nextPos, false).warp(width, height);
+            nextPos = pos.adjustNextPos(nextPos).warp(width, height);
         } else {
             nextPos = furthestFreeCell(nextPos, state).warp(width, height);
         }
@@ -140,7 +140,7 @@ public final class PacMan extends Critter {
             }
         }
         // Cas où aucun mur n'a été trouvé, renvoie nextPos
-        return pos.adjustNextPos(end, false);
+        return pos.adjustNextPos(end);
     }
 
     //endregion Position

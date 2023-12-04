@@ -37,26 +37,67 @@ public final class Piece {
         if (buildState == BuildState.BELOWSPAWN) {
             for (String piece : possibleGridPieces[0]) {
                 if (isAValidPiece(grid, piece, buildState)) {
-                    int randomIndex = random.nextInt(possibles.size() + 1);
-                    possibles.add(randomIndex, piece);
+                    possibles.add(piece);
                 }
             }
         } else if (buildState == BuildState.MIDDLEMAP) {
             for (String piece : possibleGridPieces[1]) {
                 if (isAValidPiece(grid, piece, buildState)) {
-                    int randomIndex = random.nextInt(possibles.size() + 1);
-                    possibles.add(randomIndex, piece);
+                    possibles.add(piece);
                 }
             }
         } else {
             for (String piece : possibleGridPieces[2]) {
                 if (isAValidPiece(grid, piece, buildState)) {
-                    int randomIndex = random.nextInt(possibles.size() + 1);
-                    possibles.add(randomIndex, piece);
+                    possibles.add(piece);
                 }
             }
         }
+        possibles = trieAleatoire(possibles);
         return possibles;
+    }
+
+        /**
+     * Renvoie un score indiquant la taille de la pièce.
+     * Pour chaque unité de longueur ou hauteur, le score augmente de 1.
+     * @param piece
+     * @return {@code int}
+     */
+    public static int calcScore(final String piece) {
+        return piece.charAt(0) - CHAR_TO_INT + piece.charAt(2) - CHAR_TO_INT;
+    }
+
+    /**
+     * Méthode qui renvoie une liste triée aléatoire mais qui favorise les grandes pièces.
+     * @param possiblesPieces
+     * @return ArrayList<String>
+     */
+    public static ArrayList<String> trieAleatoire(final ArrayList<String> possiblesPieces) {
+        ArrayList<String> list = new ArrayList<>();
+        for (int i = 0; i < possiblesPieces.size(); i++) {
+            if (i == 0) {
+                list.add(possiblesPieces.get(0));
+            } else {
+                for (int j = 0; j < list.size(); j++) {
+                    if (calcScore(possiblesPieces.get(i)) > calcScore(list.get(j))) {
+                        list.add(j, possiblesPieces.get(i));
+                        break;
+                    } else if (j == list.size() - 1) {
+                        list.add(possiblesPieces.get(i));
+                        break;
+                    }
+                }
+            }
+        }
+        final int chance = list.size();
+        for (int i = 0; i < list.size() - 1; i++) {
+            if (random.nextInt(chance - i) == 0) {
+                final String removePiece = list.remove(i);
+                list.add(i + 1, removePiece);
+                i++;
+            }
+        }
+        return list;
     }
 
     /**
@@ -201,6 +242,9 @@ public final class Piece {
             if (grid[i][indice[1]] == 0) {
                 nb0H[0]++;
             } else {
+                if (nb0H[0] == 1 || nb0H[0] == 2) {
+                    return true;
+                }
                 break;
             }
         }
@@ -208,6 +252,9 @@ public final class Piece {
             if (grid[i][pos[1]] == 0) {
                 nb0H[1]++;
             } else {
+                if (nb0H[1] == 1 || nb0H[1] == 2) {
+                    return true;
+                }
                 break;
             }
         }
@@ -216,6 +263,9 @@ public final class Piece {
             if (grid[indice[0]][i] == 0) {
                 nb0L[0]++;
             } else {
+                if (nb0L[0] == 1 || nb0L[0] == 2) {
+                    return true;
+                }
                 break;
             }
         }
@@ -223,11 +273,13 @@ public final class Piece {
             if (grid[pos[0]][i] == 0) {
                 nb0L[1]++;
             } else {
+                if (nb0L[1] == 1 || nb0L[1] == 2) {
+                    return true;
+                }
                 break;
             }
         }
-        return nb0H[0] == 1 || nb0H[0] == 2 || nb0H[1] == 1 || nb0H[1] == 2
-        || nb0L[0] == 1 || nb0L[0] == 2 || nb0L[1] == 1 || nb0L[1] == 2;
+        return false;
     }
 
     /**

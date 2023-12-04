@@ -98,7 +98,7 @@ public class Cell {
     }
 
     /**
-     * Retourne une nouvelle cellule{@code Cell}de{@code Type}t contenant{@code c}.
+     * Retourne une nouvelle cellule{@code Cell}de{@code Type}t.
      * @param t {@code Type}
      * @param c {@code Content}
      * @return Nouvelle cellule {@link #Cell}

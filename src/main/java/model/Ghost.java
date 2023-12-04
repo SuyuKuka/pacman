@@ -151,7 +151,7 @@ public final class Ghost extends Critter {
                 default:
                     break;
             }
-        } else {
+        } else if (posName.equals("spawn")) {
             switch (ghostType) {
                 case BLINKY:
                     return new RealCoordinates(entrance.x(), entrance.y() + 1);
@@ -248,17 +248,20 @@ public final class Ghost extends Critter {
      * @param state
      */
     public void updateTarget(final MazeState state) {
+        final RealCoordinates spawnEntrance = state.getConfig().getGhostSpawnEntrance();
+        final int spawnInter = 3;
+        final RealCoordinates intersection = spawnEntrance.plus(new RealCoordinates(0, spawnInter));
         if (ghostState == GhostState.EATEN) {
-            RealCoordinates spawnEntrance = state.getConfig().getGhostSpawnEntrance();
-
             // Si mangé, alors fixe sa cible à l'entrée du spawn des fantômes.
             if (!target.equals(spawnEntrance) && !isInSpawn(state.getConfig())) {
                 target = spawnEntrance;
-
             // Si il se trouve à l'entrée du spawn, alors fixe sa cible en eatenTarget.
             } else if (!target.equals(eatenTarget) && isInSpawn(state.getConfig())) {
                 target = eatenTarget;
             }
+        // Si il est arrivé à la position de son eatenTarget, va vers le milieu.
+        } else if (getPos().y() == intersection.y() && isInSpawn(state.getConfig())) {
+            target = intersection;
 
         // Si l'état actuel du jeu est "SCATTER", alors fixe sa cible en scatterTarget.
         } else if (state.getCurrentState() == GameState.SCATTER && !target.equals(scatterTarget)) {
@@ -466,19 +469,23 @@ public final class Ghost extends Critter {
         if (isInTunnel(config)) {
             return Arrays.asList(getDirection());
         }
+        final RealCoordinates curPos = getPos();
         List<Direction> directions = new ArrayList<>(Arrays.asList(NORTH, WEST, SOUTH, EAST));
+        // Si le fantôme est sur 4 cellules en même temps (sécurité).
+        if (curPos.y() != Math.floor(curPos.y()) && curPos.x() != Math.floor(curPos.x())) {
+            return directions;
+        }
         directions.remove(getDirection().getOpposite());
-        RealCoordinates curPos = getPos();
         // Cas où le fantôme se trouve sur les cellules dites "murs invisibles".
         if (config.getCell(curPos.toIntCoordinates()).isRestricted()) {
             directions.remove(NORTH);
         }
-        if (curPos.x() != Math.floor(curPos.x())) {
-            directions.remove(NORTH);
-            directions.remove(SOUTH);
-        } else if (curPos.y() != Math.floor(curPos.y())) {
+        if (curPos.y() != Math.floor(curPos.y())) {
             directions.remove(EAST);
             directions.remove(WEST);
+        } else if (curPos.x() != Math.floor(curPos.x())) {
+            directions.remove(NORTH);
+            directions.remove(SOUTH);
         } else {
             // Cas où le fantôme est au milieu d'une case, alors retire toutes les cases du spawn
             // et celles qui ont un mur.
@@ -559,7 +566,7 @@ public final class Ghost extends Critter {
                 dirProba.remove(i);
             }
         }
-        double random = Math.random() * 100; // 0 à 100
+        double random = Math.random() * 100; // 0 à 99
         int j = 0;
         for (int k = 0; k < dirProba.size(); k++) {
             random -= dirProba.get(k);
@@ -622,12 +629,43 @@ public final class Ghost extends Critter {
             if (pos.equals(nextPos)) {
                 return;
             } else if (pos.haveSameNeighbours(nextPos)) {
-                nextPos = pos.adjustNextPos(nextPos, true).warp(width, height);
+                nextPos = pos.adjustNextPos(nextPos);
             } else {
-                nextPos = furthestFreeCell(nextPos, config).warp(width, height);
+                nextPos = furthestFreeCell(nextPos, config);
+            }
+            if (wentThroughTarget(nextPos)) {
+                nextPos = target;
             }
             setPos(nextPos.warp(width, height));
         }
+    }
+
+
+    /**
+     * Méthode qui vérifie si le {@link Ghost} à traversé la position de son target.
+     * @param nextPos
+     * @return {@code boolean} Vrai si le {@link Ghost} à traversé son target, faux sinon.
+     */
+    public boolean wentThroughTarget(final RealCoordinates nextPos) {
+        final RealCoordinates curPos = getPos();
+        if (curPos.x() == target.x() && curPos.y() == target.y()) {
+            return false;
+        }
+        boolean isInLine = false;
+        // Problème si on traverse un tunnel qui se trouve sur la même ligne que le target.
+        // Il va se tp sur le target et nom de l'autre côté du tunnel car la méthode est vraie.
+        // Il n'y a pas de vrai moyen pour vérifier cela... La seule combine que j'ai trouvé est de
+        // vérifier si les 2 positions ont le même signe
+        if (curPos.x() == target.x() && nextPos.x() == target.x() && curPos.x() * nextPos.x() > 0) {
+            isInLine = true;
+        }
+        if (curPos.y() == target.y() && nextPos.y() == target.y() && curPos.y() * nextPos.y() > 0) {
+            isInLine = true;
+        }
+        if (!isInLine) {
+            return false;
+        }
+        return curPos.getDirectionTo(target) != nextPos.getDirectionTo(target);
     }
 
     /**
@@ -645,13 +683,13 @@ public final class Ghost extends Critter {
         while (dir == tmpPos.getDirectionTo(end)) {
             // Cas où on trouve un mur
             if (config.getCell(tmpPos.plus(dir.directionToUnit()).toIntCoordinates()).hasWall()) {
-                return pos.roundFromDirection(getDirection());
+                return tmpPos.roundFromDirection(getDirection());
             } else {
                 tmpPos = tmpPos.plus(dir.directionToUnit());
             }
         }
         // Cas où aucun mur n'a été trouvé, renvoie nextPos
-        return pos.adjustNextPos(end, true);
+        return pos.adjustNextPos(end);
     }
 
     //endregion Position
