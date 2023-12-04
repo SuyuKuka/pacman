@@ -81,43 +81,86 @@ public final class Ghost extends Critter {
     // region Constructeurs
 
     /**
-     * Constructeur spécial pour créer un {@link GhostType#INKY}.
-     * Inky à besoin d'un fantôme lié pour calculer sa cible en mode CHASE.
+     * Constructeur pour un {@link Ghost}.
      * @param ghostType
-     * @param inkyLinkedGhost
-     * @param pacman
-     * @param pacman2
-     * @param spawnPos
-     * @param eatenTarget
-     * @param scatterTarget
+     * @param config
      */
-    public Ghost(final GhostType ghostType, final Ghost inkyLinkedGhost, final PacMan pacman,
-    final PacMan pacman2, final RealCoordinates spawnPos, final RealCoordinates eatenTarget,
-    final RealCoordinates scatterTarget) {
-        this.ghostType = ghostType;
-        this.inkyLinkedGhost = inkyLinkedGhost;
-        this.pacman = pacman;
-        this.pacman2 = pacman2;
-        this.setSpawnPos(spawnPos);
-        this.setPos(spawnPos);
-        this.eatenTarget = eatenTarget;
-        this.scatterTarget = scatterTarget;
-        this.target = scatterTarget;
+    public Ghost(final MazeConfig config, final GhostType ghostType) {
+        this(config, ghostType, null);
     }
 
     /**
-     * Constructeur pour créer un {@link Ghost}.
+     * Constructeur pour un {@link Ghost}.
+     * Inky à besoin d'un fantôme lié pour calculer sa cible en mode CHASE.
+     * @param config
      * @param ghostType
-     * @param pacman
-     * @param pacman2
-     * @param spawnPos
-     * @param eatenTarget
-     * @param scatterTarget
+     * @param inkyLinkedGhost
      */
-    public Ghost(final GhostType ghostType, final PacMan pacman, final PacMan pacman2,
-    final RealCoordinates spawnPos, final RealCoordinates eatenTarget,
-    final RealCoordinates scatterTarget) {
-        this(ghostType, null, pacman, pacman2, spawnPos, eatenTarget, scatterTarget);
+    public Ghost(final MazeConfig config, final GhostType ghostType, final Ghost inkyLinkedGhost) {
+        this.ghostType = ghostType;
+        this.inkyLinkedGhost = inkyLinkedGhost;
+        final RealCoordinates spawnPos = initStartValue(config, "spawn");
+        this.eatenTarget = initStartValue(config, "eaten");
+        this.scatterTarget = initStartValue(config, "scatter");
+        this.target = scatterTarget;
+        this.pacman = config.getPacman();
+        this.pacman2 = config.getPacman2();
+        setSpawnPos(spawnPos);
+        setPos(spawnPos);
+        return;
+    }
+
+    /**
+     * Méthode qui initialise le target de son spawn, du scatter et du eaten
+     * par rapport au terrain donné.
+     * @param config
+     * @param posName
+     * @return {@link RealCoordinates} Coordonnées associé au String donné en paramètre.
+     */
+    public RealCoordinates initStartValue(final MazeConfig config, final String posName) {
+        // CHECKSTYLE:OFF
+        final RealCoordinates entrance = config.getGhostSpawnEntrance();
+        if (posName.equals("eaten")) {
+            switch (ghostType) {
+                case BLINKY:
+                case PINKY:
+                    return new RealCoordinates(entrance.x(), entrance.y() + 3);
+                case INKY:
+                    return new RealCoordinates(entrance.x() - 2, entrance.y() + 3);
+                case CLYDE:
+                    return new RealCoordinates(entrance.x() + 2, entrance.y() + 3);
+                default:
+                    break;
+            }
+        } else if (posName.equals("scatter")) {
+            switch (ghostType) {
+                case BLINKY:
+                    return new RealCoordinates(config.getWidth() - 3, 0);
+                case PINKY:
+                    return new RealCoordinates(2, 0);
+                case INKY:
+                    return new RealCoordinates(config.getWidth() - 1, config.getHeight() - 2);
+                case CLYDE:
+                    return new RealCoordinates(0, config.getHeight() - 2);
+                default:
+                    break;
+            }
+        } else {
+            switch (ghostType) {
+                case BLINKY:
+                    return new RealCoordinates(entrance.x(), entrance.y() + 1);
+                case PINKY:
+                    return new RealCoordinates(entrance.x(), entrance.y() + 3);
+                case INKY:
+                    return new RealCoordinates(entrance.x() - 2, entrance.y() + 3);
+                case CLYDE:
+                    return new RealCoordinates(entrance.x() + 2, entrance.y() + 3);
+                default:
+                    break;
+            }
+        }
+        // CHECKSTYLE:ON
+        return new RealCoordinates(0, 0);
     }
 
     // endregion Constructeurs
