@@ -1,5 +1,6 @@
 package gui.menu;
 
+import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -12,6 +13,8 @@ import javafx.stage.Stage;
 import utils.Music;
 
 public final class Settings extends Menu {
+    private HBox volumeBox;
+
     public static final Settings INSTANCE = new Settings();
 
     private Settings() {
@@ -30,9 +33,10 @@ public final class Settings extends Menu {
     }
 
     @Override
-    protected void addMainBox() {
+    protected void addOptionsToMenu() {
         final int titleSize = 100;
         final int spacingSize = 20;
+        final double minWidth = Menu.getMainStage().getWidth() / 7;
 
         setTitleText(createText("Settings", titleSize));
         HBox title = createHBox(0, Pos.TOP_CENTER, getTitleText());
@@ -48,6 +52,7 @@ public final class Settings extends Menu {
             final float f = 100.0f;
             Music.setVolume(volume / f);
         });
+        volumeSlider.setMinWidth(minWidth);
 
         //CHECKSTYLE:OFF
         volumeSlider.setShowTickLabels(true);
@@ -57,7 +62,7 @@ public final class Settings extends Menu {
         volumeSlider.setBlockIncrement(10);
         //CHECKSTYLE:ON
 
-        HBox volumeBox = createHBox(spacingSize, Pos.CENTER, volumeText, volumeSlider);
+        volumeBox = createHBox(spacingSize, Pos.CENTER, volumeText, volumeSlider);
 
         Text selectback = createText(">", getFontSize().getValue().intValue());
         Text back = createText("Back", getFontSize().getValue().intValue());
@@ -94,5 +99,18 @@ public final class Settings extends Menu {
             }
             selector.getKeySelector().resetSelect();
         });
+    }
+
+    @Override
+    protected void bindTextSizeToScene() {
+        final int sliderSize = 5;
+        super.bindTextSizeToScene();
+
+        volumeBox.getChildren().get(0).styleProperty().bind(
+            Bindings.concat("-fx-font-size: ", Menu.getFontSize().asString())
+        );
+        volumeBox.getChildren().get(1).styleProperty().bind(
+            Bindings.concat("-fx-font-size: ", Menu.getFontSize().divide(sliderSize).asString())
+        );
     }
 }

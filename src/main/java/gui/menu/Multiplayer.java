@@ -6,9 +6,8 @@ import config.MazeConfig;
 import gui.GameView;
 import gui.InGameGui;
 import gui.controller.Controller;
-import gui.controller.GhostController;
 import gui.controller.PacmanController;
-import gui.controller.PacmanController2;
+import gui.controller.PlayerTwoController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -90,11 +89,11 @@ public final class Multiplayer extends Menu {
             List<Ghost> blinkys = maze.getConfig().getGhostKind(GhostType.BLINKY);
             Ghost playerGhost = blinkys.get(0);
             playerGhost.setDirectionBuffer(new DirectionBuffer());
-            var ghostController = new GhostController(playerGhost);
+            var ghostController = new PlayerTwoController(playerGhost);
 
             gameScene.addEventHandler(KeyEvent.KEY_PRESSED, ghostController::keyPressedHandler);
         } else if (mode == coop) {
-            var pacmanController2 = new PacmanController2(maze.getConfig().getPacman2());
+            var pacmanController2 = new PlayerTwoController(maze.getConfig().getPacman2());
             gameScene.addEventHandler(KeyEvent.KEY_PRESSED, pacmanController2::keyPressedHandler);
         }
 
@@ -104,7 +103,7 @@ public final class Multiplayer extends Menu {
     }
 
     @Override
-    protected void addMainBox() {
+    protected void addOptionsToMenu() {
         final int titleSize = 100;
         final int spacingSize = 20;
 

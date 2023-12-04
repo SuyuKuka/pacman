@@ -2,6 +2,7 @@ package gui.graphics;
 
 import javafx.scene.Node;
 import javafx.scene.image.ImageView;
+import model.Direction;
 import model.Ghost;
 import model.MazeState;
 import model.PacMan;
@@ -14,7 +15,7 @@ public final class CritterGraphicsFactory {
     /** (Nombre d'update par seconde) / 60. */
     private static final double ALTERNATE_FREQUENCY = (double) 1 / 15;
     /** Scale pour la taille des critters. */
-    private static final double SIZE = 1.4;
+    public static final double SIZE = 1.4;
     private static final double X_SHIFT = 0.175;
     private static final double Y_SHIFT = 0.2;
     /** Echelle globale. */
@@ -169,13 +170,23 @@ public final class CritterGraphicsFactory {
         pacman.getGraphicsBuffer().setPacManMouthOpen(
             !pacman.getGraphicsBuffer().isPacManMouthOpen()
         );
+        if (pacman.getDirection() == Direction.NONE) {
+            return pacman.getImage();
+        }
+        rotateImageByDirection(image, pacman.getDirection());
+        return alternatePacImage(pacman, maze);
+    }
+
+    /**
+     * Méthode qui tourne une{@code ImageView}selon la direction.
+     * @param image {@code ImageView}
+     * @param dir {@code Direction}
+     */
+    public static void rotateImageByDirection(final ImageView image, final Direction dir) {
         final double angle = 90.0;
-        switch (pacman.getDirection()) {
+        switch (dir) {
             case NORTH:
-                if (image.getRotate() != -angle) {
-                    image.setScaleX(1);
-                    image.setRotate(-angle);
-                }
+                image.setRotate(image.getScaleX() == -1 ? angle : -angle);
                 break;
             case EAST:
                 if (image.getRotate() != 0 || image.getScaleX() != 1) {
@@ -184,23 +195,20 @@ public final class CritterGraphicsFactory {
                 }
                 break;
             case SOUTH:
-                if (image.getRotate() != angle) {
-                    image.setScaleX(1);
-                    image.setRotate(angle);
-                }
+                image.setRotate(image.getScaleX() == -1 ? -angle : angle);
                 break;
             case WEST:
-                if (image.getScaleX() != -1) {
+                if (image.getRotate() != 0 || image.getScaleX() != -1) {
                     image.setRotate(0);
                     image.setScaleX(-1);
                 }
                 break;
 
             default:
-                return pacman.getImage();
+                image.setRotate(0);
+                image.setScaleX(1);
+                break;
         }
-
-        return alternatePacImage(pacman, maze);
     }
 
     private String alternatePacImage(final PacMan pacman, final MazeState maze) {
