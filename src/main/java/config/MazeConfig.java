@@ -100,6 +100,7 @@ public final class MazeConfig {
             pacman2 = null;
         } else {
             pacman.setSpawnPos(new RealCoordinates(entrance.x() - 0.5, entrance.y() + PacSpawnY));
+            PacMan.setEnergizedDuration(PacMan.getMaxEnergizedTime() / 2);
             pacman2 = new PacMan();
             pacman2.setImage("pacman_rainbow_3");
             pacman2.setSpawnPos(new RealCoordinates(entrance.x() + 0.5, entrance.y() + PacSpawnY));
