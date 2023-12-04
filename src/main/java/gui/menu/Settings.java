@@ -42,7 +42,7 @@ public final class Settings extends Menu {
         HBox title = createHBox(0, Pos.TOP_CENTER, getTitleText());
 
         // Volume control
-        Text volumeText = createText("Volume", getFontSize().getValue().intValue());
+        Text volumeText = createText("Volume", getFontSize().doubleValue());
         // Range [0, 100] with default value 50
         final int minVol = 0;
         final int maxVol = 100;
@@ -64,15 +64,15 @@ public final class Settings extends Menu {
 
         volumeBox = createHBox(spacingSize, Pos.CENTER, volumeText, volumeSlider);
 
-        Text selectback = createText(">", getFontSize().getValue().intValue());
-        Text back = createText("Back", getFontSize().getValue().intValue());
+        Text selectback = createText(">", getFontSize().doubleValue());
+        Text back = createText("Back", getFontSize().doubleValue());
 
         if (getOptions().isEmpty() && getSelects().isEmpty() && getChoices().isEmpty()) {
-            getOptions().add(0, createHBox(spacingSize, Pos.BOTTOM_LEFT, selectback, back));
+            getOptions().add(createHBox(spacingSize, Pos.BOTTOM_LEFT, selectback, back));
 
-            getSelects().add(0, selectback);
+            getSelects().add(selectback);
 
-            getChoices().add(0, back);
+            getChoices().add(back);
         }
 
         bindTextSizeToScene();

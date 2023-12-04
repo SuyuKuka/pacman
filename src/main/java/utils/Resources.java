@@ -64,12 +64,18 @@ public final class Resources {
                 Files.list(
                     fs.getPath("/maps")
                 ).forEach(Resources::sort);
+                Files.list(
+                    fs.getPath("/maps/mazeGenPieces")
+                ).forEach(Resources::sort);
             } else {
                 Files.list(Path.of("src/main/resources/fonts")).forEach(Resources::sort);
                 Files.list(Path.of("src/main/resources/mp4")).forEach(Resources::sort);
                 Files.list(Path.of("src/main/resources/png")).forEach(Resources::sort);
                 Files.list(Path.of("src/main/resources/wav")).forEach(Resources::sort);
                 Files.list(Path.of("src/main/resources/maps")).forEach(Resources::sort);
+                Files.list(Path.of(
+                    "src/main/resources/maps/mazeGenPieces"
+                )).forEach(Resources::sort);
             }
         } catch (Exception e) {
             e.printStackTrace();

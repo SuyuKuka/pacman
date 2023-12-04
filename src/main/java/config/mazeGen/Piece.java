@@ -1,15 +1,13 @@
-package config.MazeGenerator;
+package config.mazeGen;
 
-import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Random;
 
-import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import config.MazeGenerator.MainGrid.BuildState;
+import config.mazeGen.MainGrid.BuildState;
+import utils.Resources;
 
 public final class Piece {
     private static Random random = new Random();
@@ -22,9 +20,6 @@ public final class Piece {
     private static ArrayList<ArrayList<String[]>> gridPieces = new ArrayList<>();
 
     private static final int BORDER_INT = 10;
-    // private static final int SPAWN_WALL_INT = 15;
-    // private static final int SPAWN_INT = 19;
-    // private static final int WALL = 20;
 
     private Piece() { }
 
@@ -286,11 +281,11 @@ public final class Piece {
      */
     public static int jsonToInt(final String fileName) {
         // CHECKSTYLE:OFF
-        if (fileName.equals("spawnWall.json")) {
+        if (fileName.equals("spawnWall")) {
             return 0;
-        } else if (fileName.equals("middleWall.json")) {
+        } else if (fileName.equals("middleWall")) {
             return 1;
-        } else if (fileName.equals("freeWall.json")) {
+        } else if (fileName.equals("freeWall")) {
             return 2;
         } else {
             return 3;
@@ -303,15 +298,14 @@ public final class Piece {
      */
     public static void initialiseGridPieces() {
         try {
-            final String path = "src/main/resources/maps/MazeGeneratorPieces/";
-            final String[] jsonPath = {
-                "spawnWall.json", "middleWall.json", "freeWall.json", "tunnel.json"};
-            for (String json : jsonPath) { // Chaque fichier
+            final String[] jsonNames = {
+                "spawnWall", "middleWall", "freeWall", "tunnel"
+            };
+            for (String name : jsonNames) { // Chaque fichier
                 gridPieces.add(new ArrayList<String[]>());
-                final String str =
-                    FileUtils.readFileToString(new File(path + json), StandardCharsets.UTF_8);
+                final String str = Resources.getPathOrContent(name);
                 final JSONObject jObject = new JSONObject(str); // Contenu du fichier -> String
-                loadPossiblesPiece(json, jObject.getJSONArray("model"));
+                loadPossiblesPiece(name, jObject.getJSONArray("model"));
                 for (int i = 0; i < jObject.names().length(); i++) { // Chaque pièce
                     if (jObject.names().getString(i).equals("model")) {
                         continue;
@@ -321,7 +315,7 @@ public final class Piece {
                     for (int j = 0; j < jArray.length(); j++) { // Chaque ligne de la pièce
                         piece[j] = jArray.getString(j);
                     }
-                    gridPieces.get(jsonToInt(json)).add(piece);
+                    gridPieces.get(jsonToInt(name)).add(piece);
                 }
             }
         } catch (Exception e) {

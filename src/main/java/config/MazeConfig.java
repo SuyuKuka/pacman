@@ -27,6 +27,7 @@ import static model.Direction.WEST;
 
 import config.Cell.Content;
 import config.Cell.Type;
+import config.mazeGen.MainGrid;
 
 public final class MazeConfig {
     private static final HashMap<String, String> LINE_TABLE = new HashMap<>();
@@ -60,18 +61,20 @@ public final class MazeConfig {
 
     /**
      * Constructeur qui initialise les configs pour la carte courante.
-     * @param versus Si on est en mode Versus
      * @param coop Si on est en mode Coop
      * @param configPath {@code String}Le path du fichier JSON de la map
+     * @param endless
+     * @param width
+     * @param height
      */
-    public MazeConfig(final boolean versus, final boolean coop, final String configPath) {
-        // grid = getJSONMaze(configPath);
-        /*
-        final int hauteur = 50;
-        final int longueur = 50;
-        grid = MainGrid.createRandomMap(hauteur, longueur);
-        */
-        grid = getJSONMaze(configPath);
+    public MazeConfig(final boolean coop, final String configPath,
+    final boolean endless, final int width, final int height) {
+        if (endless) {
+            grid = MainGrid.createRandomMap(height, width);
+        } else {
+            grid = getJSONMaze(configPath);
+        }
+
         ghostStateSwap = getStateSwap(configPath);
         totalPacGomme = countPacGomme();
         MapVerification.tunnelFinder(grid);
@@ -233,14 +236,23 @@ public final class MazeConfig {
     }
 
     /**
-     * Retourne un {@link MazeConfig}. Si{@code versus}est{@code true}, initialise
-     * un {@link GhostType#BLINKY} jouable.
-     * @param versus {@code true}si en mode Versus
+     * Retourne un {@link MazeConfig}.
      * @param coop {@code true}si en mode Coop
      * @return {@link MazeConfig}
      */
-    public static MazeConfig classicalConfig(final boolean versus, final boolean coop) {
-        return new MazeConfig(versus, coop, "Level1");
+    public static MazeConfig classicalConfig(final boolean coop) {
+        return new MazeConfig(coop, "Level1", false, 0, 0);
+    }
+
+    /**
+     * Retourne un {@link MazeConfig} pour le mode Endless.
+     * @param coop {@code true}si en coop
+     * @param width {@code int}largeur de la carte
+     * @param height {@code int}longueur de la carte
+     * @return {@link MazeConfig}
+     */
+    public static MazeConfig endlessConfig(final boolean coop, final int width, final int height) {
+        return new MazeConfig(coop, "Level1", true, width, height);
     }
 
     /**
