@@ -39,23 +39,23 @@ public final class Solo extends Menu {
     }
 
     @Override
-    protected void addMainBox() {
+    protected void addOptionsToMenu() {
         final int titleSize = 100;
         final int spacingSize = 20;
 
         setTitleText(createText("Level Selector", titleSize));
         HBox title = createHBox(0, Pos.TOP_CENTER, getTitleText());
 
-        Text select0 = createText(">", getFontSize().getValue().intValue());
-        Text classique = createText("Classique", getFontSize().getValue().intValue());
+        Text select0 = createText(">", getFontSize().doubleValue());
+        Text classic = createText("Classic", getFontSize().doubleValue());
 
-        Text selectBack = createText(">", getFontSize().getValue().intValue());
-        Text backText = createText("Back", getFontSize().getValue().intValue());
+        Text selectBack = createText(">", getFontSize().doubleValue());
+        Text backText = createText("Back", getFontSize().doubleValue());
 
         //CHECKSTYLE:OFF
         if (getOptions().isEmpty()) {
-            getOptions().add(0, createHBox(spacingSize, Pos.CENTER, select0, classique));
-            getOptions().add(1, createHBox(spacingSize, Pos.BOTTOM_LEFT, selectBack, backText));
+            getOptions().add(createHBox(spacingSize, Pos.CENTER, select0, classic));
+            getOptions().add(createHBox(spacingSize, Pos.BOTTOM_LEFT, selectBack, backText));
         }
 
         VBox optionBox = createVBox(
@@ -64,11 +64,11 @@ public final class Solo extends Menu {
         );
 
         if (getSelects().isEmpty() && getChoices().isEmpty()) {
-            getSelects().add(0, select0);
-            getSelects().add(1, selectBack);
+            getSelects().add(select0);
+            getSelects().add(selectBack);
 
-            getChoices().add(0, classique);
-            getChoices().add(1, backText);
+            getChoices().add(classic);
+            getChoices().add(backText);
         }
 
         bindTextSizeToScene();
@@ -115,9 +115,8 @@ public final class Solo extends Menu {
         InGameGui.setCurrentLevel(level);
         Music.stopBackgroundMusic();
 
-        StackPane root = new StackPane();
         HBox box = new HBox();
-        root.getChildren().add(box);
+        StackPane root = new StackPane(box);
 
         Scene gameScene = new Scene(
             root,
@@ -126,14 +125,14 @@ public final class Solo extends Menu {
         );
 
         MazeState maze;
-        final int classique = 0;
+        final int classic = 0;
         switch (level) {
-            case classique:
-                maze = new MazeState(MazeConfig.classicalConfig(false, false));
+            case classic:
+                maze = new MazeState(MazeConfig.classicalConfig(false));
                 break;
 
             default:
-                maze = new MazeState(MazeConfig.classicalConfig(false, false));
+                maze = new MazeState(MazeConfig.classicalConfig(false));
                 break;
         }
 
