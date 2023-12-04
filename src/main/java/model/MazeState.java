@@ -244,6 +244,9 @@ public final class MazeState {
         if (critter instanceof Ghost) {
             ((Ghost) critter).setPos(((Ghost) critter).getSpawnPos());
             ((Ghost) critter).setGhostState(GhostState.NORMAL);
+            if (config.isCoop()) {
+                ((Ghost) critter).setChaseTargetNull();
+            }
             if (((Ghost) critter).isPlayer()) {
                 ((Ghost) critter).getDirectionBuffer().setBufferDirection(Direction.NONE);
                 critter.setDirection(Direction.NONE);
