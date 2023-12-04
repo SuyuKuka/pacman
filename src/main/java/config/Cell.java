@@ -69,6 +69,19 @@ public class Cell {
     }
 
     /**
+     * Retourne une copie de la cellule{@code c}.
+     * @param c {@code Cell}
+     */
+    public Cell(final Cell c) {
+        this.content = c.content;
+        this.northWall = c.northWall;
+        this.eastWall = c.eastWall;
+        this.southWall = c.southWall;
+        this.westWall = c.westWall;
+        this.restricted = c.restricted;
+    }
+
+    /**
      * Retourne une nouvelle cellule{@code Cell}de{@code Type}t.
      * @param t {@code Type}
      * @return Nouvelle cellule {@link #Cell}

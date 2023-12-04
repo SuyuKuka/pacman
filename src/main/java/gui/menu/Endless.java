@@ -3,6 +3,7 @@ package gui.menu;
 import java.util.ArrayList;
 import java.util.List;
 
+import config.Cell;
 import config.MazeConfig;
 import config.mazeGen.MainGrid;
 import gui.GameView;
@@ -36,8 +37,7 @@ public final class Endless extends Menu {
     private static int mazeWidth;
     private static int mazeHeight;
     private static String selectedMode;
-
-    private MazeConfig mazeConfig;
+    private static Cell[][] currentMap;
 
     public static final Endless INSTANCE = new Endless();
 
@@ -204,8 +204,7 @@ public final class Endless extends Menu {
         boolean versus = mode.equals("Versus");
         boolean coop = mode.equals("Coop");
 
-        Endless.INSTANCE.setMazeConfig(MazeConfig.endlessConfig(coop, width, height));
-        MazeState maze = new MazeState(Endless.INSTANCE.getMazeConfig());
+        MazeState maze = new MazeState(MazeConfig.endlessConfig(coop, width, height));
 
         getMainStage().setScene(gameScene);
         InGameGui inGameGui = new InGameGui(gameScene, solo ? "Solo" : "Multi", true);
@@ -251,7 +250,7 @@ public final class Endless extends Menu {
         boolean versus = mode.equals("Versus");
         boolean coop = mode.equals("Coop");
 
-        MazeState maze = new MazeState(Endless.INSTANCE.getMazeConfig());
+        MazeState maze = new MazeState(MazeConfig.restartedEndlessConfig(coop));
 
         getMainStage().setScene(gameScene);
         InGameGui inGameGui = new InGameGui(gameScene, solo ? "Solo" : "Multi", true);
@@ -292,12 +291,12 @@ public final class Endless extends Menu {
         }
     }
 
-    public MazeConfig getMazeConfig() {
-        return mazeConfig;
+    public static Cell[][] getCurrentMap() {
+        return currentMap;
     }
 
-    public void setMazeConfig(final MazeConfig mazeConfig) {
-        this.mazeConfig = mazeConfig;
+    public static void setCurrentMap(final Cell[][] currentMap) {
+        Endless.currentMap = currentMap;
     }
 
     public static void setMazeWidth(final int mazeWidth) {

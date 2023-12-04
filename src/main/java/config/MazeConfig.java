@@ -2,6 +2,7 @@ package config;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
+import gui.menu.Endless;
 import model.Critter;
 import model.Direction;
 import model.Ghost;
@@ -66,11 +67,29 @@ public final class MazeConfig {
      * @param endless
      * @param width
      * @param height
+     * @param restartedEndless
      */
     public MazeConfig(final boolean coop, final String configPath,
-    final boolean endless, final int width, final int height) {
-        if (endless) {
+    final boolean endless, final int width, final int height,
+    final boolean restartedEndless) {
+        if (restartedEndless) {
+            grid = Endless.getCurrentMap();
+            Cell[][] gridCopy = new Cell[grid.length][grid[0].length];
+            for (int y = 0; y < grid.length; y++) {
+                for (int x = 0; x < grid[0].length; x++) {
+                    gridCopy[y][x] = new Cell(grid[y][x]);
+                }
+            }
+            Endless.setCurrentMap(gridCopy);
+        } else if (endless) {
             grid = MainGrid.createRandomMap(height, width);
+            Cell[][] gridCopy = new Cell[grid.length][grid[0].length];
+            for (int y = 0; y < grid.length; y++) {
+                for (int x = 0; x < grid[0].length; x++) {
+                    gridCopy[y][x] = new Cell(grid[y][x]);
+                }
+            }
+            Endless.setCurrentMap(gridCopy);
         } else {
             grid = getJSONMaze(configPath);
         }
@@ -242,7 +261,7 @@ public final class MazeConfig {
      * @return {@link MazeConfig}
      */
     public static MazeConfig classicalConfig(final boolean coop) {
-        return new MazeConfig(coop, "Level1", false, 0, 0);
+        return new MazeConfig(coop, "Level1", false, 0, 0, false);
     }
 
     /**
@@ -253,7 +272,16 @@ public final class MazeConfig {
      * @return {@link MazeConfig}
      */
     public static MazeConfig endlessConfig(final boolean coop, final int width, final int height) {
-        return new MazeConfig(coop, "Level1", true, width, height);
+        return new MazeConfig(coop, "Level1", true, width, height, false);
+    }
+
+    /**
+     * Retourne un {@link MazeConfig} pour le mode Endless.
+     * @param coop {@code true}si en coop
+     * @return {@link MazeConfig}
+     */
+    public static MazeConfig restartedEndlessConfig(final boolean coop) {
+        return new MazeConfig(coop, "Level1", true, 0, 0, true);
     }
 
     /**
