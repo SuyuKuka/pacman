@@ -33,7 +33,6 @@ import utils.Music;
 public final class Endless extends Menu {
     private ArrayList<Text> mainTexts;
     private ArrayList<Text> subTexts;
-    private ChoiceBox<String> modeChoice;
     private static int mazeWidth;
     private static int mazeHeight;
     private static String selectedMode;
@@ -70,9 +69,11 @@ public final class Endless extends Menu {
 
         Text mode = createText("Mode", getFontSize().doubleValue());
         String[] modes = {"Solo", "Versus", "Coop"};
-        modeChoice = new ChoiceBox<>();
+
+        ChoiceBox<String> modeChoice = new ChoiceBox<>();
         modeChoice.getItems().addAll(modes);
         modeChoice.setValue(modes[0]);
+        setSelectedMode(modes[0]);
         modeChoice.valueProperty().addListener((observable, oldValue, newValue) -> {
             setSelectedMode(newValue);
         });

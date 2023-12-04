@@ -39,7 +39,7 @@ public final class GameView {
     /** Liste d'éléments à update. */
     private List<GraphicsUpdater> graphicsUpdaters;
 
-    private static final double INITIAL_SCALE = 16;
+    private static final double INITIAL_SCALE = 12;
     /** Nombre de pixels représentant une unité de la map. */
     private static double scale = INITIAL_SCALE;
     private InGameGui inGameGui;
