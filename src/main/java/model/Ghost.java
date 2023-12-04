@@ -72,52 +72,101 @@ public final class Ghost extends Critter {
 
     private boolean activated = false;
 
+    /** Pacman CHASED (Mode Coop). */
+    private PacMan chaseTarget;
+
+    /** Indice de {@link Ghost} par rapport à {@code chaseTarget} (Mode Coop). */
+    private int chaseTargetIndex;
+
     /** Buffer utilisé pour le mode versus en multijoueur. */
     private DirectionBuffer directionBuffer = null;
     private GraphicsBuffer graphicsBuffer = new GraphicsBuffer();
 
-    // endregion Variables
+    // endregion Variables :
 
-    // region Constructeurs
+    // region Constructeurs :
 
     /**
-     * Constructeur spécial pour créer un {@link GhostType#INKY}.
-     * Inky à besoin d'un fantôme lié pour calculer sa cible en mode CHASE.
+     * Constructeur pour un {@link Ghost}.
      * @param ghostType
-     * @param inkyLinkedGhost
-     * @param pacman
-     * @param pacman2
-     * @param spawnPos
-     * @param eatenTarget
-     * @param scatterTarget
+     * @param config
      */
-    public Ghost(final GhostType ghostType, final Ghost inkyLinkedGhost, final PacMan pacman,
-    final PacMan pacman2, final RealCoordinates spawnPos, final RealCoordinates eatenTarget,
-    final RealCoordinates scatterTarget) {
-        this.ghostType = ghostType;
-        this.inkyLinkedGhost = inkyLinkedGhost;
-        this.pacman = pacman;
-        this.pacman2 = pacman2;
-        this.setSpawnPos(spawnPos);
-        this.setPos(spawnPos);
-        this.eatenTarget = eatenTarget;
-        this.scatterTarget = scatterTarget;
-        this.target = scatterTarget;
+    public Ghost(final MazeConfig config, final GhostType ghostType) {
+        this(config, ghostType, null);
     }
 
     /**
-     * Constructeur pour créer un {@link Ghost}.
+     * Constructeur pour un {@link Ghost}.
+     * Inky à besoin d'un fantôme lié pour calculer sa cible en mode CHASE.
+     * @param config
      * @param ghostType
-     * @param pacman
-     * @param pacman2
-     * @param spawnPos
-     * @param eatenTarget
-     * @param scatterTarget
+     * @param inkyLinkedGhost
      */
-    public Ghost(final GhostType ghostType, final PacMan pacman, final PacMan pacman2,
-    final RealCoordinates spawnPos, final RealCoordinates eatenTarget,
-    final RealCoordinates scatterTarget) {
-        this(ghostType, null, pacman, pacman2, spawnPos, eatenTarget, scatterTarget);
+    public Ghost(final MazeConfig config, final GhostType ghostType, final Ghost inkyLinkedGhost) {
+        this.ghostType = ghostType;
+        this.inkyLinkedGhost = inkyLinkedGhost;
+        final RealCoordinates spawnPos = initStartValue(config, "spawn");
+        this.eatenTarget = initStartValue(config, "eaten");
+        this.scatterTarget = initStartValue(config, "scatter");
+        this.target = scatterTarget;
+        this.pacman = config.getPacman();
+        this.pacman2 = config.getPacman2();
+        setSpawnPos(spawnPos);
+        setPos(spawnPos);
+        return;
+    }
+
+    /**
+     * Méthode qui initialise le target de son spawn, du scatter et du eaten
+     * par rapport au terrain donné.
+     * @param config
+     * @param posName
+     * @return {@link RealCoordinates} Coordonnées associé au String donné en paramètre.
+     */
+    public RealCoordinates initStartValue(final MazeConfig config, final String posName) {
+        // CHECKSTYLE:OFF
+        final RealCoordinates entrance = config.getGhostSpawnEntrance();
+        if (posName.equals("eaten")) {
+            switch (ghostType) {
+                case BLINKY:
+                case PINKY:
+                    return new RealCoordinates(entrance.x(), entrance.y() + 3);
+                case INKY:
+                    return new RealCoordinates(entrance.x() - 2, entrance.y() + 3);
+                case CLYDE:
+                    return new RealCoordinates(entrance.x() + 2, entrance.y() + 3);
+                default:
+                    break;
+            }
+        } else if (posName.equals("scatter")) {
+            switch (ghostType) {
+                case BLINKY:
+                    return new RealCoordinates(config.getWidth() - 3, 0);
+                case PINKY:
+                    return new RealCoordinates(2, 0);
+                case INKY:
+                    return new RealCoordinates(config.getWidth() - 1, config.getHeight() - 2);
+                case CLYDE:
+                    return new RealCoordinates(0, config.getHeight() - 2);
+                default:
+                    break;
+            }
+        } else if (posName.equals("spawn")) {
+            switch (ghostType) {
+                case BLINKY:
+                    return new RealCoordinates(entrance.x(), entrance.y() + 1);
+                case PINKY:
+                    return new RealCoordinates(entrance.x(), entrance.y() + 3);
+                case INKY:
+                    return new RealCoordinates(entrance.x() - 2, entrance.y() + 3);
+                case CLYDE:
+                    return new RealCoordinates(entrance.x() + 2, entrance.y() + 3);
+                default:
+                    break;
+            }
+        }
+        // CHECKSTYLE:ON
+        return new RealCoordinates(0, 0);
     }
 
     // endregion Constructeurs
@@ -199,17 +248,20 @@ public final class Ghost extends Critter {
      * @param state
      */
     public void updateTarget(final MazeState state) {
+        final RealCoordinates spawnEntrance = state.getConfig().getGhostSpawnEntrance();
+        final int spawnInter = 3;
+        final RealCoordinates intersection = spawnEntrance.plus(new RealCoordinates(0, spawnInter));
         if (ghostState == GhostState.EATEN) {
-            RealCoordinates spawnEntrance = state.getConfig().getGhostSpawnEntrance();
-
             // Si mangé, alors fixe sa cible à l'entrée du spawn des fantômes.
             if (!target.equals(spawnEntrance) && !isInSpawn(state.getConfig())) {
                 target = spawnEntrance;
-
             // Si il se trouve à l'entrée du spawn, alors fixe sa cible en eatenTarget.
             } else if (!target.equals(eatenTarget) && isInSpawn(state.getConfig())) {
                 target = eatenTarget;
             }
+        // Si il est arrivé à la position de son eatenTarget, va vers le milieu.
+        } else if (getPos().y() == intersection.y() && isInSpawn(state.getConfig())) {
+            target = intersection;
 
         // Si l'état actuel du jeu est "SCATTER", alors fixe sa cible en scatterTarget.
         } else if (state.getCurrentState() == GameState.SCATTER && !target.equals(scatterTarget)) {
@@ -217,8 +269,79 @@ public final class Ghost extends Critter {
 
         // Si l'état actuel du jeu est "CHASE", alors fixe sa cible en chaseTarget.
         } else if (state.getCurrentState() == GameState.CHASE) {
-            target = calcChaseTarget();
+            if (state.getConfig().isCoop()) {
+                target = calcChaseTargetCoop();
+            } else {
+                target = calcChaseTarget();
+            }
         }
+    }
+    /**
+     * Méthode qui renvoie la cible du {@link Ghost} lorsqu'il est en {@link GhostType#CHASE}.
+     * <br><br> Chaque fantôme calcule sa cible différement.<br><br>
+     * La cible de BLINKY and PINKY est toujours la position actuelle de PacMan et Pacman2.
+     * La cible de INKY et CKYDE dépend de son {@code chaseTargetIndex}
+     * @return cible {@link RealCoordinates}
+     */
+    public RealCoordinates calcChaseTargetCoop() {
+        PacMan chosenPacman = choosePacman();
+        if (this.chaseTarget != chosenPacman
+            && ghostType != GhostType.BLINKY
+            && ghostType != GhostType.PINKY) {
+            chosenPacman.setNbGhostChased(chosenPacman.getNbGhostChased() + 1);
+            if (chaseTarget != null) {
+                chaseTarget.setNbGhostChased(chaseTarget.getNbGhostChased() - 1);
+            }
+            chaseTarget = chosenPacman;
+        }
+        if (ghostType != GhostType.BLINKY && ghostType != GhostType.PINKY) {
+            chaseTargetIndex = chosenPacman.getNbGhostChased();
+        }
+        switch (ghostType) {
+            case BLINKY:
+                return calcBlinkyChaseTarget(pacman);
+            //CHECKSTYLE:OFF
+            case INKY:
+                switch (this.chaseTargetIndex) {
+                    case 2:
+                        return calcPinkyChaseTarget(chaseTarget);
+                    case 3:
+                        return calcClydeChaseTarget(chaseTarget);
+                    default:
+                        break;
+                }
+            case CLYDE:
+                switch (this.chaseTargetIndex) {
+                    case 2:
+                        return calcPinkyChaseTarget(chaseTarget);
+                    case 3:
+                        return calcClydeChaseTarget(chaseTarget);
+                    default:
+                        break;
+                }
+                //CHECKSTYLE:ON
+            case PINKY:
+                return calcBlinkyChaseTarget(pacman2);
+            default:
+                break;
+        }
+        return chaseTarget.getPos();
+    }
+
+
+    /** Méthode qui renvoie quel pacman à suivre en Coop.
+     * @return {@link Pacman}
+     */
+    public PacMan choosePacman() {
+        if (getDistance(getPos(), pacman.getPos()) <= getDistance(getPos(), pacman2.getPos())) {
+            if (pacman.getNbGhostChased() < pacman.getNbGhostChasedMax()) {
+                return pacman;
+            }
+        }
+        if (pacman2.getNbGhostChased() > pacman2.getNbGhostChasedMax()) {
+            return pacman;
+        }
+        return pacman2;
     }
 
     /**
@@ -229,13 +352,13 @@ public final class Ghost extends Critter {
     public RealCoordinates calcChaseTarget() {
         switch (ghostType) {
             case BLINKY:
-                return calcBlinkyChaseTarget();
+                return calcBlinkyChaseTarget(pacman);
             case PINKY:
-                return calcPinkyChaseTarget();
+                return calcPinkyChaseTarget(pacman);
             case INKY:
-                return calcInkyChaseTarget();
+                return calcInkyChaseTarget(pacman);
             case CLYDE:
-                return calcClydeChaseTarget();
+                return calcClydeChaseTarget(pacman);
             default:
                 break;
         }
@@ -244,38 +367,41 @@ public final class Ghost extends Critter {
 
     /**
      * La cible de Blinky est toujours la position actuelle de PacMan.
+     * @param pac
      * @return cible {@link RealCoordinates}
      */
-    public RealCoordinates calcBlinkyChaseTarget() {
-        return pacman.getPos();
+    public RealCoordinates calcBlinkyChaseTarget(final PacMan pac) {
+        return pac.getPos();
     }
 
     /**
      * La cible de Pinky est toujours 4 cases devant PacMan. <br><br>
      * Exception pour la direction Nord où la cible est aussi décalé de 4 cases à l'Est.
+     * @param pac
      * @return cible {@link RealCoordinates}
      */
-    public RealCoordinates calcPinkyChaseTarget() {
+    public RealCoordinates calcPinkyChaseTarget(final PacMan pac) {
         final int distance = 4;
-        RealCoordinates targetCell = pacman.getLastDirection().directionToUnit().times(distance);
-        if (pacman.getLastDirection() == NORTH) {
+        RealCoordinates targetCell = pac.getLastDirection().directionToUnit().times(distance);
+        if (pac.getLastDirection() == NORTH) {
             targetCell = targetCell.plus(new RealCoordinates(-distance, 0));
         }
-        return pacman.getPos().plus(targetCell);
+        return pac.getPos().plus(targetCell);
     }
 
     /**
      * La cible de Inky est toujours la symétrie centrale entre la position de Blinky et
      * la 2eme case devant PacMan. <br> <br>
      * Exception pour le Nord où la case devant PacMan est aussi décalé de 2 cases à l'Est.
+     * @param pac
      * @return cible {@link RealCoordinates}
      */
-    public RealCoordinates calcInkyChaseTarget() {
+    public RealCoordinates calcInkyChaseTarget(final PacMan pac) {
         final int distance = 2;
         RealCoordinates blinkyPos = inkyLinkedGhost.getPos();
-        RealCoordinates pacTPos = pacman.getPos().
-        plus(pacman.getLastDirection().directionToUnit().times(distance));
-        if (pacman.getLastDirection() == NORTH) {
+        RealCoordinates pacTPos = pac.getPos().
+        plus(pac.getLastDirection().directionToUnit().times(distance));
+        if (pac.getLastDirection() == NORTH) {
             pacTPos = pacTPos.plus(new RealCoordinates(-distance, 0));
         }
         RealCoordinates vecteur =
@@ -286,14 +412,15 @@ public final class Ghost extends Critter {
     /**
      * La cible de Clyde est la position de PacMan mais lorsqu'il est à 8 cases de PacMan,
      * sa cible devient celle de son mode {@GhostType#SCATTER}.
+     * @param pac
      * @return cible {@link RealCoordinates}
      */
-    public RealCoordinates calcClydeChaseTarget() {
+    public RealCoordinates calcClydeChaseTarget(final PacMan pac) {
         final int radiusRange = 8;
-        if (getDistance(getPos(), pacman.getPos()) < radiusRange) {
+        if (getDistance(getPos(), pac.getPos()) < radiusRange) {
             return scatterTarget;
         }
-        return pacman.getPos();
+        return pac.getPos();
     }
 
     //endregion Target
@@ -342,19 +469,23 @@ public final class Ghost extends Critter {
         if (isInTunnel(config)) {
             return Arrays.asList(getDirection());
         }
+        final RealCoordinates curPos = getPos();
         List<Direction> directions = new ArrayList<>(Arrays.asList(NORTH, WEST, SOUTH, EAST));
+        // Si le fantôme est sur 4 cellules en même temps (sécurité).
+        if (curPos.y() != Math.floor(curPos.y()) && curPos.x() != Math.floor(curPos.x())) {
+            return directions;
+        }
         directions.remove(getDirection().getOpposite());
-        RealCoordinates curPos = getPos();
         // Cas où le fantôme se trouve sur les cellules dites "murs invisibles".
         if (config.getCell(curPos.toIntCoordinates()).isRestricted()) {
             directions.remove(NORTH);
         }
-        if (curPos.x() != Math.floor(curPos.x())) {
-            directions.remove(NORTH);
-            directions.remove(SOUTH);
-        } else if (curPos.y() != Math.floor(curPos.y())) {
+        if (curPos.y() != Math.floor(curPos.y())) {
             directions.remove(EAST);
             directions.remove(WEST);
+        } else if (curPos.x() != Math.floor(curPos.x())) {
+            directions.remove(NORTH);
+            directions.remove(SOUTH);
         } else {
             // Cas où le fantôme est au milieu d'une case, alors retire toutes les cases du spawn
             // et celles qui ont un mur.
@@ -435,7 +566,7 @@ public final class Ghost extends Critter {
                 dirProba.remove(i);
             }
         }
-        double random = Math.random() * 100; // 0 à 100
+        double random = Math.random() * 100; // 0 à 99
         int j = 0;
         for (int k = 0; k < dirProba.size(); k++) {
             random -= dirProba.get(k);
@@ -498,12 +629,43 @@ public final class Ghost extends Critter {
             if (pos.equals(nextPos)) {
                 return;
             } else if (pos.haveSameNeighbours(nextPos)) {
-                nextPos = pos.adjustNextPos(nextPos, true).warp(width, height);
+                nextPos = pos.adjustNextPos(nextPos);
             } else {
-                nextPos = furthestFreeCell(nextPos, config).warp(width, height);
+                nextPos = furthestFreeCell(nextPos, config);
+            }
+            if (wentThroughTarget(nextPos)) {
+                nextPos = target;
             }
             setPos(nextPos.warp(width, height));
         }
+    }
+
+
+    /**
+     * Méthode qui vérifie si le {@link Ghost} à traversé la position de son target.
+     * @param nextPos
+     * @return {@code boolean} Vrai si le {@link Ghost} à traversé son target, faux sinon.
+     */
+    public boolean wentThroughTarget(final RealCoordinates nextPos) {
+        final RealCoordinates curPos = getPos();
+        if (curPos.x() == target.x() && curPos.y() == target.y()) {
+            return false;
+        }
+        boolean isInLine = false;
+        // Problème si on traverse un tunnel qui se trouve sur la même ligne que le target.
+        // Il va se tp sur le target et nom de l'autre côté du tunnel car la méthode est vraie.
+        // Il n'y a pas de vrai moyen pour vérifier cela... La seule combine que j'ai trouvé est de
+        // vérifier si les 2 positions ont le même signe
+        if (curPos.x() == target.x() && nextPos.x() == target.x() && curPos.x() * nextPos.x() > 0) {
+            isInLine = true;
+        }
+        if (curPos.y() == target.y() && nextPos.y() == target.y() && curPos.y() * nextPos.y() > 0) {
+            isInLine = true;
+        }
+        if (!isInLine) {
+            return false;
+        }
+        return curPos.getDirectionTo(target) != nextPos.getDirectionTo(target);
     }
 
     /**
@@ -521,13 +683,13 @@ public final class Ghost extends Critter {
         while (dir == tmpPos.getDirectionTo(end)) {
             // Cas où on trouve un mur
             if (config.getCell(tmpPos.plus(dir.directionToUnit()).toIntCoordinates()).hasWall()) {
-                return pos.roundFromDirection(getDirection());
+                return tmpPos.roundFromDirection(getDirection());
             } else {
                 tmpPos = tmpPos.plus(dir.directionToUnit());
             }
         }
         // Cas où aucun mur n'a été trouvé, renvoie nextPos
-        return pos.adjustNextPos(end, true);
+        return pos.adjustNextPos(end);
     }
 
     //endregion Position
@@ -645,5 +807,10 @@ public final class Ghost extends Critter {
 
     public GhostState getGhostState() {
         return ghostState;
+    }
+
+    /** Méthode qui remet le chaseTarget à null lors de réinitialisation. */
+    public void setChaseTargetNull() {
+        this.chaseTarget = null;
     }
 }

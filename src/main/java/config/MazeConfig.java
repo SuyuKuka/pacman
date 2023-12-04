@@ -2,6 +2,7 @@ package config;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
+import gui.menu.Endless;
 import model.Critter;
 import model.Direction;
 import model.Ghost;
@@ -27,6 +28,7 @@ import static model.Direction.WEST;
 
 import config.Cell.Content;
 import config.Cell.Type;
+import config.mazeGen.MainGrid;
 
 public final class MazeConfig {
     private static final HashMap<String, String> LINE_TABLE = new HashMap<>();
@@ -45,6 +47,8 @@ public final class MazeConfig {
 
     /** La carte contenant chaque cellule {@link Cell}. */
     private final Cell[][] grid;
+    /** Tableau de nombre qui indique le nombre de seconde entre
+     * chaque changement d'états des {@link Ghost}. */
     private final int[] ghostStateSwap;
 
     private final int totalPacGomme;
@@ -58,12 +62,37 @@ public final class MazeConfig {
 
     /**
      * Constructeur qui initialise les configs pour la carte courante.
-     * @param versus Si on est en mode Versus
      * @param coop Si on est en mode Coop
      * @param configPath {@code String}Le path du fichier JSON de la map
+     * @param endless
+     * @param width
+     * @param height
+     * @param restartedEndless
      */
-    public MazeConfig(final boolean versus, final boolean coop, final String configPath) {
-        grid = getJSONMaze(configPath);
+    public MazeConfig(final boolean coop, final String configPath,
+    final boolean endless, final int width, final int height,
+    final boolean restartedEndless) {
+        if (restartedEndless) {
+            grid = Endless.getCurrentMap();
+            Cell[][] gridCopy = new Cell[grid.length][grid[0].length];
+            for (int y = 0; y < grid.length; y++) {
+                for (int x = 0; x < grid[0].length; x++) {
+                    gridCopy[y][x] = new Cell(grid[y][x]);
+                }
+            }
+            Endless.setCurrentMap(gridCopy);
+        } else if (endless) {
+            grid = MainGrid.createRandomMap(height, width);
+            Cell[][] gridCopy = new Cell[grid.length][grid[0].length];
+            for (int y = 0; y < grid.length; y++) {
+                for (int x = 0; x < grid[0].length; x++) {
+                    gridCopy[y][x] = new Cell(grid[y][x]);
+                }
+            }
+            Endless.setCurrentMap(gridCopy);
+        } else {
+            grid = getJSONMaze(configPath);
+        }
         ghostStateSwap = getStateSwap(configPath);
         totalPacGomme = countPacGomme();
         MapVerification.tunnelFinder(grid);
@@ -73,69 +102,34 @@ public final class MazeConfig {
         final int ghostSpawnX = getWidth() / 2 - 4;
         final int ghostSpawnY = getHeight() / 2 - 3;
         ghostSpawnPos[0] = new RealCoordinates(ghostSpawnX, ghostSpawnY);
-        ghostSpawnPos[1] = new RealCoordinates((double) ghostSpawnX + 7, (double) ghostSpawnY + 4);
+        ghostSpawnPos[1] = new RealCoordinates(ghostSpawnX + 7, ghostSpawnY + 4);
 
         final double entranceY = -1;
         final double entranceX = 3.5;
         ghostSpawnEntrance = ghostSpawnPos[0].plus(new RealCoordinates(entranceX, entranceY));
 
-        final String spawn = "critterSpawn";
-        final String eatenTarg = "eatenTarget";
-        final String target = "target";
-
         pacman = new PacMan();
         pacman.setImage("pacman_3");
-        RealCoordinates pacSpawnPos = critterSpawnOrTargetPos(
-            null, false, spawn, configPath
-        );
-
-        // Multijoueur Coop
-        if (coop) {
-            pacSpawnPos = pacSpawnPos.minus(new RealCoordinates(0.5, 0));
-
-            pacman2 = new PacMan();
-            pacman2.setImage("pacman_rainbow_3");
-            RealCoordinates pac2SpawnPos = critterSpawnOrTargetPos(
-                null, true, spawn, configPath
-            );
-            pacman2.setPos(pac2SpawnPos);
-            pacman2.setSpawnPos(pac2SpawnPos);
-            PacMan.setEnergizedDuration(PacMan.getMaxEnergizedTime() - 2);
-        } else {
+        final double PacSpawnY = 12;
+        final RealCoordinates entrance = ghostSpawnEntrance;
+        if (!coop) {
+            pacman.setSpawnPos(new RealCoordinates(entrance.x(), entrance.y() + PacSpawnY));
             PacMan.setEnergizedDuration(PacMan.getMaxEnergizedTime());
             pacman2 = null;
+        } else {
+            pacman.setSpawnPos(new RealCoordinates(entrance.x() - 0.5, entrance.y() + PacSpawnY));
+            PacMan.setEnergizedDuration(PacMan.getMaxEnergizedTime() / 2);
+            pacman2 = new PacMan();
+            pacman2.setImage("pacman_rainbow_3");
+            pacman2.setSpawnPos(new RealCoordinates(entrance.x() + 0.5, entrance.y() + PacSpawnY));
+            pacman2.setPos(pacman2.getSpawnPos());
         }
+        pacman.setPos(pacman.getSpawnPos());
 
-        pacman.setPos(pacSpawnPos);
-        pacman.setSpawnPos(pacSpawnPos);
-
-        Ghost blinky = new Ghost(
-            GhostType.BLINKY, pacman, pacman2,
-            versus
-            ? new RealCoordinates(13, 15)
-            : critterSpawnOrTargetPos(GhostType.BLINKY, false, spawn, configPath),
-            critterSpawnOrTargetPos(GhostType.BLINKY, false, eatenTarg, configPath),
-            critterSpawnOrTargetPos(GhostType.BLINKY, false, target, configPath)
-        );
-        Ghost inky = new Ghost(
-            GhostType.INKY, blinky, pacman, pacman2,
-            critterSpawnOrTargetPos(GhostType.INKY, false, spawn, configPath),
-            critterSpawnOrTargetPos(GhostType.INKY, false, eatenTarg, configPath),
-            critterSpawnOrTargetPos(GhostType.INKY, false, target, configPath)
-        );
-
-        Ghost pinky = new Ghost(
-            GhostType.PINKY, pacman, pacman2,
-            critterSpawnOrTargetPos(GhostType.PINKY, false, spawn, configPath),
-            critterSpawnOrTargetPos(GhostType.PINKY, false, eatenTarg, configPath),
-            critterSpawnOrTargetPos(GhostType.PINKY, false, target, configPath)
-        );
-        Ghost clyde = new Ghost(
-            GhostType.CLYDE, pacman, pacman2,
-            critterSpawnOrTargetPos(GhostType.CLYDE, false, spawn, configPath),
-            critterSpawnOrTargetPos(GhostType.CLYDE, false, eatenTarg, configPath),
-            critterSpawnOrTargetPos(GhostType.CLYDE, false, target, configPath)
-        );
+        Ghost blinky = new Ghost(this, GhostType.BLINKY);
+        Ghost inky = new Ghost(this, GhostType.INKY, blinky);
+        Ghost pinky = new Ghost(this, GhostType.PINKY);
+        Ghost clyde = new Ghost(this, GhostType.CLYDE);
         ghostList.addAll(Arrays.asList(blinky, inky, pinky, clyde));
         //CHECKSTYLE:ON
     }
@@ -162,9 +156,8 @@ public final class MazeConfig {
                     if (output.equals("■") || output.equals("/")) {
                         maze[y][x] = cell(Type.valueOf(LINE_TABLE.get(output)));
                     } else if (output.equals("□")) {
-                        maze[y][x] = cell(
-                            Type.valueOf("CLOSED"), Content.valueOf(LINE_TABLE.get(output))
-                        );
+                        maze[y][x] = cell(Type.valueOf("CLOSED"),
+                        Content.valueOf(LINE_TABLE.get(output)));
                     } else if (output.equals("¤") || output.equals("x")) {
                         maze[y][x] = cell(Content.valueOf(LINE_TABLE.get(output)), true);
                     } else {
@@ -199,54 +192,6 @@ public final class MazeConfig {
             e.printStackTrace();
         }
         return new int[0];
-    }
-
-    /**
-     * Méthode qui retourne un{@code RealCoordinates}du spawn ou du target
-     * en{@code SCATTER}d'un{@code Critter}depuis le fichier de configuration.
-     * @param type {@link GhostType} du fantôme,{@code null} si Pac-Man
-     * @param pacman2 Si en coop
-     * @param config {@code String} "critterSpawn" / "target" / "eatenTarget"
-     * @param name Le nom du fichier à importer.
-     * @return {@code RealCoordinates}
-     */
-    public static RealCoordinates critterSpawnOrTargetPos(
-    final GhostType type, final boolean pacman2, final String config, final String name) {
-        //CHECKSTYLE:OFFcheckstyle:magicnumber
-        try {
-            String file = Resources.getPathOrContent(name);
-            JSONObject jObject = new JSONObject(file).getJSONObject("config");
-            JSONArray jArray;
-            String[] pos = new String[2];
-            if (type == null) {
-                jArray = new JSONArray(jObject.getJSONArray("critterSpawn"));
-                pos = jArray.getString(pacman2 ? 5 : 4).split(";");
-                return new RealCoordinates(Double.valueOf(pos[0]), Double.valueOf(pos[1]));
-            }
-            jArray = new JSONArray(jObject.getJSONArray(config));
-            switch (type) {
-                case BLINKY:
-                    pos = jArray.getString(0).split(";");
-                    break;
-                case INKY:
-                    pos = jArray.getString(1).split(";");
-                    break;
-                case PINKY:
-                    pos = jArray.getString(2).split(";");
-                    break;
-                case CLYDE:
-                    pos = jArray.getString(3).split(";");
-                    break;
-
-                default:
-                    break;
-            }
-            return new RealCoordinates(Double.valueOf(pos[0]), Double.valueOf(pos[1]));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new RealCoordinates(0, 0);
-        //CHECKSTYLE:ON
     }
 
     /**
@@ -309,14 +254,32 @@ public final class MazeConfig {
     }
 
     /**
-     * Retourne un {@link MazeConfig}. Si{@code versus}est{@code true}, initialise
-     * un {@link GhostType#BLINKY} jouable.
-     * @param versus {@code true}si en mode Versus
+     * Retourne un {@link MazeConfig}.
      * @param coop {@code true}si en mode Coop
      * @return {@link MazeConfig}
      */
-    public static MazeConfig classicalConfig(final boolean versus, final boolean coop) {
-        return new MazeConfig(versus, coop, "Level1");
+    public static MazeConfig classicalConfig(final boolean coop) {
+        return new MazeConfig(coop, "Level1", false, 0, 0, false);
+    }
+
+    /**
+     * Retourne un {@link MazeConfig} pour le mode Endless.
+     * @param coop {@code true}si en coop
+     * @param width {@code int}largeur de la carte
+     * @param height {@code int}longueur de la carte
+     * @return {@link MazeConfig}
+     */
+    public static MazeConfig endlessConfig(final boolean coop, final int width, final int height) {
+        return new MazeConfig(coop, "Level1", true, width, height, false);
+    }
+
+    /**
+     * Retourne un {@link MazeConfig} pour le mode Endless.
+     * @param coop {@code true}si en coop
+     * @return {@link MazeConfig}
+     */
+    public static MazeConfig restartedEndlessConfig(final boolean coop) {
+        return new MazeConfig(coop, "Level1", true, 0, 0, true);
     }
 
     /**
@@ -380,10 +343,6 @@ public final class MazeConfig {
 
     public int getTotalPacGomme() {
         return totalPacGomme;
-    }
-
-    public RealCoordinates[] getGhostSpawnPos() {
-        return ghostSpawnPos;
     }
 
     public RealCoordinates getGhostSpawnEntrance() {

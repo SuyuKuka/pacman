@@ -39,7 +39,7 @@ public final class GameView {
     /** Liste d'éléments à update. */
     private List<GraphicsUpdater> graphicsUpdaters;
 
-    private static final double INITIAL_SCALE = 16;
+    private static final double INITIAL_SCALE = 12;
     /** Nombre de pixels représentant une unité de la map. */
     private static double scale = INITIAL_SCALE;
     private InGameGui inGameGui;
@@ -200,9 +200,13 @@ public final class GameView {
                 inGameGui.updateScore(instMaze);
                 inGameGui.updateLives(instMaze);
 
+                final int maxLength = 5;
                 final double nanoseconds = Math.pow(10, 9);
                 timeSinceAnimationStart += deltaT / nanoseconds;
                 if (Music.isStartBgmPlaying()) {
+                    inGameGui.updateStartProgressBar(timeSinceAnimationStart);
+                } else if (instMaze.getCurrentLiveTime() == null && !Music.isStartBgmPlaying()) {
+                    timeSinceAnimationStart = maxLength;
                     inGameGui.updateStartProgressBar(timeSinceAnimationStart);
                 } else {
                     inGameGui.updateProgressBar(instMaze);

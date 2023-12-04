@@ -3,6 +3,11 @@ package gui.menu;
 import java.util.ArrayList;
 import java.util.List;
 
+import gui.GameView;
+import gui.controller.Controller;
+import gui.controller.PacmanController;
+import gui.controller.PlayerTwoController;
+import gui.graphics.CritterGraphicsFactory;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
@@ -11,6 +16,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
 import javafx.scene.layout.BackgroundPosition;
@@ -18,16 +25,20 @@ import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import model.Direction;
 import utils.Resources;
 
 public abstract class Menu extends Application {
     protected static final int INITIAL_TEXT_SIZE = 45;
-    private DoubleProperty fontSize = new SimpleDoubleProperty(INITIAL_TEXT_SIZE);
+    private static DoubleProperty fontSize = new SimpleDoubleProperty(INITIAL_TEXT_SIZE);
     private Text titleText;
     private ArrayList<HBox> options = new ArrayList<>();
     private ArrayList<Text> selects = new ArrayList<>();
@@ -36,22 +47,40 @@ public abstract class Menu extends Application {
     /** Stage. */
     private static Stage mainStage;
 
+    private StackPane mainPane;
     private BorderPane menuPane;
     private Scene menuScene;
+
+    private StackPane helpCircle;
+    private StackPane helpWindow;
 
     protected Menu() {
         menuPane = new BorderPane();
         menuPane.setBackground(getBackground());
+        mainPane = new StackPane();
+        mainPane.getChildren().add(menuPane);
+        mainPane.setStyle("-fx-background-color: black");
 
         menuScene = new Scene(
-            menuPane,
+            mainPane,
             mainStage.getScene().getWidth(),
             mainStage.getScene().getHeight()
         );
         menuScene.setFill(Color.BLACK);
 
-        addMainBox();
+        addHelper();
+        addOptionsToMenu();
         addEventHandlers(getMenuScene());
+
+        mainStage.heightProperty().addListener((obs, oldV, newV) -> {
+            removeHelper();
+            addHelper();
+        });
+
+        mainStage.maximizedProperty().addListener(obs -> {
+            removeHelper();
+            addHelper();
+        });
     }
 
     /**
@@ -59,27 +88,246 @@ public abstract class Menu extends Application {
      * lorque la méthode est appelée.
      */
     protected void setScene() {
+        mainPane.getChildren().clear();
+        mainPane.getChildren().add(menuPane);
         menuScene.setRoot(new HBox());
         menuScene = new Scene(
-            menuPane,
-            mainStage.getScene().getWidth(),
-            mainStage.getScene().getHeight()
+            mainPane, mainStage.getScene().getWidth(), mainStage.getScene().getHeight()
         );
-        menuScene.setFill(Color.BLACK);
 
+        addHelper();
+        addOptionsToMenu();
         addEventHandlers(menuScene);
     }
 
     /**
-     * Ajoute les options à la scène {@link #menuScene}.
+     * Ajoute les options au {@link #menuPane}.
      */
-    protected void addMainBox() { }
+    protected void addOptionsToMenu() { }
 
     /**
      * Ajoute les différents{@code EventHandler}(souris, clavier).
      * @param scene
      */
     protected void addEventHandlers(final Scene scene) { }
+
+    protected final void addHelper() {
+        addHelpWindow();
+        addHelpCircle();
+    }
+
+    protected final void removeHelper() {
+        mainPane.getChildren().remove(helpCircle);
+        mainPane.getChildren().remove(helpWindow);
+    }
+
+    private void addHelpCircle() {
+        final double radius = GameView.getScale() * 1.5;
+        helpCircle = new StackPane();
+
+        Circle circle = new Circle();
+        circle.setRadius(radius);
+        circle.setFill(Color.WHITE);
+
+        Text questionMark = createText("?", GameView.getScale() * 2);
+        questionMark.setFill(Color.BLACK);
+
+        StackPane.setAlignment(circle, Pos.CENTER);
+        StackPane.setAlignment(questionMark, Pos.CENTER);
+
+        helpCircle.setMaxSize(INITIAL_TEXT_SIZE, INITIAL_TEXT_SIZE);
+        helpCircle.setTranslateX(-INITIAL_TEXT_SIZE / 2.0);
+        helpCircle.setTranslateY(-INITIAL_TEXT_SIZE / 2.0);
+        helpCircle.getChildren().addAll(circle, questionMark);
+        StackPane.setAlignment(helpCircle, Pos.BOTTOM_RIGHT);
+
+        mainPane.getChildren().add(helpCircle);
+        helpCircle.setOnMouseClicked(event -> helpWindow.setVisible(!helpWindow.isVisible()));
+    }
+
+    private void addHelpWindow() {
+        final int margin = 200;
+        final double boxSpacing = mainStage.getWidth() / 8;
+        final double keySpacing = mainStage.getWidth() / 70;
+
+        Text player1 = createText("Player 1", fontSize.doubleValue());
+        ImageView pacImgPlayerOne = new ImageView(Resources.getImage("pacman_3"));
+        pacImgPlayerOne.setPreserveRatio(true);
+        pacImgPlayerOne.setSmooth(true);
+        Text player2 = createText("Player 2", fontSize.doubleValue());
+        ImageView pacImgPlayerTwo = new ImageView(Resources.getImage("pacman_rainbow_3"));
+        pacImgPlayerTwo.setPreserveRatio(true);
+        pacImgPlayerTwo.setSmooth(true);
+
+        VBox left = new VBox(player1, pacImgPlayerOne);
+        left.setAlignment(Pos.CENTER);
+        left.setSpacing(keySpacing);
+
+        VBox right = new VBox(player2, pacImgPlayerTwo);
+        right.setAlignment(Pos.CENTER);
+        right.setSpacing(keySpacing);
+
+        Text title = createText("Test your keybinds!", fontSize.doubleValue());
+        HBox hbox = createHBox(boxSpacing, Pos.CENTER, left, right);
+
+        VBox vbox = createVBox(margin / 2, Pos.CENTER, title, hbox);
+        helpWindow = new StackPane(vbox);
+
+        helpWindow.setMaxSize(mainStage.getWidth() - margin, mainStage.getHeight() - margin);
+        helpWindow.setStyle("-fx-background-color: #0f0f0f; -fx-background-radius: 50 50 50 50");
+        helpWindow.setVisible(false);
+        StackPane.setAlignment(helpWindow, Pos.CENTER);
+
+        StackPane upPlayerOne = getNewKey(Controller.getKeyCode(
+            PacmanController.getKeybinds(), Direction.NORTH
+        ).toString());
+        StackPane leftPlayerOne = getNewKey(Controller.getKeyCode(
+            PacmanController.getKeybinds(), Direction.WEST
+        ).toString());
+        StackPane downPlayerOne = getNewKey(Controller.getKeyCode(
+            PacmanController.getKeybinds(), Direction.SOUTH
+        ).toString());
+        StackPane rightPlayerOne = getNewKey(Controller.getKeyCode(
+            PacmanController.getKeybinds(), Direction.EAST
+        ).toString());
+        HBox threeKeysPlayerOne = new HBox(leftPlayerOne, downPlayerOne, rightPlayerOne);
+        threeKeysPlayerOne.setSpacing(keySpacing);
+        left.getChildren().addAll(upPlayerOne, threeKeysPlayerOne);
+
+        StackPane upPlayerTwo = getNewKey(Controller.getKeyCode(
+            PlayerTwoController.getKeybinds(), Direction.NORTH
+        ).toString());
+        StackPane leftPlayerTwo = getNewKey(Controller.getKeyCode(
+            PlayerTwoController.getKeybinds(), Direction.WEST
+        ).toString());
+        StackPane downPlayerTwo = getNewKey(Controller.getKeyCode(
+            PlayerTwoController.getKeybinds(), Direction.SOUTH
+        ).toString());
+        StackPane rightPlayerTwo = getNewKey(Controller.getKeyCode(
+            PlayerTwoController.getKeybinds(), Direction.EAST
+        ).toString());
+        HBox threeKeysPlayerTwo = new HBox(leftPlayerTwo, downPlayerTwo, rightPlayerTwo);
+        threeKeysPlayerTwo.setSpacing(keySpacing);
+        right.getChildren().addAll(upPlayerTwo, threeKeysPlayerTwo);
+
+        mainPane.getChildren().add(helpWindow);
+
+        addHelperHandlers(
+            pacImgPlayerOne, pacImgPlayerTwo,
+            upPlayerOne, leftPlayerOne, downPlayerOne, rightPlayerOne,
+            upPlayerTwo, leftPlayerTwo, downPlayerTwo, rightPlayerTwo
+        );
+    }
+
+    private StackPane getNewKey(final String key) {
+        final double arcSize = 20.0;
+        final double keySize = 5 * GameView.getScale();
+        final Color keyColor = Color.rgb(220, 220, 220);
+
+        Text label = createText(key, fontSize.doubleValue() / 2);
+        Rectangle rec = new Rectangle();
+        StackPane keyPane = new StackPane(rec, label);
+
+        StackPane.setAlignment(label, Pos.CENTER);
+        StackPane.setAlignment(rec, Pos.CENTER);
+        label.setFill(Color.BLACK);
+        rec.setWidth(keySize);
+        rec.setHeight(keySize);
+        rec.setFill(keyColor);
+        rec.setArcWidth(arcSize);
+        rec.setArcHeight(arcSize);
+        keyPane.setMaxSize(rec.getWidth(), rec.getHeight());
+
+        return keyPane;
+    }
+
+    private void addHelperHandlers(
+    final ImageView p1, final ImageView p2, final StackPane... panes) {
+        for (int i = 0; i < panes.length; i++) {
+            final int index = i;
+            //CHECKSTYLE:OFF
+            switch (index) {
+                case 0:
+                    setOneKeyHandler(
+                        p1, true, (Rectangle) panes[index].getChildren().get(0), Direction.NORTH
+                    );
+                    break;
+                case 1:
+                    setOneKeyHandler(
+                        p1, true, (Rectangle) panes[index].getChildren().get(0), Direction.WEST
+                    );
+                    break;
+                case 2:
+                    setOneKeyHandler(
+                        p1, true, (Rectangle) panes[index].getChildren().get(0), Direction.SOUTH
+                    );
+                    break;
+                case 3:
+                    setOneKeyHandler(
+                        p1, true, (Rectangle) panes[index].getChildren().get(0), Direction.EAST
+                    );
+                    break;
+                case 4:
+                    setOneKeyHandler(
+                        p2, false, (Rectangle) panes[index].getChildren().get(0), Direction.NORTH
+                    );
+                    break;
+                case 5:
+                    setOneKeyHandler(
+                        p2, false, (Rectangle) panes[index].getChildren().get(0), Direction.WEST
+                    );
+                    break;
+                case 6:
+                    setOneKeyHandler(
+                        p2, false, (Rectangle) panes[index].getChildren().get(0), Direction.SOUTH
+                    );
+                    break;
+                case 7:
+                    setOneKeyHandler(
+                        p2, false, (Rectangle) panes[index].getChildren().get(0), Direction.EAST
+                    );
+                    break;
+
+                default:
+                    break;
+            }
+            //CHECKSTYLE:ON
+        }
+    }
+
+    private void setOneKeyHandler(
+    final ImageView image, final boolean isPlayerOne, final Rectangle key, final Direction dir) {
+        final Color keyColor = Color.rgb(220, 220, 220);
+        if (isPlayerOne) {
+            menuScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+                if (event.getCode().equals(Controller.getKeyCode(
+                PacmanController.getKeybinds(), dir))) {
+                    key.setFill(Color.DODGERBLUE);
+                    CritterGraphicsFactory.rotateImageByDirection(image, dir);
+                }
+            });
+            menuScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+                if (event.getCode().equals(Controller.getKeyCode(
+                PacmanController.getKeybinds(), dir))) {
+                    key.setFill(keyColor);
+                }
+            });
+        } else {
+            menuScene.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+                if (event.getCode().equals(Controller.getKeyCode(
+                PlayerTwoController.getKeybinds(), dir))) {
+                    key.setFill(Color.TOMATO);
+                    CritterGraphicsFactory.rotateImageByDirection(image, dir);
+                }
+            });
+            menuScene.addEventHandler(KeyEvent.KEY_RELEASED, event -> {
+                if (event.getCode().equals(Controller.getKeyCode(
+                PlayerTwoController.getKeybinds(), dir))) {
+                    key.setFill(keyColor);
+                }
+            });
+        }
+    }
 
     /**
      * Relie la taille du texte à la taille de la fenêtre.
@@ -135,7 +383,7 @@ public abstract class Menu extends Application {
      * @param size La taille du{@code Text}
      * @return {@code Text}
      */
-    public static Text createText(final String str, final int size) {
+    public static Text createText(final String str, final double size) {
         Text text = new Text(str);
         text.setFill(Color.WHITE);
         text.setFont(Font.loadFont(Resources.getPathOrContent("small_pixel-7"), size));
@@ -151,7 +399,7 @@ public abstract class Menu extends Application {
      * @return {@code VBox}
      */
     public static VBox createVBox(
-            final int spacing, final Pos position, final Node... nodes) {
+    final double spacing, final Pos position, final Node... nodes) {
         VBox box = new VBox(spacing);
         box.getChildren().addAll(nodes);
         box.setAlignment(position);
@@ -167,8 +415,7 @@ public abstract class Menu extends Application {
      * @return {@code HBox}
      */
     public static HBox createHBox(
-        final int spacing, final Pos position, final Node... nodes
-        ) {
+    final double spacing, final Pos position, final Node... nodes) {
         HBox box = new HBox(spacing);
         box.getChildren().addAll(nodes);
         box.setAlignment(position);
@@ -191,7 +438,7 @@ public abstract class Menu extends Application {
         return menuScene;
     }
 
-    public final DoubleProperty getFontSize() {
+    public static DoubleProperty getFontSize() {
         return fontSize;
     }
 
