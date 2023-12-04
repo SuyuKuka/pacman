@@ -25,7 +25,9 @@ public final class PacMan extends Critter {
     private GraphicsBuffer graphicsBuffer = new GraphicsBuffer();
 
     private String image;
-
+    /** Paramètre pour le mode Coop.*/
+    private int nbDeGhostChased = 1;
+    private final int nbGhostChasedMax = 3;
     /**
      * Fonction générale de {@link PacMan} qui actualise tous ses paramètres.
      * @param state
@@ -104,7 +106,7 @@ public final class PacMan extends Critter {
         if (pos.equals(nextPos)) {
             return;
         } else if (pos.haveSameNeighbours(nextPos)) {
-            nextPos = pos.adjustNextPos(nextPos, false).warp(width, height);
+            nextPos = pos.adjustNextPos(nextPos).warp(width, height);
         } else {
             nextPos = furthestFreeCell(nextPos, state).warp(width, height);
         }
@@ -138,7 +140,7 @@ public final class PacMan extends Critter {
             }
         }
         // Cas où aucun mur n'a été trouvé, renvoie nextPos
-        return pos.adjustNextPos(end, false);
+        return pos.adjustNextPos(end);
     }
 
     //endregion Position
@@ -185,6 +187,7 @@ public final class PacMan extends Critter {
         setDirection(Direction.NONE);
         directionBuffer.setBufferDirection(Direction.NONE);
         lastDirection = Direction.NONE;
+        nbDeGhostChased = 1;
         setPos(getSpawnPos());
     }
 
@@ -250,5 +253,18 @@ public final class PacMan extends Critter {
     @Override
     public void setImage(final String image) {
         this.image = image;
+    }
+
+    public int getNbGhostChased() {
+        return nbDeGhostChased;
+    }
+
+    public void setNbGhostChased(final int nbDeGhostChased2) {
+        this.nbDeGhostChased = nbDeGhostChased2;
+    }
+
+    /** @return {@link int} */
+    public int getNbGhostChasedMax() {
+        return nbGhostChasedMax;
     }
 }

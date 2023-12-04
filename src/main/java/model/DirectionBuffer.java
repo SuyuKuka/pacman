@@ -33,10 +33,10 @@ public final class DirectionBuffer {
         }
         final Set<IntCoordinates> neighbours
         = critter.nextPos(deltaTns, bufferDirection).intNeighbours();
-        final int maxNeighbours = 4;
-        if (neighbours.size() >= maxNeighbours) {
-            return false;
-        }
+        // final int maxNeighbours = 4;
+        // if (neighbours.size() >= maxNeighbours) {
+        //     return false;
+        // }
         for (IntCoordinates c: neighbours) {
             Cell cell = config.getCell(c);
             if (cell.hasWall()

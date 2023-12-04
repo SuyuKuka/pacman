@@ -140,6 +140,63 @@ public record RealCoordinates(double x, double y) {
      * Faux pour toutes les coordonnées ajustée par 0.5.
      * @return
      */
+    public RealCoordinates adjustNextPos(final RealCoordinates end) {
+        //CHECKSTYLE:OFF
+        final Direction d = this.getDirectionTo(end);
+        switch (d) {
+            case NORTH: {
+                    int curY = Math.abs((int) y);
+                    final int nextY = Math.abs((int) (end.y));
+                    if (y % 1 == 0) {
+                        curY--;
+                    }
+                    if (curY > nextY) {
+                        return new RealCoordinates(x, 1 + end.y - end.y % 1);
+                    }
+                }
+                break;
+            case EAST: {
+                    if (((int) x) < ((int)end.x)) {
+                        return new RealCoordinates(end.x - end.x % 1, y);
+                    }
+                }
+                break;
+            case SOUTH: {
+                    if (((int) y) < ((int) end.y)) {
+                        return new RealCoordinates(x, end.y - end.y % 1);
+                    }
+                }
+                break;
+            case WEST: {
+                    int curX = Math.abs((int) x);
+                    final int nextX = Math.abs((int) end.x);
+                    if (x % 1 == 0) {
+                        curX--;
+                    }
+                    if (curX > nextX) {
+                        return new RealCoordinates(1 + end.x - end.x % 1, y);
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+        return end;
+        //CHECKSTYLE:ON
+    }
+
+    /**
+     * Méthode qui renvoie un {@link RealCoordinates} où ses coordonnées on été ajustée à l'unité ou
+     * par 0.5. Cette méthode est utile pour le calcul de la prochaine position pour les
+     * {@link Critters} (Le centre d'une case est toujours une valeur entière et
+     * la position entre 2 cases est toujours une valeur qui se finit par 0.5).
+     * <p> Exemple : Si this.x = 1.9 et end.x = 2.4, alors adjustPosition() = 2
+     * <p> Exemple : Si this.x = 2.3 et end.x = 2.7, alors adjustPosition() = 2.5
+     * @param end
+     * @param precision Vrai n'avoir que les coordonnées ajustées par 1.
+     * Faux pour toutes les coordonnées ajustée par 0.5.
+     * @return
+     */
     public RealCoordinates adjustNextPos(final RealCoordinates end, final boolean precision) {
         //CHECKSTYLE:OFF
         final Direction d = this.getDirectionTo(end);

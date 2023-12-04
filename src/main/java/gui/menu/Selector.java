@@ -29,7 +29,6 @@ public final class Selector {
     final List<Text> choices,
     final Scene gameScene,
     final boolean pauseMenu) {
-        setSelectedIndex(0);
         keySelector = new KeySelector(selects, pauseMenu);
         gameScene.addEventHandler(KeyEvent.KEY_PRESSED, keySelector);
         int index = 0;

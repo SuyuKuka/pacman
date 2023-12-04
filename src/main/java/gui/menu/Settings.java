@@ -6,12 +6,20 @@ import javafx.scene.Scene;
 import javafx.scene.control.Slider;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import utils.Music;
 
 public final class Settings extends Menu {
+    private HBox bgMusicVolumeBox;
+    private HBox effectsVolumeBox;
+    private Slider bgMusicVolumeSlider;
+    private Slider effectsVolumeSlider;
+    private final int spacingSize = 20;
+    private static final double FONT_VALUE = 0.6;
     public static final Settings INSTANCE = new Settings();
 
     private Settings() {
@@ -30,54 +38,77 @@ public final class Settings extends Menu {
     }
 
     @Override
-    protected void addMainBox() {
+    protected void addOptionsToMenu() {
         final int titleSize = 100;
-        final int spacingSize = 20;
 
         setTitleText(createText("Settings", titleSize));
         HBox title = createHBox(0, Pos.TOP_CENTER, getTitleText());
 
-        // Volume control
-        Text volumeText = createText("Volume", getFontSize().getValue().intValue());
-        // Range [0, 100] with default value 50
-        final int minVol = 0;
-        final int maxVol = 100;
-        Slider volumeSlider = new Slider(minVol, maxVol, Music.getVolume() * maxVol);
-        volumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            int volume = newValue.intValue();
-            final float f = 100.0f;
-            Music.setVolume(volume / f);
-        });
+        setupVolumeControl();
 
-        //CHECKSTYLE:OFF
-        volumeSlider.setShowTickLabels(true);
-        volumeSlider.setShowTickMarks(true);
-        volumeSlider.setMajorTickUnit(25);
-        volumeSlider.setMinorTickCount(4);
-        volumeSlider.setBlockIncrement(10);
-        //CHECKSTYLE:ON
+        VBox mainBox = new VBox(spacingSize);
+        mainBox.setAlignment(Pos.CENTER);
 
-        HBox volumeBox = createHBox(spacingSize, Pos.CENTER, volumeText, volumeSlider);
+        mainBox.getChildren().addAll(bgMusicVolumeBox, effectsVolumeBox);
 
-        Text selectback = createText(">", getFontSize().getValue().intValue());
-        Text back = createText("Back", getFontSize().getValue().intValue());
-
-        if (getOptions().isEmpty() && getSelects().isEmpty() && getChoices().isEmpty()) {
-            getOptions().add(0, createHBox(spacingSize, Pos.BOTTOM_LEFT, selectback, back));
-
-            getSelects().add(0, selectback);
-
-            getChoices().add(0, back);
-        }
-
-        bindTextSizeToScene();
+        BorderPane.setMargin(title, new Insets(spacingSize, 0, spacingSize, 0));
+        BorderPane.setMargin(mainBox, new Insets(spacingSize));
 
         getMenuPane().setTop(title);
-        getMenuPane().setCenter(volumeBox);
+        getMenuPane().setCenter(mainBox);
+
+        setupBottomBackButton();
+    }
+
+    /**
+     * Configure les contrôles de volume pour la musique de fond et les effets sonores.
+     */
+    private void setupVolumeControl() {
+        bgMusicVolumeSlider = new Slider(0, 1, Music.getBgMusicVolume());
+        bgMusicVolumeSlider.valueProperty().addListener((observable, oldValue, newValue) ->
+            Music.setBgMusicVolume(newValue.floatValue())
+        );
+
+        effectsVolumeSlider = new Slider(0, 1, Music.getEffectsVolume());
+        effectsVolumeSlider.valueProperty().addListener((observable, oldValue, newValue) ->
+            Music.setEffectsVolume(newValue.floatValue())
+        );
+
+        Text bgMusicTitle = createText(
+            "Background Music Volume :", getFontSize().doubleValue() * FONT_VALUE
+        );
+        Text effectsTitle = createText(
+            "Sound Effects Volume :   ", getFontSize().doubleValue() * FONT_VALUE
+        );
+
+        bgMusicVolumeBox = createHBox(spacingSize, Pos.CENTER, bgMusicTitle, bgMusicVolumeSlider);
+        effectsVolumeBox = createHBox(spacingSize, Pos.CENTER, effectsTitle, effectsVolumeSlider);
+    }
+
+    /**
+     * Configure le bouton de retour en bas de l'écran.
+     */
+    private void setupBottomBackButton() {
+        Text selectback = createText(">", getFontSize().intValue());
+        Text backText = createText("Back", getFontSize().intValue());
+
+        backText.setFill(Color.WHITE);
+
+        backText.setOnMouseEntered(event -> backText.setUnderline(true));
+        backText.setOnMouseExited(event -> backText.setUnderline(false));
+
+        backText.setOnMouseClicked(event -> {
+            MainMenu.INSTANCE.toMenu();
+        });
+
+        HBox backButtonBox = createHBox(spacingSize, Pos.BOTTOM_LEFT, selectback, backText);
+
+        if (getOptions().isEmpty() && getSelects().isEmpty() && getChoices().isEmpty()) {
+            getOptions().add(0, backButtonBox);
+            getSelects().add(0, selectback);
+            getChoices().add(0, backText);
+        }
         getMenuPane().setBottom(getOptions().get(0));
-        //CHECKSTYLE:OFF
-        BorderPane.setMargin(title, new Insets(100, 0, 0, 0));
-        //CHECKSTYLE:ON
     }
 
     @Override
