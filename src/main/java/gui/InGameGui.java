@@ -83,8 +83,6 @@ public final class InGameGui {
 
     private Selector selector;
 
-    private static final String FONT = "small_pixel-7";
-
     /**
      * Constructeur{@code InGameGui}.
      * @param scene
@@ -140,24 +138,13 @@ public final class InGameGui {
      * Méthode qui ajoute le texte avec le score dans {@link #infos}.
      */
     public void makeScoreDisplay() {
-        // Création d'un texte
-        Text title = new Text();
-        scoreText = new Text();
-
-        // Configuration du texte
         final int titleSize = 50;
         final int scoreSize = 40;
         final int spacing = 10;
 
-        title.setText("Score");
-        title.setFont(Font.loadFont(Resources.getPathOrContent(FONT), titleSize));
-        title.setFill(Color.WHITE);
-        scoreText.setFont(Font.loadFont(Resources.getPathOrContent(FONT), scoreSize));
-        scoreText.setFill(Color.WHITE);
-
-        VBox score = new VBox(title, scoreText);
-        score.setAlignment(Pos.CENTER);
-        score.setSpacing(spacing);
+        Text title = Menu.createText("Score", titleSize);
+        scoreText = Menu.createText("", scoreSize);
+        VBox score = Menu.createVBox(spacing, Pos.CENTER, title, scoreText);
 
         infos.getChildren().add(score);
     }
@@ -186,9 +173,7 @@ public final class InGameGui {
      */
     public static void showEatGhostPoints(final int eatScore, final Ghost ghost) {
         final int fontSize = 15 + (int) GameView.getScale() - (int) GameView.getInitialScale();
-        Text eatGhostPoints = new Text(String.valueOf(eatScore));
-        eatGhostPoints.setFont(Font.loadFont(Resources.getPathOrContent(FONT), fontSize));
-        eatGhostPoints.setFill(Color.WHITE);
+        Text eatGhostPoints = Menu.createText(String.valueOf(eatScore), fontSize);
         final double posX = ghost.getPos().x();
         final double posY = ghost.getPos().y();
 
@@ -269,7 +254,7 @@ public final class InGameGui {
         final int fontSize = 50;
 
         barLabel = new Label();
-        barLabel.setFont(Font.loadFont(Resources.getPathOrContent(FONT), fontSize));
+        barLabel.setFont(Font.loadFont(Resources.getPathOrContent("small_pixel-7"), fontSize));
         barLabel.setTextFill(Color.WHITE);
 
         bar = new ProgressBar();
