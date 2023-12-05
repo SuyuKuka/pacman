@@ -425,7 +425,10 @@ public final class InGameGui {
 
         endgameOptions.get(0).setOnMouseClicked(event -> {
             if (isEndless) {
-                Endless.startLevel(mode, currentLevel, currentLevel);
+                Endless.startLevel(
+                    Endless.getSelectedMode(),
+                    Endless.getMazeWidth(), Endless.getMazeHeight()
+                );
             } else if (mode.equals("Solo")) {
                 Solo.startLevel(currentLevel);
             } else {
@@ -453,7 +456,10 @@ public final class InGameGui {
                 switch (Selector.getSelectedIndex()) {
                     case 0:
                         if (isEndless) {
-                            Endless.startLevel(mode, currentLevel, currentLevel);
+                            Endless.startLevel(
+                                Endless.getSelectedMode(),
+                                Endless.getMazeWidth(), Endless.getMazeHeight()
+                            );
                         } else if (mode.equals("Solo")) {
                             Solo.startLevel(currentLevel);
                         } else {
