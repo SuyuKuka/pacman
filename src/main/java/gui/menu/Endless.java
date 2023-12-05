@@ -314,4 +314,12 @@ public final class Endless extends Menu {
     public static String getSelectedMode() {
         return selectedMode;
     }
+
+    public static int getMazeWidth() {
+        return mazeWidth;
+    }
+
+    public static int getMazeHeight() {
+        return mazeHeight;
+    }
 }
