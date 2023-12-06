@@ -23,23 +23,7 @@ public class Cell {
         /** Rien. (Indique les cellules en dehors de la carte). */
         OUTER,
         /** Rien. (Indique qu'un pac-gomme a été mangé). */
-        EATEN,
-        /** Donne 100 points si mangé par {@link PacMan}. */
-        CERISE,
-        /** Donne 300 points si mangé par {@link PacMan}. */
-        FRAISE,
-        /** Donne 500 points si mangé par {@link PacMan}. */
-        ORANGE,
-        /** Donne 700 points si mangé par {@link PacMan}. */
-        POMME,
-        /** Donne 1000 points si mangé par {@link PacMan}. */
-        MELON,
-        /** Donne 2000 points si mangé par {@link PacMan}. */
-        GALAXIAN,
-        /** Donne 3000 points si mangé par {@link PacMan}. */
-        CLOCHE,
-        /** Donne 5000 points si mangé par {@link PacMan}. */
-        CLEF
+        EATEN
     }
     /** Type que qu'a une {@link Cell}. (fermé ou ouverte). */
     public enum Type {

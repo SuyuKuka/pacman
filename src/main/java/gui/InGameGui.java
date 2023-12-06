@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import gui.graphics.GraphicsUpdater;
-import gui.menu.Endless;
+import gui.menu.Custom;
 import gui.menu.MainMenu;
 import gui.menu.Menu;
 import gui.menu.Multiplayer;
@@ -77,11 +77,11 @@ public final class InGameGui {
     /** Boolean indiquant si la partie est mise en pause. */
     private static boolean paused = false;
     /** Boolean indiquant si la partie est finie. */
-    private boolean end = false;
+    private static boolean end = false;
 
     /** Solo ou Multi. */
     private String mode;
-    private boolean isEndless;
+    private boolean isCustom;
 
     private Selector selector;
 
@@ -93,6 +93,7 @@ public final class InGameGui {
     public InGameGui(final Scene scene, final String mode) {
         gameScene = scene;
         this.mode = mode;
+        setEnd(false);
         addPauseHandlers();
         setPaused(false);
         Music.setBgMusicClip(null);
@@ -103,11 +104,11 @@ public final class InGameGui {
      * Constructeur{@code InGameGui}en Endless.
      * @param scene
      * @param mode
-     * @param isEndless
+     * @param isCustom
      */
-    public InGameGui(final Scene scene, final String mode, final boolean isEndless) {
+    public InGameGui(final Scene scene, final String mode, final boolean isCustom) {
         this(scene, mode);
-        this.isEndless = isEndless;
+        this.isCustom = isCustom;
     }
 
     /**
@@ -171,7 +172,7 @@ public final class InGameGui {
         scoreText.setText(String.valueOf(state.getScore()));
         // Total : 244 pac-gommes en classique
         if (!end && state.getEatenPacgomme() >= state.getConfig().getTotalPacGomme()) {
-            end = true;
+            setEnd(true);
             state.playerWin();
             endGameMenu = endGameMenu(true, state);
             showEndGame();
@@ -252,7 +253,7 @@ public final class InGameGui {
         }
 
         if (state.getLives() == 0 && !end) {
-            end = true;
+            setEnd(true);
             endGameMenu = endGameMenu(false, state);
             showEndGame();
             addEndHandlers();
@@ -376,7 +377,7 @@ public final class InGameGui {
         Text score = Menu.createText("Score : " + state.getScore(), scoreSize);
 
         Text selectContinue = Menu.createText(">", textSize);
-        Text continuer = Menu.createText("Continue", textSize);
+        Text continuer = Menu.createText(isCustom ? "New map" : "Continue", textSize);
         HBox optionContinue = Menu.createHBox(textSpacing, Pos.CENTER, selectContinue, continuer);
 
         Text select0 = Menu.createText(">", textSize);
@@ -390,7 +391,7 @@ public final class InGameGui {
         );
 
         VBox optionBox;
-        if (!isEndless) {
+        if (!isCustom) {
             optionBox = Menu.createVBox(optionSpacing, Pos.CENTER, option0, option1);
         } else {
             endGameSelects.add(selectContinue);
@@ -424,10 +425,10 @@ public final class InGameGui {
         selector = new Selector(endGameSelects, endgameOptions, gameScene, false);
 
         endgameOptions.get(0).setOnMouseClicked(event -> {
-            if (isEndless) {
-                Endless.startLevel(
-                    Endless.getSelectedMode(),
-                    Endless.getMazeWidth(), Endless.getMazeHeight()
+            if (isCustom) {
+                Custom.startLevel(
+                    Custom.getSelectedMode(),
+                    Custom.getMazeWidth(), Custom.getMazeHeight()
                 );
             } else if (mode.equals("Solo")) {
                 Solo.startLevel(currentLevel);
@@ -437,14 +438,14 @@ public final class InGameGui {
             selector.getKeySelector().resetSelect();
         });
         endgameOptions.get(1).setOnMouseClicked(mouseEvent -> {
-            if (isEndless) {
-                Endless.INSTANCE.restartLevel(Endless.getSelectedMode());
+            if (isCustom) {
+                Custom.INSTANCE.restartLevel(Custom.getSelectedMode());
             } else {
                 MainMenu.INSTANCE.toMenu();
             }
             selector.getKeySelector().resetSelect();
         });
-        if (isEndless) {
+        if (isCustom) {
             endgameOptions.get(2).setOnMouseClicked(mouseEvent -> {
                 MainMenu.INSTANCE.toMenu();
                 selector.getKeySelector().resetSelect();
@@ -455,10 +456,10 @@ public final class InGameGui {
             if (keyEvent.getCode() == KeyCode.ENTER) {
                 switch (Selector.getSelectedIndex()) {
                     case 0:
-                        if (isEndless) {
-                            Endless.startLevel(
-                                Endless.getSelectedMode(),
-                                Endless.getMazeWidth(), Endless.getMazeHeight()
+                        if (isCustom) {
+                            Custom.startLevel(
+                                Custom.getSelectedMode(),
+                                Custom.getMazeWidth(), Custom.getMazeHeight()
                             );
                         } else if (mode.equals("Solo")) {
                             Solo.startLevel(currentLevel);
@@ -468,8 +469,8 @@ public final class InGameGui {
                         break;
 
                     case 1:
-                        if (isEndless) {
-                            Endless.INSTANCE.restartLevel(Endless.getSelectedMode());
+                        if (isCustom) {
+                            Custom.INSTANCE.restartLevel(Custom.getSelectedMode());
                         } else {
                             MainMenu.INSTANCE.toMenu();
                         }
@@ -566,8 +567,8 @@ public final class InGameGui {
         });
         pauseOptions.get(1).setOnMouseClicked(mouseEvent -> {
             pause(false);
-            if (isEndless) {
-                Endless.INSTANCE.restartLevel(Endless.getSelectedMode());
+            if (isCustom) {
+                Custom.INSTANCE.restartLevel(Custom.getSelectedMode());
             } else if (mode.equals("Solo")) {
                 Solo.startLevel(currentLevel);
             } else {
@@ -589,8 +590,8 @@ public final class InGameGui {
                         break;
 
                     case 1:
-                        if (isEndless) {
-                            Endless.INSTANCE.restartLevel(Endless.getSelectedMode());
+                        if (isCustom) {
+                            Custom.INSTANCE.restartLevel(Custom.getSelectedMode());
                         } else if (mode.equals("Solo")) {
                             Solo.startLevel(currentLevel);
                         } else {
@@ -628,5 +629,13 @@ public final class InGameGui {
 
     public static List<GraphicsUpdater> getEatScoreUpdater() {
         return eatScoreUpdater;
+    }
+
+    public static void setEnd(final boolean end) {
+        InGameGui.end = end;
+    }
+
+    public static boolean isEnd() {
+        return InGameGui.end;
     }
 }
