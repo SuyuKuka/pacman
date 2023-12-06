@@ -166,7 +166,7 @@ public final class Custom extends Menu {
 
         VBox optionBox = createVBox(
             0, Pos.CENTER,
-            createHBox(0, Pos.CENTER, selectStart, startButton),
+            createHBox(-spacingSize, Pos.CENTER, selectStart, startButton),
             createHBox(0, Pos.BOTTOM_CENTER, settings)
         );
 
@@ -190,7 +190,9 @@ public final class Custom extends Menu {
 
         getMenuPane().setTop(title);
         getMenuPane().setCenter(optionBox);
-        getMenuPane().setBottom(createHBox(0, Pos.BASELINE_LEFT, selectBack, backButton));
+        getMenuPane().setBottom(
+            createHBox(-spacingSize, Pos.BASELINE_LEFT, selectBack, backButton)
+        );
         //CHECKSTYLE:OFF
         BorderPane.setMargin(title, new Insets(100, 0, 0, 0));
         //CHECKSTYLE:ON

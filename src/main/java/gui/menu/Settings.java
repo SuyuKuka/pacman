@@ -2,16 +2,19 @@ package gui.menu;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Slider;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import utils.Music;
+import utils.Resources;
 
 public final class Settings extends Menu {
     private HBox bgMusicVolumeBox;
@@ -64,14 +67,7 @@ public final class Settings extends Menu {
     private void setupVolumeControl() {
         //CHECKSTYLE:OFF
         Slider bgMusicVolumeSlider = new Slider(0, 100, Music.getBgMusicVolume() * 100);
-        bgMusicVolumeSlider.valueProperty().addListener((observable, oldValue, newValue) ->
-            Music.setBgMusicVolume(newValue.floatValue() / 100)
-        );
-
         Slider effectsVolumeSlider = new Slider(0, 100, Music.getEffectsVolume() * 100);
-        effectsVolumeSlider.valueProperty().addListener((observable, oldValue, newValue) ->
-            Music.setEffectsVolume(newValue.floatValue() / 100)
-        );
 
         bgMusicVolumeSlider.setMajorTickUnit(25);
         bgMusicVolumeSlider.setMinorTickCount(5);
@@ -80,20 +76,43 @@ public final class Settings extends Menu {
         effectsVolumeSlider.setMajorTickUnit(25);
         effectsVolumeSlider.setMinorTickCount(5);
         effectsVolumeSlider.setBlockIncrement(1);
-        //CHECKSTYLE:ON
 
+        Text selectBg = createText(">", getFontSize().intValue());
+        selectBg.setVisible(false);
         Text bgMusicTitle = createText(
             "Background Music Volume :", getFontSize().doubleValue() * FONT_VALUE
         );
+
+        Text selectSfx = createText(">", getFontSize().intValue());
+        selectSfx.setVisible(false);
         Text effectsTitle = createText(
             "Sound Effects Volume :", getFontSize().doubleValue() * FONT_VALUE
         );
 
+        Text bgValue = createText("50", getFontSize().doubleValue() * FONT_VALUE);
+        Text sfxValue = createText("50", getFontSize().doubleValue() * FONT_VALUE);
+
+        bgMusicVolumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            Music.setBgMusicVolume(newValue.floatValue() / 100);
+            bgValue.setText(newValue.intValue() + "");
+        });
+        effectsVolumeSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
+            Music.setEffectsVolume(newValue.floatValue() / 100);
+            sfxValue.setText(newValue.intValue() + "");
+        });
+        bgMusicVolumeSlider.focusedProperty().addListener(
+            e -> selectBg.setVisible(bgMusicVolumeSlider.isFocused())
+        );
+        effectsVolumeSlider.focusedProperty().addListener(
+            e -> selectSfx.setVisible(effectsVolumeSlider.isFocused())
+        );
+        //CHECKSTYLE:ON
+
         bgMusicVolumeBox = createHBox(
-            spacingSize, Pos.CENTER, bgMusicTitle, bgMusicVolumeSlider
+            spacingSize, Pos.CENTER, selectBg, bgMusicTitle, bgMusicVolumeSlider, bgValue
         );
         effectsVolumeBox = createHBox(
-            spacingSize, Pos.CENTER, effectsTitle, effectsVolumeSlider
+            spacingSize, Pos.CENTER, selectSfx, effectsTitle, effectsVolumeSlider, sfxValue
         );
     }
 
@@ -102,40 +121,26 @@ public final class Settings extends Menu {
      */
     private void setupBottomBackButton() {
         Text selectback = createText(">", getFontSize().intValue());
-        Text backText = createText("Back", getFontSize().intValue());
+        selectback.setVisible(false);
+        Button backButton = new Button("Back");
+        backButton.setTextFill(Color.WHITE);
+        backButton.setBackground(Background.EMPTY);
+        backButton.setFont(
+            Font.loadFont(Resources.getPathOrContent("small_pixel-7"), getFontSize().doubleValue())
+        );
 
-        backText.setFill(Color.WHITE);
-
-        backText.setOnMouseEntered(event -> backText.setUnderline(true));
-        backText.setOnMouseExited(event -> backText.setUnderline(false));
-
-        backText.setOnMouseClicked(event -> {
-            MainMenu.INSTANCE.toMenu();
-        });
-
-        HBox backButtonBox = createHBox(spacingSize, Pos.BOTTOM_LEFT, selectback, backText);
-
-        if (getOptions().isEmpty() && getSelects().isEmpty() && getChoices().isEmpty()) {
-            getOptions().add(0, backButtonBox);
-            getSelects().add(0, selectback);
-            getChoices().add(0, backText);
-        }
-        getMenuPane().setBottom(getOptions().get(0));
-    }
-
-    @Override
-    protected void addEventHandlers(final Scene gameScene) {
-        Selector selector = new Selector(getSelects(), getChoices(), gameScene, false);
-        getOptions().get(0).setOnMouseClicked(event -> {
-            MainMenu.INSTANCE.toMenu();
-            selector.getKeySelector().resetSelect();
-        });
-
-        gameScene.setOnKeyPressed(keyEvent -> {
-            if (keyEvent.getCode() == KeyCode.ENTER) {
+        backButton.setOnMouseClicked(event -> MainMenu.INSTANCE.toMenu());
+        backButton.setOnKeyPressed(event -> {
+            if (event.getCode() == KeyCode.ENTER) {
                 MainMenu.INSTANCE.toMenu();
             }
-            selector.getKeySelector().resetSelect();
         });
+        backButton.focusedProperty().addListener(
+            e -> selectback.setVisible(backButton.isFocused())
+        );
+
+        HBox backButtonBox = createHBox(-spacingSize, Pos.BASELINE_LEFT, selectback, backButton);
+
+        getMenuPane().setBottom(backButtonBox);
     }
 }
