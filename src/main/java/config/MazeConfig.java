@@ -2,7 +2,7 @@ package config;
 
 import geometry.IntCoordinates;
 import geometry.RealCoordinates;
-import gui.menu.Endless;
+import gui.menu.Custom;
 import model.Critter;
 import model.Direction;
 import model.Ghost;
@@ -73,14 +73,14 @@ public final class MazeConfig {
     final boolean endless, final int width, final int height,
     final boolean restartedEndless) {
         if (restartedEndless) {
-            grid = Endless.getCurrentMap();
+            grid = Custom.getCurrentMap();
             Cell[][] gridCopy = new Cell[grid.length][grid[0].length];
             for (int y = 0; y < grid.length; y++) {
                 for (int x = 0; x < grid[0].length; x++) {
                     gridCopy[y][x] = new Cell(grid[y][x]);
                 }
             }
-            Endless.setCurrentMap(gridCopy);
+            Custom.setCurrentMap(gridCopy);
         } else if (endless) {
             grid = MainGrid.createRandomMap(height, width);
             Cell[][] gridCopy = new Cell[grid.length][grid[0].length];
@@ -89,7 +89,7 @@ public final class MazeConfig {
                     gridCopy[y][x] = new Cell(grid[y][x]);
                 }
             }
-            Endless.setCurrentMap(gridCopy);
+            Custom.setCurrentMap(gridCopy);
         } else {
             grid = getJSONMaze(configPath);
         }

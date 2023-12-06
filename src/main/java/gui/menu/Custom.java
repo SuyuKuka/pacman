@@ -15,14 +15,18 @@ import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Slider;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import model.DirectionBuffer;
@@ -30,18 +34,20 @@ import model.Ghost;
 import model.Ghost.GhostType;
 import model.MazeState;
 import utils.Music;
+import utils.Resources;
 
-public final class Endless extends Menu {
+public final class Custom extends Menu {
     private ArrayList<Text> mainTexts;
     private ArrayList<Text> subTexts;
+    private ArrayList<Button> buttons;
     private static int mazeWidth;
     private static int mazeHeight;
     private static String selectedMode;
     private static Cell[][] currentMap;
 
-    public static final Endless INSTANCE = new Endless();
+    public static final Custom INSTANCE = new Custom();
 
-    private Endless() {
+    private Custom() {
     }
 
     @Override
@@ -49,9 +55,9 @@ public final class Endless extends Menu {
     }
 
     /**
-     * Affiche le menu Endless.
+     * Affiche le menu Custom.
      */
-    public void toEndless() {
+    public void toCustom() {
         setScene();
         getMainStage().setScene(getMenuScene());
     }
@@ -61,23 +67,42 @@ public final class Endless extends Menu {
         final int titleSize = 100;
         final int spacingSize = 20;
 
-        setTitleText(createText("Endless", titleSize));
+        setTitleText(createText("Custom", titleSize));
         HBox title = createHBox(0, Pos.TOP_CENTER, getTitleText());
 
         Text selectStart = createText(">", getFontSize().doubleValue());
-        Text startText = createText("Start", getFontSize().doubleValue());
+        selectStart.setVisible(false);
+        Button startButton = new Button("Start");
+        startButton.setFont(Font.loadFont(
+            Resources.getPathOrContent("small_pixel-7"),
+            getFontSize().doubleValue()
+        ));
+        startButton.setTextFill(Color.WHITE);
+        startButton.setBackground(Background.EMPTY);
+        startButton.focusedProperty().addListener(
+            e -> selectStart.setVisible(startButton.isFocused())
+        );
 
+        Text selectMode = createText(">", getFontSize().doubleValue());
+        selectMode.setVisible(false);
         Text mode = createText("Mode", getFontSize().doubleValue());
         String[] modes = {"Solo", "Versus", "Coop"};
 
         ChoiceBox<String> modeChoice = new ChoiceBox<>();
         modeChoice.getItems().addAll(modes);
         modeChoice.setValue(modes[0]);
+        //CHECKSTYLE:OFF
+        modeChoice.setStyle("-fx-font: " + getFontSize().doubleValue() / 3 + "px Monaco;");
+        //CHECKSTYLE:ON
         setSelectedMode(modes[0]);
-        modeChoice.valueProperty().addListener((observable, oldValue, newValue) -> {
-            setSelectedMode(newValue);
-        });
-        VBox modeBox = createVBox(spacingSize, Pos.CENTER, mode, modeChoice);
+        modeChoice.valueProperty().addListener(
+            (observable, oldValue, newValue) -> setSelectedMode(newValue)
+        );
+        modeChoice.focusedProperty().addListener(
+            e -> selectMode.setVisible(modeChoice.isFocused())
+        );
+        HBox subModeBox = createHBox(spacingSize / 2, Pos.CENTER, selectMode, modeChoice);
+        VBox modeBox = createVBox(0, Pos.CENTER, mode, subModeBox);
 
         Text size = createText("Size", getFontSize().doubleValue());
         Slider widthSlider = new Slider(
@@ -85,98 +110,107 @@ public final class Endless extends Menu {
             MainGrid.getMinMaxLongueur()[1],
             (MainGrid.getMinMaxLongueur()[0] + MainGrid.getMinMaxLongueur()[1]) / 2.0
         );
-        widthSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            setMazeWidth(newValue.intValue());
-        });
+        widthSlider.valueProperty().addListener(
+            (observable, oldValue, newValue) -> setMazeWidth(newValue.intValue())
+        );
         //CHECKSTYLE:OFF
         widthSlider.setShowTickLabels(true);
         widthSlider.setShowTickMarks(true);
         widthSlider.setMajorTickUnit(4);
         widthSlider.setMinorTickCount(1);
         widthSlider.setBlockIncrement(1);
+        Text selectWidth = createText(">", getFontSize().doubleValue());
+        selectWidth.setVisible(false);
         Text width = createText("Width", getFontSize().doubleValue());
-        HBox widthBox = createHBox(spacingSize, Pos.CENTER, width, widthSlider);
+        widthSlider.focusedProperty().addListener(
+            e -> selectWidth.setVisible(widthSlider.isFocused())
+        );
+        HBox widthBox = createHBox(spacingSize, Pos.CENTER, selectWidth, width, widthSlider);
+
         Slider heightSlider = new Slider(
             MainGrid.getMinMaxHauteur()[0],
             MainGrid.getMinMaxHauteur()[1],
             (MainGrid.getMinMaxHauteur()[0] + MainGrid.getMinMaxHauteur()[1]) / 2.0
         );
-        heightSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
-            setMazeHeight(newValue.intValue());
-        });
+        heightSlider.valueProperty().addListener(
+            (observable, oldValue, newValue) -> setMazeHeight(newValue.intValue())
+        );
         heightSlider.setShowTickLabels(true);
         heightSlider.setShowTickMarks(true);
         heightSlider.setMajorTickUnit(4);
         heightSlider.setMinorTickCount(1);
         heightSlider.setBlockIncrement(1);
         //CHECKSTYLE:ON
+        Text selectHeight = createText(">", getFontSize().doubleValue());
+        selectHeight.setVisible(false);
         Text height = createText("Height", getFontSize().doubleValue());
-        HBox heightBox = createHBox(spacingSize, Pos.CENTER, height, heightSlider);
-        VBox sizeBox = createVBox(spacingSize, Pos.CENTER, size, widthBox, heightBox);
+        heightSlider.focusedProperty().addListener(
+            e -> selectHeight.setVisible(heightSlider.isFocused())
+        );
+        HBox heightBox = createHBox(spacingSize, Pos.CENTER, selectHeight, height, heightSlider);
+        VBox sizeBox = createVBox(0, Pos.CENTER, size, widthBox, heightBox);
 
-        VBox settings = createVBox(spacingSize, Pos.CENTER, modeBox, sizeBox);
+        VBox settings = createVBox(0, Pos.CENTER, modeBox, sizeBox);
 
         Text selectBack = createText(">", getFontSize().doubleValue());
-        Text backText = createText("Back", getFontSize().doubleValue());
-
-        //CHECKSTYLE:OFF
-        if (getOptions().isEmpty()) {
-            getOptions().add(createHBox(spacingSize, Pos.CENTER, selectStart, startText));
-            getOptions().add(createHBox(spacingSize, Pos.BOTTOM_CENTER, settings));
-            getOptions().add(createHBox(spacingSize, Pos.BOTTOM_LEFT, selectBack, backText));
-        }
-
-        VBox optionBox = createVBox(
-            spacingSize, Pos.CENTER,
-            getOptions().get(0), getOptions().get(1)
+        selectBack.setVisible(false);
+        Button backButton = new Button("Back");
+        backButton.setFont(
+            Font.loadFont(Resources.getPathOrContent("small_pixel-7"), getFontSize().doubleValue())
+        );
+        backButton.setTextFill(Color.WHITE);
+        backButton.setBackground(Background.EMPTY);
+        backButton.focusedProperty().addListener(
+            e -> selectBack.setVisible(backButton.isFocused())
         );
 
-        if (getSelects().isEmpty() && getChoices().isEmpty()) {
-            getSelects().add(selectStart);
-            getSelects().add(selectBack);
-
-            getChoices().add(startText);
-            getChoices().add(backText);
-        }
+        VBox optionBox = createVBox(
+            0, Pos.CENTER,
+            createHBox(-spacingSize, Pos.CENTER, selectStart, startButton),
+            createHBox(0, Pos.BOTTOM_CENTER, settings)
+        );
 
         mainTexts = new ArrayList<>();
         subTexts = new ArrayList<>();
+        buttons = new ArrayList<>();
         mainTexts.add(mode);
         mainTexts.add(size);
         subTexts.add(width);
         subTexts.add(height);
+        buttons.add(startButton);
+        buttons.add(backButton);
+
+        getSelects().add(selectStart);
+        getSelects().add(selectMode);
+        getSelects().add(selectWidth);
+        getSelects().add(selectHeight);
+        getSelects().add(selectBack);
 
         bindTextSizeToScene();
 
         getMenuPane().setTop(title);
         getMenuPane().setCenter(optionBox);
-        getMenuPane().setBottom(getOptions().get(2));
+        getMenuPane().setBottom(
+            createHBox(-spacingSize, Pos.BASELINE_LEFT, selectBack, backButton)
+        );
+        //CHECKSTYLE:OFF
         BorderPane.setMargin(title, new Insets(100, 0, 0, 0));
         //CHECKSTYLE:ON
     }
 
     @Override
     protected void addEventHandlers(final Scene gameScene) {
-        Selector selector = new Selector(getSelects(), getChoices(), gameScene, false);
+        buttons.get(0).setOnMouseClicked(event -> startLevel(selectedMode, mazeWidth, mazeHeight));
+        buttons.get(1).setOnMouseClicked(event -> MainMenu.INSTANCE.toMenu());
 
-        getOptions().get(0).setOnMouseClicked(event -> {
-            startLevel(selectedMode, mazeWidth, mazeHeight);
-            selector.getKeySelector().resetSelect();
-        });
-        getOptions().get(2).setOnMouseClicked(event -> {
-            MainMenu.INSTANCE.toMenu();
-            selector.getKeySelector().resetSelect();
-        });
-
-        gameScene.setOnKeyPressed(keyEvent -> {
-            final int back = 1;
+        buttons.get(0).setOnKeyPressed(keyEvent -> {
             if (keyEvent.getCode() == KeyCode.ENTER) {
-                if (Selector.getSelectedIndex() == back) {
+                startLevel(selectedMode, mazeWidth, mazeHeight);
+            }
+        });
+        buttons.get(1).setOnKeyPressed(keyEvent -> {
+            if (keyEvent.getCode() == KeyCode.ENTER) {
                     MainMenu.INSTANCE.toMenu();
-                } else {
-                    startLevel(selectedMode, mazeWidth, mazeHeight);
-                }
-                selector.getKeySelector().resetSelect();
             }
         });
     }
@@ -296,19 +330,19 @@ public final class Endless extends Menu {
     }
 
     public static void setCurrentMap(final Cell[][] currentMap) {
-        Endless.currentMap = currentMap;
+        Custom.currentMap = currentMap;
     }
 
     public static void setMazeWidth(final int mazeWidth) {
-        Endless.mazeWidth = mazeWidth;
+        Custom.mazeWidth = mazeWidth;
     }
 
     public static void setMazeHeight(final int mazeHeight) {
-        Endless.mazeHeight = mazeHeight;
+        Custom.mazeHeight = mazeHeight;
     }
 
     public static void setSelectedMode(final String selectedMode) {
-        Endless.selectedMode = selectedMode;
+        Custom.selectedMode = selectedMode;
     }
 
     public static String getSelectedMode() {

@@ -68,7 +68,7 @@ public final class MainMenu extends Menu {
         Text multiplayer = createText("Multiplayer", getFontSize().doubleValue());
 
         Text select2 = createText(">", getFontSize().doubleValue());
-        Text endless = createText("Endless", getFontSize().doubleValue());
+        Text custom = createText("Custom", getFontSize().doubleValue());
 
         Text select3 = createText(">", getFontSize().doubleValue());
         Text settings = createText("Settings", getFontSize().doubleValue());
@@ -84,7 +84,7 @@ public final class MainMenu extends Menu {
                 spacingSize, Pos.CENTER, select1, multiplayer
             ));
             getOptions().add(createHBox(
-                spacingSize, Pos.CENTER, select2, endless
+                spacingSize, Pos.CENTER, select2, custom
             ));
             //CHECKSTYLE:OFF
             getOptions().add(createHBox(
@@ -111,7 +111,7 @@ public final class MainMenu extends Menu {
 
             getChoices().add(solo);
             getChoices().add(multiplayer);
-            getChoices().add(endless);
+            getChoices().add(custom);
             getChoices().add(settings);
             getChoices().add(quit);
         }
@@ -138,7 +138,7 @@ public final class MainMenu extends Menu {
             selector.getKeySelector().resetSelect();
         });
         getOptions().get(2).setOnMouseClicked(mouseEvent -> {
-            Endless.INSTANCE.toEndless();
+            Custom.INSTANCE.toCustom();
             selector.getKeySelector().resetSelect();
         });
         //CHECKSTYLE:OFF
@@ -169,7 +169,7 @@ public final class MainMenu extends Menu {
                         break;
 
                     case endlessCase:
-                        Endless.INSTANCE.toEndless();
+                        Custom.INSTANCE.toCustom();
                         break;
 
                     case settingsCase:
