@@ -32,7 +32,7 @@ public final class PacmanController extends Controller implements KeyHandlers {
 
     @Override
     public void keyPressedHandler(final KeyEvent event) {
-        if (event.getCode() == KeyCode.ESCAPE && !InGameGui.isPaused()) {
+        if (event.getCode() == KeyCode.ESCAPE && !InGameGui.isPaused() && !InGameGui.isEnd()) {
             getInGameGui().pause(true);
         } else if (event.getCode() == KeyCode.ESCAPE) {
             getInGameGui().pause(false);

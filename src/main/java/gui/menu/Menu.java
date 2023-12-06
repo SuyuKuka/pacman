@@ -76,11 +76,6 @@ public abstract class Menu extends Application {
             removeHelper();
             addHelper();
         });
-
-        mainStage.maximizedProperty().addListener(obs -> {
-            removeHelper();
-            addHelper();
-        });
     }
 
     /**
@@ -143,6 +138,12 @@ public abstract class Menu extends Application {
 
         mainPane.getChildren().add(helpCircle);
         helpCircle.setOnMouseClicked(event -> helpWindow.setVisible(!helpWindow.isVisible()));
+        menuScene.setOnKeyTyped(event -> {
+            if (event.getCharacter().equals("?") || event.getCharacter().equals(",")) {
+                helpWindow.requestFocus();
+                helpWindow.setVisible(!helpWindow.isVisible());
+            }
+        });
     }
 
     private void addHelpWindow() {
@@ -167,10 +168,16 @@ public abstract class Menu extends Application {
         right.setAlignment(Pos.CENTER);
         right.setSpacing(keySpacing);
 
-        Text title = createText("Test your keybinds!", fontSize.doubleValue());
+        //CHECKSTYLE:OFF
+        Text title1 = createText("Press ESC to pause in game!", fontSize.doubleValue());
+        Text title2 = createText(
+            "Try your keybinds by pressing the corresponding button!",
+            fontSize.divide(1.5).doubleValue()
+        );
+        //CHECKSTYLE:ON
         HBox hbox = createHBox(boxSpacing, Pos.CENTER, left, right);
 
-        VBox vbox = createVBox(margin / 2, Pos.CENTER, title, hbox);
+        VBox vbox = createVBox(margin / 2, Pos.CENTER, title1, title2, hbox);
         helpWindow = new StackPane(vbox);
 
         helpWindow.setMaxSize(mainStage.getWidth() - margin, mainStage.getHeight() - margin);
@@ -224,7 +231,9 @@ public abstract class Menu extends Application {
         final double keySize = 5 * GameView.getScale();
         final Color keyColor = Color.rgb(220, 220, 220);
 
-        Text label = createText(key, fontSize.doubleValue() / 2);
+        //CHECKSTYLE:OFF
+        Text label = createText(key, fontSize.doubleValue() / 2.5);
+        //CHECKSTYLE:ON
         Rectangle rec = new Rectangle();
         StackPane keyPane = new StackPane(rec, label);
 
