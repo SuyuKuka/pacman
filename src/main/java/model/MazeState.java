@@ -93,6 +93,10 @@ public final class MazeState {
             }
             ghost.updateGhost(this, deltaTns);
         }
+        // Update gameState
+        if (gameState != GameState.FRIGHTENED && gameState != getCurrentState()) {
+            setGameState(getCurrentState());
+        }
         energizedCheck();
     }
 

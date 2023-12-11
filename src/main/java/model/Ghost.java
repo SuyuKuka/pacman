@@ -231,12 +231,6 @@ public final class Ghost extends Critter {
                     break;
             }
         }
-        // Quand l'état actuel du jeu change, tous les fantômes doivent faire un 180°.
-        GameState gameState = state.getGameState();
-        if (gameState != GameState.FRIGHTENED && gameState != state.getCurrentState()) {
-            state.setGameState(state.getCurrentState());
-            setDirection(getDirection().getOpposite());
-        }
     }
 
     //endregion State
@@ -450,8 +444,15 @@ public final class Ghost extends Critter {
         // Si le fantôme est dans l'état mangé et se trouve à l'entrée du spawn ou est dans le spawn
         // alors le fantôme doit aller vers sa cible en prenant un chemin prédéfini.
         if (ghostState == GhostState.EATEN && getPos().equals(config.getGhostSpawnEntrance())
-                || isInSpawn(config)) {
+        || isInSpawn(config)) {
             setDirection(getDirectionToEatenTarget());
+            return;
+        }
+
+        // Quand l'état actuel du jeu change, tous les fantômes doivent faire un 180°.
+        GameState gameState = state.getGameState();
+        if (gameState != GameState.FRIGHTENED && gameState != state.getCurrentState()) {
+            setDirection(getDirection().getOpposite());
             return;
         }
 
@@ -738,11 +739,12 @@ public final class Ghost extends Critter {
      * Renvoie la distance entre 2 {@link RealCoordinates}.
      * @param pos1 {@link RealCoordinates}
      * @param pos2 {@link RealCoordinates}
-     * @return {@code int}
+     * @return {@code double}
      */
-    public static int getDistance(final RealCoordinates pos1, final RealCoordinates pos2) {
-        return Math.abs((int)
-        (Math.sqrt(Math.pow(pos2.x() - pos1.x(), 2) + Math.pow(pos2.y() - pos1.y(), 2))));
+    public static double getDistance(final RealCoordinates pos1, final RealCoordinates pos2) {
+        return Math.abs(
+            Math.sqrt(Math.pow(pos2.x() - pos1.x(), 2) + Math.pow(pos2.y() - pos1.y(), 2))
+        );
     }
 
     public GhostType getGhostType() {

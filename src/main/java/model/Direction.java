@@ -44,9 +44,8 @@ public enum Direction {
             case WEST:
                 return EAST;
             default:
-                break;
+                return NONE;
         }
-        return NONE;
     }
 
     /**
