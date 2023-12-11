@@ -114,8 +114,9 @@ public final class CritterGraphicsFactory {
                 image.setTranslateX(ghost.getPos().x() * scale - scale * X_SHIFT);
                 image.setTranslateY(ghost.getPos().y() * scale - scale * Y_SHIFT);
 
+                final int ratio = 3;
                 double graphicsBuffer
-                = ghost.getGraphicsBuffer().getUpdateBuffer() + UPDATE_FREQUENCY;
+                = ghost.getGraphicsBuffer().getUpdateBuffer() + UPDATE_FREQUENCY / ratio;
                 double alternateBuffer
                 = ghost.getGraphicsBuffer().getAlternateBuffer() + ALTERNATE_FREQUENCY;
 
@@ -167,9 +168,6 @@ public final class CritterGraphicsFactory {
      */
     private String getPacManImageName(
     final PacMan pacman, final ImageView image, final MazeState maze) {
-        pacman.getGraphicsBuffer().setPacManMouthOpen(
-            !pacman.getGraphicsBuffer().isPacManMouthOpen()
-        );
         if (pacman.getDirection() == Direction.NONE) {
             return pacman.getImage();
         }
@@ -245,6 +243,38 @@ public final class CritterGraphicsFactory {
      * @return {@code String} du nom de l'image
      */
     private String getGhostImageName(final Ghost ghost, final ImageView image) {
+        String img;
+        if (ghost.getGhostState() == GhostState.FRIGHTENED
+        && !ghost.getGraphicsBuffer().isAlternate()) {
+            img = getFrightenedImage(ghost, image);
+        } else {
+            if (ghost.getGhostState() == GhostState.EATEN) {
+                return "eaten" + getImageDirection(ghost, image);
+            } else {
+                switch (ghost.getGhostType()) {
+                    case BLINKY:
+                        img = "blinky";
+                        break;
+                    case CLYDE:
+                        img = "clyde";
+                        break;
+                    case INKY:
+                        img = "inky";
+                        break;
+                    case PINKY:
+                        img = "pinky";
+                        break;
+                    default:
+                        img = ghost.getImage();
+                        break;
+                }
+                img += getImageDirection(ghost, image);
+            }
+        }
+        return img + alternateGhostImage(ghost);
+    }
+
+    private String getFrightenedImage(final Ghost ghost, final ImageView image) {
         switch (ghost.getDirection()) {
             case EAST:
                 if (image.getScaleX() != -1) {
@@ -260,28 +290,38 @@ public final class CritterGraphicsFactory {
             default:
                 break;
         }
+        return "frightened";
+    }
 
-        if (ghost.getGhostState() == GhostState.EATEN) {
-            return "eaten";
-        }
+    private String getImageDirection(final Ghost ghost, final ImageView image) {
+        switch (ghost.getDirection()) {
+            case NORTH:
+                return "_u";
+            case EAST:
+                if (image.getScaleX() != -1) {
+                    image.setScaleX(-1);
+                }
+                return "_s";
+            case SOUTH:
+                return "_d";
+            case WEST:
+                if (image.getScaleX() != 1) {
+                    image.setScaleX(1);
+                }
+                return "_s";
 
-        if (ghost.getGhostState() == GhostState.FRIGHTENED
-        && !ghost.getGraphicsBuffer().isAlternate()) {
-            return "frightened";
-        }
-
-        switch (ghost.getGhostType()) {
-            case BLINKY:
-                return "blinky";
-            case CLYDE:
-                return "clyde";
-            case INKY:
-                return "inky";
-            case PINKY:
-                return "pinky";
             default:
-                return ghost.getImage();
+                return "_s";
         }
+    }
+
+    private String alternateGhostImage(final Ghost ghost) {
+        GraphicsBuffer buffer = ghost.getGraphicsBuffer();
+        buffer.setAlternateMove(!buffer.isAlternateMove());
+        if (buffer.isAlternateMove()) {
+            return "_2";
+        }
+        return "_1";
     }
 }
 
